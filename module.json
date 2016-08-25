@@ -18,6 +18,7 @@
   "extraIncludes": [
     "inc/core",
     "inc/types",
+    "inc/drivers",
     "inc/platform"
   ]
 }
