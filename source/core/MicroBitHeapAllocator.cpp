@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "MicroBitConfig.h"
 #include "MicroBitHeapAllocator.h"
-#include "MicroBitDevice.h"
+#include "CodalDevice.h"
 #include "ErrorNo.h"
 
 struct HeapDefinition
@@ -366,7 +366,7 @@ void *microbit_malloc(size_t size)
 #endif
 
 #if CONFIG_ENABLED(MICROBIT_PANIC_HEAP_FULL)
-	microbit_panic(MICROBIT_OOM);
+	device.panic(MICROBIT_OOM);
 #endif
 
     return NULL;

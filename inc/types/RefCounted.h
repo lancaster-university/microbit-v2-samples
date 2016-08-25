@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "mbed.h"
 #include "MicroBitConfig.h"
-#include "MicroBitDevice.h"
+#include "CodalDevice.h"
 
 /**
   * Base class for payload for ref-counted objects. Used by ManagedString and MicroBitImage.

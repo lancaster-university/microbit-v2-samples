@@ -29,8 +29,8 @@ DEALINGS IN THE SOFTWARE.
   */
 #include "mbed.h"
 #include "MicroBitConfig.h"
+#include "CodalDevice.h"
 #include "RefCounted.h"
-#include "MicroBitDisplay.h"
 
 /**
   * Initializes for one outstanding reference.
@@ -58,7 +58,7 @@ static inline bool isReadOnlyInline(RefCounted *t)
     // Do some sanity checking while we're here
     if (refCount == 1 ||        // object should have been deleted
         (refCount & 1) == 0)    // refCount doesn't look right
-        microbit_panic(MICROBIT_HEAP_ERROR);
+        device.panic(MICROBIT_HEAP_ERROR);
 
     // Not read only
     return false;

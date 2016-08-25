@@ -8,7 +8,6 @@ enable_language(ASM)
 set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
     "core/MicroBitCompat.cpp"
-    "core/MicroBitDevice.cpp"
     "core/MicroBitFiber.cpp"
     "core/MicroBitFont.cpp"
     "core/MicroBitHeapAllocator.cpp"
