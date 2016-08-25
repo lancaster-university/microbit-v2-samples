@@ -1,0 +1,65 @@
+# This file is no longer auto-generated to make the repository builds with GCC
+# and ARMCC no matter what.
+
+cmake_minimum_required(VERSION 2.8.12)
+
+enable_language(ASM)
+
+set(YOTTA_AUTO_CODAL_CORE_CPP_FILES
+    "core/MemberFunctionCallback.cpp"
+    "core/MicroBitCompat.cpp"
+    "core/MicroBitDevice.cpp"
+    "core/MicroBitFiber.cpp"
+    "core/MicroBitFont.cpp"
+    "core/MicroBitHeapAllocator.cpp"
+    "core/MicroBitListener.cpp"
+    "core/MicroBitSystemTimer.cpp"
+
+    "types/ManagedString.cpp"
+    "types/Matrix4.cpp"
+    "types/MicroBitEvent.cpp"
+    "types/MicroBitImage.cpp"
+    "types/PacketBuffer.cpp"
+    "types/RefCounted.cpp"
+)
+
+execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)
+execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "rev-parse" "--abbrev-ref" "HEAD" OUTPUT_VARIABLE git_branch OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if ("${git_branch}" STREQUAL "master")
+    set(CODAL_VERSION_STRING "${YOTTA_CODAL_VERSION_STRING}")
+else()
+    set(CODAL_VERSION_STRING "${YOTTA_CODAL_VERSION_STRING}-${git_branch}-g${git_hash}")
+endif()
+
+set(CODAL_VERSION_FLAGS "-DCODAL_VERSION=\\\"${CODAL_VERSION_STRING}\\\"")
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CODAL_VERSION_FLAGS}")
+
+if(CMAKE_COMPILER_IS_GNUCC)
+  file(REMOVE "asm/CortexContextSwitch.s")
+  configure_file("asm/CortexContextSwitch.s.gcc" "asm/CortexContextSwitch.s" COPYONLY)
+else()
+  file(REMOVE "asm/CortexContextSwitch.s")
+  configure_file("asm/CortexContextSwitch.s.armcc" "asm/CortexContextSwitch.s" COPYONLY)
+endif()
+
+set(YOTTA_AUTO_CODAL_CORE_S_FILES
+    "asm/CortexContextSwitch.s"
+)
+
+add_library(codal-core
+    ${YOTTA_AUTO_CODAL_CORE_CPP_FILES}
+    ${YOTTA_AUTO_CODAL_CORE_S_FILES}
+)
+
+yotta_postprocess_target(LIBRARY codal-core)
+
+target_link_libraries(codal-core
+    mbed-classic
+)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    message("suppressing ALL warnings from mbed-classic")
+    target_compile_options(mbed-classic PRIVATE "-w")
+endif()
