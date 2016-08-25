@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8.12)
 
 enable_language(ASM)
 
-set(YOTTA_AUTO_CODAL_CORE_CPP_FILES
+set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
     "core/MicroBitCompat.cpp"
     "core/MicroBitDevice.cpp"
@@ -44,18 +44,18 @@ else()
   configure_file("asm/CortexContextSwitch.s.armcc" "asm/CortexContextSwitch.s" COPYONLY)
 endif()
 
-set(YOTTA_AUTO_CODAL_CORE_S_FILES
+set(YOTTA_AUTO_CODAL_S_FILES
     "asm/CortexContextSwitch.s"
 )
 
-add_library(codal-core
-    ${YOTTA_AUTO_CODAL_CORE_CPP_FILES}
-    ${YOTTA_AUTO_CODAL_CORE_S_FILES}
+add_library(codal
+    ${YOTTA_AUTO_CODAL_CPP_FILES}
+    ${YOTTA_AUTO_CODAL_S_FILES}
 )
 
-yotta_postprocess_target(LIBRARY codal-core)
+yotta_postprocess_target(LIBRARY codal)
 
-target_link_libraries(codal-core
+target_link_libraries(codal
     mbed-classic
 )
 

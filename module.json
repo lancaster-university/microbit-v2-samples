@@ -1,5 +1,5 @@
 {
-  "name": "codal-core",
+  "name": "codal",
   "version": "2.0.0",
   "license": "MIT",
   "description": "Core functionality for the Component Oriented Device Abstraction Layer (codal)",
