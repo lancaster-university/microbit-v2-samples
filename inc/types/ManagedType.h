@@ -128,7 +128,7 @@ public:
       */
     T* operator->() {
         if (object == NULL)
-            microbit_panic(MICROBIT_NULL_DEREFERENCE);
+            device.panic(MICROBIT_NULL_DEREFERENCE);
         return object;
     }
 
