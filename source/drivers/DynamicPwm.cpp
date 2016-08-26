@@ -34,6 +34,9 @@ DEALINGS IN THE SOFTWARE.
 #include "DynamicPwm.h"
 #include "MicroBitPin.h"
 #include "ErrorNo.h"
+#include "Glue.h"
+
+extern void pwmout_redirect(PinName pin, pwmout_t *obj);
 
 DynamicPwm* DynamicPwm::pwms[NO_PWMS] = { NULL, NULL, NULL };
 
@@ -41,45 +44,7 @@ uint8_t DynamicPwm::lastUsed = NO_PWMS+1; //set it to out of range i.e. 4 so we 
 
 uint16_t DynamicPwm::sharedPeriod = 0; //set the shared period to an unknown state
 
-/**
-  * Reassigns an already operational PWM channel to the given pin.
-  *
-  * @param pin The desired pin to begin a PWM wave.
-  *
-  * @param oldPin The pin to stop running a PWM wave.
-  *
-  * @param channel_number The GPIOTE channel being used to drive this PWM channel
-  *
-  * TODO: Merge into mbed, at a later date.
-  */
-void gpiote_reinit(PinName pin, PinName oldPin, uint8_t channel_number)
-{
-    // Connect GPIO input buffers and configure PWM_OUTPUT_PIN_NUMBER as an output.
-    NRF_GPIO->PIN_CNF[pin] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-                            | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                            | (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos)
-                            | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                            | (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos);
 
-    NRF_GPIO->OUTCLR = (1 << oldPin);
-    NRF_GPIO->OUTCLR = (1 << pin);
-
-    /* Finally configure the channel as the caller expects. If OUTINIT works, the channel is configured properly.
-       If it does not, the channel output inheritance sets the proper level. */
-
-    NRF_GPIOTE->CONFIG[channel_number] = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos) |
-                                         ((uint32_t)pin << GPIOTE_CONFIG_PSEL_Pos) |
-                                         ((uint32_t)GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos) |
-                                         ((uint32_t)GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos); // ((uint32_t)GPIOTE_CONFIG_OUTINIT_High <<
-                                                                                                             // GPIOTE_CONFIG_OUTINIT_Pos);//
-
-    /* Three NOPs are required to make sure configuration is written before setting tasks or getting events */
-    __NOP();
-    __NOP();
-    __NOP();
-
-    NRF_TIMER2->CC[channel_number] = 0;
-}
 
 /**
   * An internal constructor used when allocating a new DynamicPwm instance.
@@ -106,7 +71,8 @@ DynamicPwm::DynamicPwm(PinName pin, PwmPersistence persistence) : PwmOut(pin)
   */
 void DynamicPwm::redirect(PinName pin)
 {
-    gpiote_reinit(pin, _pwm.pin, (uint8_t)_pwm.pwm);
+    //gpiote_reinit(pin, _pwm.pin, (uint8_t)_pwm.pwm);
+    pwmout_redirect(pin, &_pwm);
     this->_pwm.pin = pin;
 }
 
@@ -178,7 +144,7 @@ DynamicPwm* DynamicPwm::allocate(PinName pin, PwmPersistence persistence)
 void DynamicPwm::release()
 {
     //free the pwm instance.
-    NRF_GPIOTE->CONFIG[(uint8_t) _pwm.pwm] = 0;
+    //NRF_GPIOTE->CONFIG[(uint8_t) _pwm.pwm] = 0;
     pwmout_free(&_pwm);
     this->flags = PWM_PERSISTENCE_TRANSIENT;
 

@@ -35,6 +35,7 @@ DEALINGS IN THE SOFTWARE.
 #include "TimedInterruptIn.h"
 #include "DynamicPwm.h"
 #include "ErrorNo.h"
+#include "Glue.h"
 
 /**
   * Constructor.
@@ -82,7 +83,7 @@ void MicroBitPin::disconnect()
         delete ((DigitalOut *)pin);
 
     if (status & IO_STATUS_ANALOG_IN){
-        NRF_ADC->ENABLE = ADC_ENABLE_ENABLE_Disabled; // forcibly disable the ADC - BUG in mbed....
+        analogin_disable();
         delete ((AnalogIn *)pin);
     }
 
