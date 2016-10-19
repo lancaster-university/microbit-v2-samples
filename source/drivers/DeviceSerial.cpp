@@ -24,19 +24,19 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "mbed.h"
-#include "MicroBitSerial.h"
+#include "DeviceSerial.h"
 #include "ErrorNo.h"
-#include "MicroBitComponent.h"
-#include "MicroBitFiber.h"
+#include "DeviceComponent.h"
+#include "DeviceFiber.h"
 #include "NotifyEvents.h"
 
-uint8_t MicroBitSerial::status = 0;
+uint8_t DeviceSerial::status = 0;
 
-int MicroBitSerial::baudrate = 0;
+int DeviceSerial::baudrate = 0;
 
 /**
   * Constructor.
-  * Create an instance of MicroBitSerial
+  * Create an instance of DeviceSerial
   *
   * @param tx the Pin to be used for transmission
   *
@@ -47,7 +47,7 @@ int MicroBitSerial::baudrate = 0;
   * @param txBufferSize the size of the buffer to be used for transmitting bytes
   *
   * @code
-  * MicroBitSerial serial(USBTX, USBRX);
+  * DeviceSerial serial(USBTX, USBRX);
   * @endcode
   * @note the default baud rate is 115200. More API details can be found:
   *       -https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/api/SerialBase.h
@@ -55,7 +55,7 @@ int MicroBitSerial::baudrate = 0;
   *
   *       Buffers aren't allocated until the first send or receive respectively.
   */
-MicroBitSerial::MicroBitSerial(PinName tx, PinName rx, uint8_t rxBufferSize, uint8_t txBufferSize) : RawSerial(tx,rx), delimeters()
+DeviceSerial::DeviceSerial(PinName tx, PinName rx, uint8_t rxBufferSize, uint8_t txBufferSize) : RawSerial(tx,rx), delimeters()
 {
     // + 1 so there is a usable buffer size, of the size the user requested.
     this->rxBuffSize = rxBufferSize + 1;
@@ -72,23 +72,23 @@ MicroBitSerial::MicroBitSerial(PinName tx, PinName rx, uint8_t rxBufferSize, uin
 
     this->rxBuffHeadMatch = -1;
 
-    this->baud(MICROBIT_SERIAL_DEFAULT_BAUD_RATE);
+    this->baud(DEVICE_SERIAL_DEFAULT_BAUD_RATE);
 
-#if CONFIG_ENABLED(MICROBIT_DBG)
+#if CONFIG_ENABLED(DEVICE_DBG)
     SERIAL_DEBUG = this;
 #endif
 
 }
 
 /**
-  * An internal interrupt callback for MicroBitSerial configured for when a
+  * An internal interrupt callback for DeviceSerial configured for when a
   * character is received.
   *
   * Each time a character is received fill our circular buffer!
   */
-void MicroBitSerial::dataReceived()
+void DeviceSerial::dataReceived()
 {
-    if(!(status & MICROBIT_SERIAL_RX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_RX_BUFF_INIT))
         return;
 
     //get the received character
@@ -102,7 +102,7 @@ void MicroBitSerial::dataReceived()
     {
         //fire an event if there is to block any waiting fibers
         if(this->delimeters.charAt(delimeterOffset) == c)
-            MicroBitEvent(MICROBIT_ID_SERIAL, MICROBIT_SERIAL_EVT_DELIM_MATCH);
+            DeviceEvent(DEVICE_ID_SERIAL, DEVICE_SERIAL_EVT_DELIM_MATCH);
 
         delimeterOffset++;
     }
@@ -121,23 +121,23 @@ void MicroBitSerial::dataReceived()
             if(rxBuffHead == rxBuffHeadMatch)
             {
                 rxBuffHeadMatch = -1;
-                MicroBitEvent(MICROBIT_ID_SERIAL, MICROBIT_SERIAL_EVT_HEAD_MATCH);
+                DeviceEvent(DEVICE_ID_SERIAL, DEVICE_SERIAL_EVT_HEAD_MATCH);
             }
     }
     else
         //otherwise, our buffer is full, send an event to the user...
-        MicroBitEvent(MICROBIT_ID_SERIAL, MICROBIT_SERIAL_EVT_RX_FULL);
+        DeviceEvent(DEVICE_ID_SERIAL, DEVICE_SERIAL_EVT_RX_FULL);
 }
 
 /**
-  * An internal interrupt callback for MicroBitSerial.
+  * An internal interrupt callback for DeviceSerial.
   *
   * Each time the Serial module's buffer is empty, write a character if we have
   * characters to write.
   */
-void MicroBitSerial::dataWritten()
+void DeviceSerial::dataWritten()
 {
-    if(txBuffTail == txBuffHead || !(status & MICROBIT_SERIAL_TX_BUFF_INIT))
+    if(txBuffTail == txBuffHead || !(status & DEVICE_SERIAL_TX_BUFF_INIT))
         return;
 
     //send our current char
@@ -148,7 +148,7 @@ void MicroBitSerial::dataWritten()
     //unblock any waiting fibers that are waiting for transmission to finish.
     if(nextTail == txBuffHead)
     {
-        MicroBitEvent(MICROBIT_ID_NOTIFY, MICROBIT_SERIAL_EVT_TX_EMPTY);
+        DeviceEvent(DEVICE_ID_NOTIFY, DEVICE_SERIAL_EVT_TX_EMPTY);
         detach(Serial::TxIrq);
     }
 
@@ -171,7 +171,7 @@ void MicroBitSerial::dataWritten()
   *
   * @return the number of bytes copied into the buffer.
   */
-int MicroBitSerial::setTxInterrupt(uint8_t *string, int len, MicroBitSerialMode mode)
+int DeviceSerial::setTxInterrupt(uint8_t *string, int len, DeviceSerialMode mode)
 {
     int copiedBytes = 0;
 
@@ -188,10 +188,10 @@ int MicroBitSerial::setTxInterrupt(uint8_t *string, int len, MicroBitSerialMode 
     }
 
     if(mode != SYNC_SPINWAIT)
-        fiber_wake_on_event(MICROBIT_ID_NOTIFY, MICROBIT_SERIAL_EVT_TX_EMPTY);
+        fiber_wake_on_event(DEVICE_ID_NOTIFY, DEVICE_SERIAL_EVT_TX_EMPTY);
 
     //set the TX interrupt
-    attach(this, &MicroBitSerial::dataWritten, Serial::TxIrq);
+    attach(this, &DeviceSerial::dataWritten, Serial::TxIrq);
 
     return copiedBytes;
 }
@@ -199,87 +199,87 @@ int MicroBitSerial::setTxInterrupt(uint8_t *string, int len, MicroBitSerialMode 
 /**
   * Locks the mutex so that others can't use this serial instance for reception
   */
-void MicroBitSerial::lockRx()
+void DeviceSerial::lockRx()
 {
-    status |= MICROBIT_SERIAL_RX_IN_USE;
+    status |= DEVICE_SERIAL_RX_IN_USE;
 }
 
 /**
   * Locks the mutex so that others can't use this serial instance for transmission
   */
-void MicroBitSerial::lockTx()
+void DeviceSerial::lockTx()
 {
-    status |= MICROBIT_SERIAL_TX_IN_USE;
+    status |= DEVICE_SERIAL_TX_IN_USE;
 }
 
 /**
   * Unlocks the mutex so that others can use this serial instance for reception
   */
-void MicroBitSerial::unlockRx()
+void DeviceSerial::unlockRx()
 {
-    status &= ~MICROBIT_SERIAL_RX_IN_USE;
+    status &= ~DEVICE_SERIAL_RX_IN_USE;
 }
 
 /**
   * Unlocks the mutex so that others can use this serial instance for transmission
   */
-void MicroBitSerial::unlockTx()
+void DeviceSerial::unlockTx()
 {
-    status &= ~MICROBIT_SERIAL_TX_IN_USE;
+    status &= ~DEVICE_SERIAL_TX_IN_USE;
 }
 
 /**
   * We do not want to always have our buffers initialised, especially if users to not
   * use them. We only bring them up on demand.
   */
-int MicroBitSerial::initialiseRx()
+int DeviceSerial::initialiseRx()
 {
-    if((status & MICROBIT_SERIAL_RX_BUFF_INIT))
+    if((status & DEVICE_SERIAL_RX_BUFF_INIT))
     {
         //ensure that we receive no interrupts after freeing our buffer
         detach(Serial::RxIrq);
         free(this->rxBuff);
     }
 
-    status &= ~MICROBIT_SERIAL_RX_BUFF_INIT;
+    status &= ~DEVICE_SERIAL_RX_BUFF_INIT;
 
     if((this->rxBuff = (uint8_t *)malloc(rxBuffSize)) == NULL)
-        return MICROBIT_NO_RESOURCES;
+        return DEVICE_NO_RESOURCES;
 
     this->rxBuffHead = 0;
     this->rxBuffTail = 0;
 
     //set the receive interrupt
-    status |= MICROBIT_SERIAL_RX_BUFF_INIT;
-    attach(this, &MicroBitSerial::dataReceived, Serial::RxIrq);
+    status |= DEVICE_SERIAL_RX_BUFF_INIT;
+    attach(this, &DeviceSerial::dataReceived, Serial::RxIrq);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * We do not want to always have our buffers initialised, especially if users to not
   * use them. We only bring them up on demand.
   */
-int MicroBitSerial::initialiseTx()
+int DeviceSerial::initialiseTx()
 {
-    if((status & MICROBIT_SERIAL_TX_BUFF_INIT))
+    if((status & DEVICE_SERIAL_TX_BUFF_INIT))
     {
         //ensure that we receive no interrupts after freeing our buffer
         detach(Serial::TxIrq);
         free(this->txBuff);
     }
 
-    status &= ~MICROBIT_SERIAL_TX_BUFF_INIT;
+    status &= ~DEVICE_SERIAL_TX_BUFF_INIT;
 
     if((this->txBuff = (uint8_t *)malloc(txBuffSize)) == NULL)
-        return MICROBIT_NO_RESOURCES;
+        return DEVICE_NO_RESOURCES;
 
     this->txBuffHead = 0;
     this->txBuffTail = 0;
 
-    status |= MICROBIT_SERIAL_TX_BUFF_INIT;
+    status |= DEVICE_SERIAL_TX_BUFF_INIT;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -288,7 +288,7 @@ int MicroBitSerial::initialiseTx()
   *
   * @param mode the selected mode, one of: ASYNC, SYNC_SPINWAIT, SYNC_SLEEP
   */
-void MicroBitSerial::send(MicroBitSerialMode mode)
+void DeviceSerial::send(DeviceSerialMode mode)
 {
     if(mode == SYNC_SPINWAIT)
         while(txBufferedSize() > 0);
@@ -316,15 +316,15 @@ void MicroBitSerial::send(MicroBitSerialMode mode)
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return a character from the circular buffer, or MICROBIT_NO_DATA is there
+  * @return a character from the circular buffer, or DEVICE_NO_DATA is there
   *         are no characters in the buffer.
   */
-int MicroBitSerial::getChar(MicroBitSerialMode mode)
+int DeviceSerial::getChar(DeviceSerialMode mode)
 {
     if(mode == ASYNC)
     {
         if(!isReadable())
-            return MICROBIT_NO_DATA;
+            return DEVICE_NO_DATA;
     }
 
     if(mode == SYNC_SPINWAIT)
@@ -359,7 +359,7 @@ int MicroBitSerial::getChar(MicroBitSerialMode mode)
   * @note this method assumes that the linear buffer has the appropriate amount of
   *       memory to contain the copy operation
   */
-void MicroBitSerial::circularCopy(uint8_t *circularBuff, uint8_t circularBuffSize, uint8_t *linearBuff, uint16_t tailPosition, uint16_t headPosition)
+void DeviceSerial::circularCopy(uint8_t *circularBuff, uint8_t circularBuffSize, uint8_t *linearBuff, uint16_t tailPosition, uint16_t headPosition)
 {
     int toBuffIndex = 0;
 
@@ -391,22 +391,22 @@ void MicroBitSerial::circularCopy(uint8_t *circularBuff, uint8_t circularBuffSiz
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return the number of bytes written, or MICROBIT_SERIAL_IN_USE if another fiber
+  * @return the number of bytes written, or DEVICE_SERIAL_IN_USE if another fiber
   *         is using the serial instance for transmission.
   */
-int MicroBitSerial::sendChar(char c, MicroBitSerialMode mode)
+int DeviceSerial::sendChar(char c, DeviceSerialMode mode)
 {
     if(txInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockTx();
 
     //lazy initialisation of our tx buffer
-    if(!(status & MICROBIT_SERIAL_TX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_TX_BUFF_INIT))
     {
         int result = initialiseTx();
 
-        if(result != MICROBIT_OK)
+        if(result != DEVICE_OK)
             return result;
     }
 
@@ -441,11 +441,11 @@ int MicroBitSerial::sendChar(char c, MicroBitSerialMode mode)
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return the number of bytes written, MICROBIT_SERIAL_IN_USE if another fiber
-  *         is using the serial instance for transmission, MICROBIT_INVALID_PARAMETER
+  * @return the number of bytes written, DEVICE_SERIAL_IN_USE if another fiber
+  *         is using the serial instance for transmission, DEVICE_INVALID_PARAMETER
   *         if buffer is invalid, or the given bufferLen is <= 0.
   */
-int MicroBitSerial::send(ManagedString s, MicroBitSerialMode mode)
+int DeviceSerial::send(ManagedString s, DeviceSerialMode mode)
 {
     return send((uint8_t *)s.toCharArray(), s.length(), mode);
 }
@@ -472,26 +472,26 @@ int MicroBitSerial::send(ManagedString s, MicroBitSerialMode mode)
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return the number of bytes written, MICROBIT_SERIAL_IN_USE if another fiber
-  *         is using the serial instance for transmission, MICROBIT_INVALID_PARAMETER
+  * @return the number of bytes written, DEVICE_SERIAL_IN_USE if another fiber
+  *         is using the serial instance for transmission, DEVICE_INVALID_PARAMETER
   *         if buffer is invalid, or the given bufferLen is <= 0.
   */
-int MicroBitSerial::send(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode)
+int DeviceSerial::send(uint8_t *buffer, int bufferLen, DeviceSerialMode mode)
 {
     if(txInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     if(bufferLen <= 0 || buffer == NULL)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     lockTx();
 
     //lazy initialisation of our tx buffer
-    if(!(status & MICROBIT_SERIAL_TX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_TX_BUFF_INIT))
     {
         int result = initialiseTx();
 
-        if(result != MICROBIT_OK)
+        if(result != DEVICE_OK)
             return result;
     }
 
@@ -519,7 +519,7 @@ int MicroBitSerial::send(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode
   *        gives a different behaviour:
   *
   *            ASYNC - A character is read from the rxBuff if available, if there
-  *                    are no characters to be read, a value of MICROBIT_NO_DATA is returned immediately.
+  *                    are no characters to be read, a value of DEVICE_NO_DATA is returned immediately.
   *
   *            SYNC_SPINWAIT - A character is read from the rxBuff if available, if there
   *                            are no characters to be read, this method will spin
@@ -531,23 +531,23 @@ int MicroBitSerial::send(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return a character, MICROBIT_SERIAL_IN_USE if another fiber is using the serial instance for reception,
-  *         MICROBIT_NO_RESOURCES if buffer allocation did not complete successfully, or MICROBIT_NO_DATA if
+  * @return a character, DEVICE_SERIAL_IN_USE if another fiber is using the serial instance for reception,
+  *         DEVICE_NO_RESOURCES if buffer allocation did not complete successfully, or DEVICE_NO_DATA if
   *         the rx buffer is empty and the mode given is ASYNC.
   */
-int MicroBitSerial::read(MicroBitSerialMode mode)
+int DeviceSerial::read(DeviceSerialMode mode)
 {
     if(rxInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockRx();
 
     //lazy initialisation of our buffers
-    if(!(status & MICROBIT_SERIAL_RX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_RX_BUFF_INIT))
     {
         int result = initialiseRx();
 
-        if(result != MICROBIT_OK)
+        if(result != DEVICE_OK)
             return result;
     }
 
@@ -582,7 +582,7 @@ int MicroBitSerial::read(MicroBitSerialMode mode)
   *
   * @return A ManagedString, or an empty ManagedString if an error was encountered during the read.
   */
-ManagedString MicroBitSerial::read(int size, MicroBitSerialMode mode)
+ManagedString DeviceSerial::read(int size, DeviceSerialMode mode)
 {
     uint8_t buff[size + 1];
 
@@ -620,22 +620,22 @@ ManagedString MicroBitSerial::read(int size, MicroBitSerialMode mode)
   *
   *         Defaults to SYNC_SLEEP.
   *
-  * @return the number of characters read, or MICROBIT_SERIAL_IN_USE if another fiber
+  * @return the number of characters read, or DEVICE_SERIAL_IN_USE if another fiber
   *         is using the instance for receiving.
   */
-int MicroBitSerial::read(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode)
+int DeviceSerial::read(uint8_t *buffer, int bufferLen, DeviceSerialMode mode)
 {
     if(rxInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockRx();
 
     //lazy initialisation of our rx buffer
-    if(!(status & MICROBIT_SERIAL_RX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_RX_BUFF_INIT))
     {
         int result = initialiseRx();
 
-        if(result != MICROBIT_OK)
+        if(result != DEVICE_OK)
             return result;
     }
 
@@ -645,7 +645,7 @@ int MicroBitSerial::read(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode
 
     if(mode == ASYNC)
     {
-        while((temp = getChar(mode)) != MICROBIT_NO_DATA && bufferIndex < bufferLen)
+        while((temp = getChar(mode)) != DEVICE_NO_DATA && bufferIndex < bufferLen)
         {
             buffer[bufferIndex] = (char)temp;
             bufferIndex++;
@@ -708,18 +708,18 @@ int MicroBitSerial::read(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode
   *
   * @note delimeters are matched on a per byte basis.
   */
-ManagedString MicroBitSerial::readUntil(ManagedString delimeters, MicroBitSerialMode mode)
+ManagedString DeviceSerial::readUntil(ManagedString delimeters, DeviceSerialMode mode)
 {
 
     if(rxInUse())
         return ManagedString();
 
     //lazy initialisation of our rx buffer
-    if(!(status & MICROBIT_SERIAL_RX_BUFF_INIT))
+    if(!(status & DEVICE_SERIAL_RX_BUFF_INIT))
     {
         int result = initialiseRx();
 
-        if(result != MICROBIT_OK)
+        if(result != DEVICE_OK)
             return result;
     }
 
@@ -804,11 +804,11 @@ ManagedString MicroBitSerial::readUntil(ManagedString delimeters, MicroBitSerial
   *         - https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/targets/hal/TARGET_NORDIC/TARGET_MCU_NRF51822/serial_api.c
   *        for permitted baud rates.
   *
-  * @return MICROBIT_INVALID_PARAMETER if baud rate is less than 0, otherwise MICROBIT_OK.
+  * @return DEVICE_INVALID_PARAMETER if baud rate is less than 0, otherwise DEVICE_OK.
   *
   * @note the underlying implementation chooses the first allowable rate at or above that requested.
   */
-void MicroBitSerial::baud(int baudrate)
+void DeviceSerial::baud(int baudrate)
 {
     if(baudrate < 0)
         return;
@@ -825,12 +825,12 @@ void MicroBitSerial::baud(int baudrate)
   *
   * @param rx the new reception pin.
   *
-  * @return MICROBIT_SERIAL_IN_USE if another fiber is currently transmitting or receiving, otherwise MICROBIT_OK.
+  * @return DEVICE_SERIAL_IN_USE if another fiber is currently transmitting or receiving, otherwise DEVICE_OK.
   */
-int MicroBitSerial::redirect(PinName tx, PinName rx)
+int DeviceSerial::redirect(PinName tx, PinName rx)
 {
     if(txInUse() || rxInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockTx();
     lockRx();
@@ -842,23 +842,23 @@ int MicroBitSerial::redirect(PinName tx, PinName rx)
 
     serial_init(&_serial, tx, rx);
 
-    attach(this, &MicroBitSerial::dataReceived, Serial::RxIrq);
+    attach(this, &DeviceSerial::dataReceived, Serial::RxIrq);
 
     if(txBufferedSize() > 0)
-        attach(this, &MicroBitSerial::dataWritten, Serial::TxIrq);
+        attach(this, &DeviceSerial::dataWritten, Serial::TxIrq);
 
     this->baud(this->baudrate);
 
     unlockRx();
     unlockTx();
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * Configures an event to be fired after "len" characters.
   *
-  * Will generate an event with the ID: MICROBIT_ID_SERIAL and the value MICROBIT_SERIAL_EVT_HEAD_MATCH.
+  * Will generate an event with the ID: DEVICE_ID_SERIAL and the value DEVICE_SERIAL_EVT_HEAD_MATCH.
   *
   * @param len the number of characters to wait before triggering the event.
   *
@@ -867,32 +867,32 @@ int MicroBitSerial::redirect(PinName tx, PinName rx)
   *
   *            ASYNC - Will configure the event and return immediately.
   *
-  *            SYNC_SPINWAIT - will return MICROBIT_INVALID_PARAMETER
+  *            SYNC_SPINWAIT - will return DEVICE_INVALID_PARAMETER
   *
   *            SYNC_SLEEP - Will configure the event and block the current fiber until the
   *                         event is received.
   *
-  * @return MICROBIT_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise MICROBIT_OK.
+  * @return DEVICE_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise DEVICE_OK.
   */
-int MicroBitSerial::eventAfter(int len, MicroBitSerialMode mode)
+int DeviceSerial::eventAfter(int len, DeviceSerialMode mode)
 {
     if(mode == SYNC_SPINWAIT)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     //configure our head match...
     this->rxBuffHeadMatch = (rxBuffHead + len) % rxBuffSize;
 
     //block!
     if(mode == SYNC_SLEEP)
-        fiber_wait_for_event(MICROBIT_ID_SERIAL, MICROBIT_SERIAL_EVT_HEAD_MATCH);
+        fiber_wait_for_event(DEVICE_ID_SERIAL, DEVICE_SERIAL_EVT_HEAD_MATCH);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * Configures an event to be fired on a match with one of the delimeters.
   *
-  * Will generate an event with the ID: MICROBIT_ID_SERIAL and the value MICROBIT_SERIAL_EVT_DELIM_MATCH.
+  * Will generate an event with the ID: DEVICE_ID_SERIAL and the value DEVICE_SERIAL_EVT_DELIM_MATCH.
   *
   * @param delimeters the characters to match received characters against e.g. ManagedString("\n")
   *
@@ -901,28 +901,28 @@ int MicroBitSerial::eventAfter(int len, MicroBitSerialMode mode)
   *
   *            ASYNC - Will configure the event and return immediately.
   *
-  *            SYNC_SPINWAIT - will return MICROBIT_INVALID_PARAMETER
+  *            SYNC_SPINWAIT - will return DEVICE_INVALID_PARAMETER
   *
   *            SYNC_SLEEP - Will configure the event and block the current fiber until the
   *                         event is received.
   *
-  * @return MICROBIT_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise MICROBIT_OK.
+  * @return DEVICE_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise DEVICE_OK.
   *
   * @note delimeters are matched on a per byte basis.
   */
-int MicroBitSerial::eventOn(ManagedString delimeters, MicroBitSerialMode mode)
+int DeviceSerial::eventOn(ManagedString delimeters, DeviceSerialMode mode)
 {
     if(mode == SYNC_SPINWAIT)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     //configure our head match...
     this->delimeters = delimeters;
 
     //block!
     if(mode == SYNC_SLEEP)
-        fiber_wait_for_event(MICROBIT_ID_SERIAL, MICROBIT_SERIAL_EVT_DELIM_MATCH);
+        fiber_wait_for_event(DEVICE_ID_SERIAL, DEVICE_SERIAL_EVT_DELIM_MATCH);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -933,7 +933,7 @@ int MicroBitSerial::eventOn(ManagedString delimeters, MicroBitSerialMode mode)
   * @note We do not wrap the super's readable() method as we don't want to
   *       interfere with communities that use manual calls to serial.readable().
   */
-int MicroBitSerial::isReadable()
+int DeviceSerial::isReadable()
 {
     return (rxBuffTail != rxBuffHead) ? 1 : 0;
 }
@@ -946,7 +946,7 @@ int MicroBitSerial::isReadable()
   * @note We do not wrap the super's writeable() method as we don't want to
   *       interfere with communities that use manual calls to serial.writeable().
   */
-int MicroBitSerial::isWriteable()
+int DeviceSerial::isWriteable()
 {
     return (txBuffHead != (txBuffTail - 1)) ? 1 : 0;
 }
@@ -956,13 +956,13 @@ int MicroBitSerial::isWriteable()
   *
   * @param size the new size for our rxBuff
   *
-  * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-  *         for reception, otherwise MICROBIT_OK.
+  * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+  *         for reception, otherwise DEVICE_OK.
   */
-int MicroBitSerial::setRxBufferSize(uint8_t size)
+int DeviceSerial::setRxBufferSize(uint8_t size)
 {
     if(rxInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockRx();
 
@@ -981,13 +981,13 @@ int MicroBitSerial::setRxBufferSize(uint8_t size)
   *
   * @param size the new size for our txBuff
   *
-  * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-  *         for transmission, otherwise MICROBIT_OK.
+  * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+  *         for transmission, otherwise DEVICE_OK.
   */
-int MicroBitSerial::setTxBufferSize(uint8_t size)
+int DeviceSerial::setTxBufferSize(uint8_t size)
 {
     if(txInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockTx();
 
@@ -1006,7 +1006,7 @@ int MicroBitSerial::setTxBufferSize(uint8_t size)
   *
   * @return the current size of rxBuff in bytes
   */
-int MicroBitSerial::getRxBufferSize()
+int DeviceSerial::getRxBufferSize()
 {
     return this->rxBuffSize;
 }
@@ -1016,7 +1016,7 @@ int MicroBitSerial::getRxBufferSize()
   *
   * @return the current size of txBuff in bytes
   */
-int MicroBitSerial::getTxBufferSize()
+int DeviceSerial::getTxBufferSize()
 {
     return this->txBuffSize;
 }
@@ -1025,13 +1025,13 @@ int MicroBitSerial::getTxBufferSize()
   * Sets the tail to match the head of our circular buffer for reception,
   * effectively clearing the reception buffer.
   *
-  * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-  *         for reception, otherwise MICROBIT_OK.
+  * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+  *         for reception, otherwise DEVICE_OK.
   */
-int MicroBitSerial::clearRxBuffer()
+int DeviceSerial::clearRxBuffer()
 {
     if(rxInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockRx();
 
@@ -1039,20 +1039,20 @@ int MicroBitSerial::clearRxBuffer()
 
     unlockRx();
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * Sets the tail to match the head of our circular buffer for transmission,
   * effectively clearing the transmission buffer.
   *
-  * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-  *         for transmission, otherwise MICROBIT_OK.
+  * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+  *         for transmission, otherwise DEVICE_OK.
   */
-int MicroBitSerial::clearTxBuffer()
+int DeviceSerial::clearTxBuffer()
 {
     if(txInUse())
-        return MICROBIT_SERIAL_IN_USE;
+        return DEVICE_SERIAL_IN_USE;
 
     lockTx();
 
@@ -1060,7 +1060,7 @@ int MicroBitSerial::clearTxBuffer()
 
     unlockTx();
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -1069,7 +1069,7 @@ int MicroBitSerial::clearTxBuffer()
   *
   * @return The currently buffered number of bytes in our rxBuff.
   */
-int MicroBitSerial::rxBufferedSize()
+int DeviceSerial::rxBufferedSize()
 {
     if(rxBuffTail > rxBuffHead)
         return (rxBuffSize - rxBuffTail) + rxBuffHead;
@@ -1083,7 +1083,7 @@ int MicroBitSerial::rxBufferedSize()
   *
   * @return The currently buffered number of bytes in our txBuff.
   */
-int MicroBitSerial::txBufferedSize()
+int DeviceSerial::txBufferedSize()
 {
     if(txBuffTail > txBuffHead)
         return (txBuffSize - txBuffTail) + txBuffHead;
@@ -1098,9 +1098,9 @@ int MicroBitSerial::txBufferedSize()
   *
   * @note Only one fiber can call read at a time
   */
-int MicroBitSerial::rxInUse()
+int DeviceSerial::rxInUse()
 {
-    return (status & MICROBIT_SERIAL_RX_IN_USE);
+    return (status & DEVICE_SERIAL_RX_IN_USE);
 }
 
 /**
@@ -1110,9 +1110,9 @@ int MicroBitSerial::rxInUse()
   *
   * @note Only one fiber can call send at a time
   */
-int MicroBitSerial::txInUse()
+int DeviceSerial::txInUse()
 {
-    return (status & MICROBIT_SERIAL_TX_IN_USE);
+    return (status & DEVICE_SERIAL_TX_IN_USE);
 }
 
 /**
@@ -1120,8 +1120,8 @@ int MicroBitSerial::txInUse()
   *
   * @param interruptType one of Serial::RxIrq or Serial::TxIrq
   */
-void MicroBitSerial::detach(Serial::IrqType interruptType)
+void DeviceSerial::detach(Serial::IrqType interruptType)
 {
     //we detach by sending a bad value to attach, for some weird reason...
-    attach((MicroBitSerial *)NULL, &MicroBitSerial::dataReceived, interruptType);
+    attach((DeviceSerial *)NULL, &DeviceSerial::dataReceived, interruptType);
 }

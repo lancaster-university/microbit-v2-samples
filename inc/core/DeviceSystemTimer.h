@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Definitions for the MicroBit system timer.
+  * Definitions for the Device system timer.
   *
   * This module provides:
   *
@@ -32,15 +32,15 @@ DEALINGS IN THE SOFTWARE.
   * 2) a simple periodic multiplexing API for the underlying mbed implementation.
   *
   * The latter is useful to avoid costs associated with multiple mbed Ticker instances
-  * in microbit-dal components, as each incurs a significant additional RAM overhead (circa 80 bytes).
+  * in codal components, as each incurs a significant additional RAM overhead (circa 80 bytes).
   */
 
-#ifndef MICROBIT_SYSTEM_TIMER_H
-#define MICROBIT_SYSTEM_TIMER_H
+#ifndef DEVICE_SYSTEM_TIMER_H
+#define DEVICE_SYSTEM_TIMER_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitComponent.h"
+#include "DeviceConfig.h"
+#include "DeviceComponent.h"
 
 /**
   * Initialises a system wide timer, used to drive the various components used in the runtime.
@@ -49,7 +49,7 @@ DEALINGS IN THE SOFTWARE.
   *
   * @param timer_period The initial period between interrupts, in millseconds.
   *
-  * @return MICROBIT_OK on success.
+  * @return DEVICE_OK on success.
   */
 int system_timer_init(int period);
 
@@ -58,7 +58,7 @@ int system_timer_init(int period);
   *
   * @param period the new period of the timer in milliseconds
   *
-  * @return MICROBIT_OK on success. MICROBIT_INVALID_PARAMETER is returned if period < 1
+  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if period < 1
   */
 int system_timer_set_period(int period);
 
@@ -105,16 +105,16 @@ void system_timer_tick();
   *
   * @param component The component to add.
   *
-  * @return MICROBIT_OK on success or MICROBIT_NO_RESOURCES if the component array is full.
+  * @return DEVICE_OK on success or DEVICE_NO_RESOURCES if the component array is full.
   *
   * @code
   * // heap allocated - otherwise it will be paged out!
-  * MicroBitDisplay* display = new MicroBitDisplay();
+  * DeviceDisplay* display = new DeviceDisplay();
   *
   * system_timer_add_component(display);
   * @endcode
   */
-int system_timer_add_component(MicroBitComponent *component);
+int system_timer_add_component(DeviceComponent *component);
 
 /**
   * Remove a component from the array of system components. This component will no longer receive
@@ -122,23 +122,23 @@ int system_timer_add_component(MicroBitComponent *component);
   *
   * @param component The component to remove.
   *
-  * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER is returned if the given component has not been previously added.
+  * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
   *
   * @code
   * // heap allocated - otherwise it will be paged out!
-  * MicroBitDisplay* display = new MicroBitDisplay();
+  * DeviceDisplay* display = new DeviceDisplay();
   *
   * system_timer_add_component(display);
   *
   * system_timer_remove_component(display);
   * @endcode
   */
-int system_timer_remove_component(MicroBitComponent *component);
+int system_timer_remove_component(DeviceComponent *component);
 
 /**
   * A simple C/C++ wrapper to allow periodic callbacks to standard C functions transparently.
   */
-class MicroBitSystemTimerCallback : MicroBitComponent
+class DeviceSystemTimerCallback : DeviceComponent
 {
     void (*fn)(void);
 
@@ -149,7 +149,7 @@ class MicroBitSystemTimerCallback : MicroBitComponent
      * @param function the function to invoke upon a systemTick.
      */
     public:
-    MicroBitSystemTimerCallback(void (*function)(void))
+    DeviceSystemTimerCallback(void (*function)(void))
     {
         fn = function;
         system_timer_add_component(this);

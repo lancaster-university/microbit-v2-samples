@@ -23,9 +23,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_COORDINATE_SYSTEM_H
-#define MICROBIT_COORDINATE_SYSTEM_H
-#include "MicroBitConfig.h"
+#ifndef DEVICE_COORDINATE_SYSTEM_H
+#define DEVICE_COORDINATE_SYSTEM_H
+#include "DeviceConfig.h"
 
 /**
   * Co-ordinate systems that can be used.
@@ -57,7 +57,7 @@ DEALINGS IN THE SOFTWARE.
   * x  +--------------------+  y-->
   *
   */
-enum MicroBitCoordinateSystem
+enum DeviceCoordinateSystem
 {
     RAW,
     SIMPLE_CARTESIAN,

@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef CODAL_DEVICE_H
 #define CODAL_DEVICE_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "ErrorNo.h"
 
 /**
@@ -42,7 +42,7 @@ class CodalDevice
     uint32_t random_value;
 
     /**
-      * The default constructor of a MicroBitComponent
+      * The default constructor of a DeviceComponent
       */
     CodalDevice()
     {
@@ -63,9 +63,9 @@ class CodalDevice
      * @return a pointer to a NULL terminated character buffer containing a representation of the current version using semantic versioning.
      */
     virtual const char *
-    microbit_dal_version()
+    device_dal_version()
     {
-        return MICROBIT_DAL_VERSION;
+        return DEVICE_DAL_VERSION;
     }
 
     /**
@@ -102,14 +102,14 @@ class CodalDevice
      * a long time and uses a lot of energy.
      *
      * @param max the upper range to generate a number for. This number cannot be negative.
-     * @return A random, natural number between 0 and the max-1. Or MICROBIT_INVALID_VALUE if max is <= 0.
+     * @return A random, natural number between 0 and the max-1. Or DEVICE_INVALID_VALUE if max is <= 0.
      */
     int random(int max)
     {
         uint32_t m, result;
 
         if(max <= 0)
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
 
         // Our maximum return value is actually one less than passed
         max--;

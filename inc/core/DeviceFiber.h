@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Functionality definitions for the MicroBit Fiber scheduler.
+  * Functionality definitions for the Device Fiber scheduler.
   *
   * This lightweight, non-preemptive scheduler provides a simple threading mechanism for two main purposes:
   *
@@ -34,22 +34,22 @@ DEALINGS IN THE SOFTWARE.
   * TODO: Consider a split mode scheduler, that monitors used stack size, and maintains a dedicated, persistent
   * stack for any long lived fibers with large stack
   */
-#ifndef MICROBIT_FIBER_H
-#define MICROBIT_FIBER_H
+#ifndef DEVICE_FIBER_H
+#define DEVICE_FIBER_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitEvent.h"
+#include "DeviceConfig.h"
+#include "DeviceEvent.h"
 #include "EventModel.h"
 
 // Fiber Scheduler Flags
-#define MICROBIT_SCHEDULER_RUNNING	     	0x01
+#define DEVICE_SCHEDULER_RUNNING	     	0x01
 
 // Fiber Flags
-#define MICROBIT_FIBER_FLAG_FOB             0x01
-#define MICROBIT_FIBER_FLAG_PARENT          0x02
-#define MICROBIT_FIBER_FLAG_CHILD           0x04
-#define MICROBIT_FIBER_FLAG_DO_NOT_PAGE     0x08
+#define DEVICE_FIBER_FLAG_FOB             0x01
+#define DEVICE_FIBER_FLAG_PARENT          0x02
+#define DEVICE_FIBER_FLAG_CHILD           0x04
+#define DEVICE_FIBER_FLAG_DO_NOT_PAGE     0x08
 
 /**
   *  Thread Context for an ARM Cortex M0 core.
@@ -206,14 +206,14 @@ void scheduler_tick();
   * The calling thread will be immediateley descheduled, and placed onto a
   * wait queue until the requested event is received.
   *
-  * @param id The ID field of the event to listen for (e.g. MICROBIT_ID_BUTTON_A)
+  * @param id The ID field of the event to listen for (e.g. DEVICE_ID_BUTTON_A)
   *
-  * @param value The value of the event to listen for (e.g. MICROBIT_BUTTON_EVT_CLICK)
+  * @param value The value of the event to listen for (e.g. DEVICE_BUTTON_EVT_CLICK)
   *
-  * @return MICROBIT_OK, or MICROBIT_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
+  * @return DEVICE_OK, or DEVICE_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
   *
   * @code
-  * fiber_wait_for_event(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+  * fiber_wait_for_event(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
   * @endcode
   *
   * @note the fiber will not be be made runnable until after the event is raised, but there
@@ -225,14 +225,14 @@ int fiber_wait_for_event(uint16_t id, uint16_t value);
   * Configures the fiber context for the current fiber to block on an event ID
   * and value, but does not deschedule the fiber.
   *
-  * @param id The ID field of the event to listen for (e.g. MICROBIT_ID_BUTTON_A)
+  * @param id The ID field of the event to listen for (e.g. DEVICE_ID_BUTTON_A)
   *
-  * @param value The value of the event to listen for (e.g. MICROBIT_BUTTON_EVT_CLICK)
+  * @param value The value of the event to listen for (e.g. DEVICE_BUTTON_EVT_CLICK)
   *
-  * @return MICROBIT_OK, or MICROBIT_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
+  * @return DEVICE_OK, or DEVICE_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
   *
   * @code
-  * fiber_wake_on_event(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+  * fiber_wake_on_event(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
   *
   * //perform some time critical operation.
   *
@@ -253,7 +253,7 @@ int fiber_wake_on_event(uint16_t id, uint16_t value);
   *
   * @param entry_fn The function to execute.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int invoke(void (*entry_fn)(void));
 
@@ -270,7 +270,7 @@ int invoke(void (*entry_fn)(void));
   *
   * @param param an untyped parameter passed into the entry_fn and completion_fn.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int invoke(void (*entry_fn)(void *), void *param);
 
@@ -287,14 +287,14 @@ int invoke(void (*entry_fn)(void *), void *param);
 inline void verify_stack_size(Fiber *f);
 
 /**
-  * Event callback. Called from an instance of MicroBitMessageBus whenever an event is raised.
+  * Event callback. Called from an instance of DeviceMessageBus whenever an event is raised.
   *
   * This function checks to determine if any fibers blocked on the wait queue need to be woken up
   * and made runnable due to the event.
   *
-  * @param evt the event that has just been raised on an instance of MicroBitMessageBus.
+  * @param evt the event that has just been raised on an instance of DeviceMessageBus.
   */
-void scheduler_event(MicroBitEvent evt);
+void scheduler_event(DeviceEvent evt);
 
 /**
   * Determines if any fibers are waiting to be scheduled.
@@ -342,17 +342,17 @@ void idle_task();
   * when the run queue is empty.
   *
   * @param component The component to add to the array.
-  * @return MICROBIT_OK on success or MICROBIT_NO_RESOURCES if the fiber components array is full.
+  * @return DEVICE_OK on success or DEVICE_NO_RESOURCES if the fiber components array is full.
   */
-int fiber_add_idle_component(MicroBitComponent *component);
+int fiber_add_idle_component(DeviceComponent *component);
 
 /**
   * remove a component from the array of idle thread components
   *
   * @param component the component to remove from the idle component array.
-  * @return MICROBIT_OK on success. MICROBIT_INVALID_PARAMETER is returned if the given component has not been previously added.
+  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
   */
-int fiber_remove_idle_component(MicroBitComponent *component);
+int fiber_remove_idle_component(DeviceComponent *component);
 
 /**
   * Determines if the processor is executing in interrupt context.

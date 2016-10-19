@@ -23,38 +23,38 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_COMPONENT_H
-#define MICROBIT_COMPONENT_H
+#ifndef DEVICE_COMPONENT_H
+#define DEVICE_COMPONENT_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 // Enumeration of core components.
-#define MICROBIT_ID_BUTTON_A            1                         // IDs used by commonly used components. Used by convention.
-#define MICROBIT_ID_BUTTON_B            2
-#define MICROBIT_ID_BUTTON_AB           3         
-#define MICROBIT_ID_BUTTON_RESET        4
-#define MICROBIT_ID_ACCELEROMETER       5
-#define MICROBIT_ID_COMPASS             6
-#define MICROBIT_ID_DISPLAY             7
-#define MICROBIT_ID_THERMOMETER         8
-#define MICROBIT_ID_RADIO               9
-#define MICROBIT_ID_RADIO_DATA_READY    10
-#define MICROBIT_ID_MULTIBUTTON_ATTACH  11
-#define MICROBIT_ID_SERIAL              12
-#define MICROBIT_ID_GESTURE             13          
+#define DEVICE_ID_BUTTON_A            1                         // IDs used by commonly used components. Used by convention.
+#define DEVICE_ID_BUTTON_B            2
+#define DEVICE_ID_BUTTON_AB           3         
+#define DEVICE_ID_BUTTON_RESET        4
+#define DEVICE_ID_ACCELEROMETER       5
+#define DEVICE_ID_COMPASS             6
+#define DEVICE_ID_DISPLAY             7
+#define DEVICE_ID_THERMOMETER         8
+#define DEVICE_ID_RADIO               9
+#define DEVICE_ID_RADIO_DATA_READY    10
+#define DEVICE_ID_MULTIBUTTON_ATTACH  11
+#define DEVICE_ID_SERIAL              12
+#define DEVICE_ID_GESTURE             13          
 
-#define MICROBIT_ID_IO_P0               100                       // IDs 100-227 are reserved for I/O Pin IDs.
+#define DEVICE_ID_IO_P0               100                       // IDs 100-227 are reserved for I/O Pin IDs.
 
-#define MICROBIT_ID_MESSAGE_BUS_LISTENER            1021          // Message bus indication that a handler for a given ID has been registered.
-#define MICROBIT_ID_NOTIFY_ONE                      1022          // Notfication channel, for general purpose synchronisation
-#define MICROBIT_ID_NOTIFY                          1023          // Notfication channel, for general purpose synchronisation
+#define DEVICE_ID_MESSAGE_BUS_LISTENER            1021          // Message bus indication that a handler for a given ID has been registered.
+#define DEVICE_ID_NOTIFY_ONE                      1022          // Notfication channel, for general purpose synchronisation
+#define DEVICE_ID_NOTIFY                          1023          // Notfication channel, for general purpose synchronisation
 
 // Universal flags used as part of the status field
-#define MICROBIT_COMPONENT_RUNNING		0x01
+#define DEVICE_COMPONENT_RUNNING		0x01
 
 
 /**
-  * Class definition for MicroBitComponent.
+  * Class definition for DeviceComponent.
   *
   * All components should inherit from this class.
   *
@@ -66,7 +66,7 @@ DEALINGS IN THE SOFTWARE.
   * Two levels of support are available. 
   *
   * systemTick() provides a periodic callback during the
-  * micro:bit's system timer interrupt. This provides a guaranteed periodic callback, but in interrupt context
+  * codal device's system timer interrupt. This provides a guaranteed periodic callback, but in interrupt context
   * and is suitable for code with lightweight processing requirements, but strict time constraints.
   * 
   * idleTick() provides a periodic callback whenever the scheduler is idle. This provides occasional, callbacks
@@ -76,7 +76,7 @@ DEALINGS IN THE SOFTWARE.
   * register their components using system_timer_add_component() fiber_add_idle_component() respectively.
   *
   */
-class MicroBitComponent
+class DeviceComponent
 {
     protected:
 
@@ -86,9 +86,9 @@ class MicroBitComponent
     public:
 
     /**
-      * The default constructor of a MicroBitComponent
+      * The default constructor of a DeviceComponent
       */
-    MicroBitComponent()
+    DeviceComponent()
     {
         this->id = 0;
         this->status = 0;
@@ -115,7 +115,7 @@ class MicroBitComponent
       * If you have added your component to the idle or system tick component arrays,
       * you must remember to remove your component from them if your component is destructed.
       */
-    virtual ~MicroBitComponent()
+    virtual ~DeviceComponent()
     {
     }
 };

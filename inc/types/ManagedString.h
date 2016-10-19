@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef MANAGED_STRING_H
 #define MANAGED_STRING_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "RefCounted.h"
 #include "PacketBuffer.h"
 
@@ -225,7 +225,7 @@ class ManagedString
       * @return true if this ManagedString is identical to the one supplied, false otherwise.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("abcd");
       * ManagedString p("efgh");
       *
@@ -247,7 +247,7 @@ class ManagedString
       * @return true if this ManagedString is alphabetically less than to the one supplied, false otherwise.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("a");
       * ManagedString p("b");
       *
@@ -269,7 +269,7 @@ class ManagedString
       * @return true if this ManagedString is alphabetically greater than to the one supplied, false otherwise.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("a");
       * ManagedString p("b");
       *
@@ -291,7 +291,7 @@ class ManagedString
       * @return a ManagedString representing the requested substring.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("abcdefg");
       *
       * display.scroll(s.substring(0,2)) // displays "ab"
@@ -308,7 +308,7 @@ class ManagedString
       * @return a new ManagedString representing the joined strings.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("abcd");
       * ManagedString p("efgh")
       *
@@ -325,7 +325,7 @@ class ManagedString
       * @return the character at posisiton index, zero if index is invalid.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("abcd");
       *
       * display.scroll(s.charAt(1)) // scrolls "b"
@@ -350,7 +350,7 @@ class ManagedString
       * @return the length of the string in characters.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * ManagedString s("abcd");
       *
       * display.scroll(s.length()) // scrolls "4"

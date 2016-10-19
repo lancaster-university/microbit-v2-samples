@@ -24,11 +24,11 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Base class for payload for ref-counted objects. Used by ManagedString and MicroBitImage.
+  * Base class for payload for ref-counted objects. Used by ManagedString and DeviceImage.
   * There is no constructor, as this struct is typically malloc()ed.
   */
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "CodalDevice.h"
 #include "RefCounted.h"
 
@@ -58,7 +58,7 @@ static inline bool isReadOnlyInline(RefCounted *t)
     // Do some sanity checking while we're here
     if (refCount == 1 ||        // object should have been deleted
         (refCount & 1) == 0)    // refCount doesn't look right
-        device.panic(MICROBIT_HEAP_ERROR);
+        device.panic(DEVICE_HEAP_ERROR);
 
     // Not read only
     return false;

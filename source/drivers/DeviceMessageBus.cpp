@@ -24,10 +24,10 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Class definition for the MicroBitMessageBus.
+  * Class definition for the DeviceMessageBus.
   *
-  * The MicroBitMessageBus is the common mechanism to deliver asynchronous events on the
-  * MicroBit platform. It serves a number of purposes:
+  * The DeviceMessageBus is the common mechanism to deliver asynchronous events on the
+  * Device platform. It serves a number of purposes:
   *
   * 1) It provides an eventing abstraction that is independent of the underlying substrate.
   *
@@ -47,9 +47,9 @@ DEALINGS IN THE SOFTWARE.
   *
   * 2) Make few assumptions about the underlying platform, but allow optimizations where possible.
   */
-#include "MicroBitConfig.h"
-#include "MicroBitMessageBus.h"
-#include "MicroBitFiber.h"
+#include "DeviceConfig.h"
+#include "DeviceMessageBus.h"
+#include "DeviceFiber.h"
 #include "ErrorNo.h"
 
 /**
@@ -58,7 +58,7 @@ DEALINGS IN THE SOFTWARE.
   * Adds itself as a fiber component, and also configures itself to be the
   * default EventModel if defaultEventBus is NULL.
   */
-MicroBitMessageBus::MicroBitMessageBus()
+DeviceMessageBus::DeviceMessageBus()
 {
 	this->listeners = NULL;
     this->evt_queue_head = NULL;
@@ -72,14 +72,14 @@ MicroBitMessageBus::MicroBitMessageBus()
 }
 
 /**
-  * Invokes a callback on a given MicroBitListener
+  * Invokes a callback on a given DeviceListener
   *
   * Internal wrapper function, used to enable
   * parameterised callbacks through the fiber scheduler.
   */
 void async_callback(void *param)
 {
-	MicroBitListener *listener = (MicroBitListener *)param;
+	DeviceListener *listener = (DeviceListener *)param;
 
     // OK, now we need to decide how to behave depending on our configuration.
     // If this a fiber f already active within this listener then check our
@@ -123,7 +123,7 @@ void async_callback(void *param)
         // If there are more events to process, dequeue the next one and process it.
         if ((listener->flags & MESSAGE_BUS_LISTENER_QUEUE_IF_BUSY) && listener->evt_queue)
         {
-            MicroBitEventQueueItem *item = listener->evt_queue;
+            DeviceEventQueueItem *item = listener->evt_queue;
 
             listener->evt = item->evt;
             listener->evt_queue = listener->evt_queue->next;
@@ -146,11 +146,11 @@ void async_callback(void *param)
   *
   * @param The event to queue.
   */
-void MicroBitMessageBus::queueEvent(MicroBitEvent &evt)
+void DeviceMessageBus::queueEvent(DeviceEvent &evt)
 {
     int processingComplete;
 
-    MicroBitEventQueueItem *prev = evt_queue_tail;
+    DeviceEventQueueItem *prev = evt_queue_tail;
 
     // Now process all handler regsitered as URGENT.
     // These pre-empt the queue, and are useful for fast, high priority services.
@@ -169,7 +169,7 @@ void MicroBitMessageBus::queueEvent(MicroBitEvent &evt)
     // We queue this event at the tail of the queue at the point where we entered queueEvent()
     // This is important as the processing above *may* have generated further events, and
     // we want to maintain ordering of events.
-    MicroBitEventQueueItem *item = new MicroBitEventQueueItem(evt);
+    DeviceEventQueueItem *item = new DeviceEventQueueItem(evt);
 
     // The queue was empty when we entered this function, so queue our event at the start of the queue.
     __disable_irq();
@@ -196,11 +196,11 @@ void MicroBitMessageBus::queueEvent(MicroBitEvent &evt)
 /**
   * Extract the next event from the front of the event queue (if present).
   *
-  * @return a pointer to the MicroBitEventQueueItem that is at the head of the list.
+  * @return a pointer to the DeviceEventQueueItem that is at the head of the list.
   */
-MicroBitEventQueueItem* MicroBitMessageBus::dequeueEvent()
+DeviceEventQueueItem* DeviceMessageBus::dequeueEvent()
 {
-    MicroBitEventQueueItem *item = NULL;
+    DeviceEventQueueItem *item = NULL;
 
     __disable_irq();
 
@@ -222,13 +222,13 @@ MicroBitEventQueueItem* MicroBitMessageBus::dequeueEvent()
 }
 
 /**
-  * Cleanup any MicroBitListeners marked for deletion from the list.
+  * Cleanup any DeviceListeners marked for deletion from the list.
   *
   * @return The number of listeners removed from the list.
   */
-int MicroBitMessageBus::deleteMarkedListeners()
+int DeviceMessageBus::deleteMarkedListeners()
 {
-	MicroBitListener *l, *p;
+	DeviceListener *l, *p;
     int removed = 0;
 
 	l = listeners;
@@ -245,7 +245,7 @@ int MicroBitMessageBus::deleteMarkedListeners()
                 p->next = l->next;
 
             // delete the listener.
-            MicroBitListener *t = l;
+            DeviceListener *t = l;
             l = l->next;
 
             delete t;
@@ -262,17 +262,17 @@ int MicroBitMessageBus::deleteMarkedListeners()
 }
 
 /**
-  * Periodic callback from MicroBit.
+  * Periodic callback from Device.
   *
   * Process at least one event from the event queue, if it is not empty.
   * We then continue processing events until something appears on the runqueue.
   */
-void MicroBitMessageBus::idleTick()
+void DeviceMessageBus::idleTick()
 {
     // Clear out any listeners marked for deletion
     this->deleteMarkedListeners();
 
-    MicroBitEventQueueItem *item = this->dequeueEvent();
+    DeviceEventQueueItem *item = this->dequeueEvent();
 
     // Whilst there are events to process and we have no useful other work to do, pull them off the queue and process them.
     while (item)
@@ -300,13 +300,13 @@ void MicroBitMessageBus::idleTick()
   * @param evt The event to send.
   *
   * @code
-  * MicroBitMessageBus bus;
+  * DeviceMessageBus bus;
   *
-  * // Creates and sends the MicroBitEvent using bus.
-  * MicrobitEvent evt(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+  * // Creates and sends the DeviceEvent using bus.
+  * DeviceEvent evt(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
   *
-  * // Creates the MicrobitEvent, but delays the sending of that event.
-  * MicrobitEvent evt1(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, CREATE_ONLY);
+  * // Creates the DeviceEvent, but delays the sending of that event.
+  * DeviceEvent evt1(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, CREATE_ONLY);
   *
   * bus.send(evt1);
   *
@@ -314,13 +314,13 @@ void MicroBitMessageBus::idleTick()
   * evt1.fire()
   * @endcode
   */
-int MicroBitMessageBus::send(MicroBitEvent evt)
+int DeviceMessageBus::send(DeviceEvent evt)
 {
     // We simply queue processing of the event until we're scheduled in normal thread context.
     // We do this to avoid the possibility of executing event handler code in IRQ context, which may bring
     // hidden race conditions to kids code. Queuing all events ensures causal ordering (total ordering in fact).
     this->queueEvent(evt);
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -335,18 +335,18 @@ int MicroBitMessageBus::send(MicroBitEvent evt)
   * @return 1 if all matching listeners were processed, 0 if further processing is required.
   *
   * @note It is recommended that all external code uses the send() function instead of this function,
-  *       or the constructors provided by MicrobitEvent.
+  *       or the constructors provided by DeviceEvent.
   */
-int MicroBitMessageBus::process(MicroBitEvent &evt, bool urgent)
+int DeviceMessageBus::process(DeviceEvent &evt, bool urgent)
 {
-	MicroBitListener *l;
+	DeviceListener *l;
     int complete = 1;
     bool listenerUrgent;
 
     l = listeners;
     while (l != NULL)
     {
-	    if((l->id == evt.source || l->id == MICROBIT_ID_ANY) && (l->value == evt.value || l->value == MICROBIT_EVT_ANY))
+	    if((l->id == evt.source || l->id == DEVICE_ID_ANY) && (l->value == evt.value || l->value == DEVICE_EVT_ANY))
         {
             // If we're running under the fiber scheduler, then derive the THREADING_MODE for the callback based on the
             // metadata in the listener itself.
@@ -383,20 +383,20 @@ int MicroBitMessageBus::process(MicroBitEvent &evt, bool urgent)
 }
 
 /**
-  * Add the given MicroBitListener to the list of event handlers, unconditionally.
+  * Add the given DeviceListener to the list of event handlers, unconditionally.
   *
-  * @param listener The MicroBitListener to add.
+  * @param listener The DeviceListener to add.
   *
-  * @return MICROBIT_OK if the listener is valid, MICROBIT_INVALID_PARAMETER otherwise.
+  * @return DEVICE_OK if the listener is valid, DEVICE_INVALID_PARAMETER otherwise.
   */
-int MicroBitMessageBus::add(MicroBitListener *newListener)
+int DeviceMessageBus::add(DeviceListener *newListener)
 {
-	MicroBitListener *l, *p;
+	DeviceListener *l, *p;
     int methodCallback;
 
 	//handler can't be NULL!
 	if (newListener == NULL)
-		return MICROBIT_INVALID_PARAMETER;
+		return DEVICE_INVALID_PARAMETER;
 
 	l = listeners;
 
@@ -417,7 +417,7 @@ int MicroBitMessageBus::add(MicroBitListener *newListener)
             if(l->flags & MESSAGE_BUS_LISTENER_DELETING)
                 l->flags &= ~MESSAGE_BUS_LISTENER_DELETING;
 
-            return MICROBIT_NOT_SUPPORTED;
+            return DEVICE_NOT_SUPPORTED;
         }
 
         l = l->next;
@@ -428,9 +428,9 @@ int MicroBitMessageBus::add(MicroBitListener *newListener)
 	if (listeners == NULL)
 	{
 		listeners = newListener;
-        MicroBitEvent(MICROBIT_ID_MESSAGE_BUS_LISTENER, newListener->id);
+        DeviceEvent(DEVICE_ID_MESSAGE_BUS_LISTENER, newListener->id);
 
-		return MICROBIT_OK;
+		return DEVICE_OK;
 	}
 
 	// We maintain an ordered list of listeners.
@@ -469,25 +469,25 @@ int MicroBitMessageBus::add(MicroBitListener *newListener)
 		p->next = newListener;
 	}
 
-    MicroBitEvent(MICROBIT_ID_MESSAGE_BUS_LISTENER, newListener->id);
-    return MICROBIT_OK;
+    DeviceEvent(DEVICE_ID_MESSAGE_BUS_LISTENER, newListener->id);
+    return DEVICE_OK;
 }
 
 /**
-  * Remove the given MicroBitListener from the list of event handlers.
+  * Remove the given DeviceListener from the list of event handlers.
   *
-  * @param listener The MicroBitListener to remove.
+  * @param listener The DeviceListener to remove.
   *
-  * @return MICROBIT_OK if the listener is valid, MICROBIT_INVALID_PARAMETER otherwise.
+  * @return DEVICE_OK if the listener is valid, DEVICE_INVALID_PARAMETER otherwise.
   */
-int MicroBitMessageBus::remove(MicroBitListener *listener)
+int DeviceMessageBus::remove(DeviceListener *listener)
 {
-	MicroBitListener *l;
+	DeviceListener *l;
     int removed = 0;
 
 	//handler can't be NULL!
 	if (listener == NULL)
-		return MICROBIT_INVALID_PARAMETER;
+		return DEVICE_INVALID_PARAMETER;
 
 	l = listeners;
 
@@ -499,7 +499,7 @@ int MicroBitMessageBus::remove(MicroBitListener *listener)
             if(((listener->flags & MESSAGE_BUS_LISTENER_METHOD) && (*l->cb_method == *listener->cb_method)) ||
               ((!(listener->flags & MESSAGE_BUS_LISTENER_METHOD) && l->cb == listener->cb)))
             {
-                if ((listener->id == MICROBIT_ID_ANY || listener->id == l->id) && (listener->value == MICROBIT_EVT_ANY || listener->value == l->value))
+                if ((listener->id == DEVICE_ID_ANY || listener->id == l->id) && (listener->value == DEVICE_EVT_ANY || listener->value == l->value))
                 {
                     // Found a match. mark this to be removed from the list.
                     l->flags |= MESSAGE_BUS_LISTENER_DELETING;
@@ -512,9 +512,9 @@ int MicroBitMessageBus::remove(MicroBitListener *listener)
     }
 
     if (removed > 0)
-        return MICROBIT_OK;
+        return DEVICE_OK;
     else
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 }
 
 /**
@@ -522,11 +522,11 @@ int MicroBitMessageBus::remove(MicroBitListener *listener)
   *
   * @param n The position in the list to return.
   *
-  * @return the MicroBitListener at postion n in the list, or NULL if the position is invalid.
+  * @return the DeviceListener at postion n in the list, or NULL if the position is invalid.
   */
-MicroBitListener* MicroBitMessageBus::elementAt(int n)
+DeviceListener* DeviceMessageBus::elementAt(int n)
 {
-    MicroBitListener *l = listeners;
+    DeviceListener *l = listeners;
 
     while (n > 0)
     {
@@ -541,9 +541,9 @@ MicroBitListener* MicroBitMessageBus::elementAt(int n)
 }
 
 /**
-  * Destructor for MicroBitMessageBus, where we deregister this instance from the array of fiber components.
+  * Destructor for DeviceMessageBus, where we deregister this instance from the array of fiber components.
   */
-MicroBitMessageBus::~MicroBitMessageBus()
+DeviceMessageBus::~DeviceMessageBus()
 {
     fiber_remove_idle_component(this);
 }

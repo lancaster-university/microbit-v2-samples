@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "PacketBuffer.h"
 #include "ErrorNo.h"
 
@@ -207,7 +207,7 @@ uint8_t& PacketBuffer::operator [] (int i)
   * @return true if this PacketBuffer is identical to the one supplied, false otherwise.
   *
   * @code
-  * MicroBitDisplay display;
+  * DeviceDisplay display;
   * uint8_t buf = {13,5,2};
   * PacketBuffer p1();
   * PacketBuffer p2();
@@ -231,7 +231,7 @@ bool PacketBuffer::operator== (const PacketBuffer& p)
   *
   * @param value The new value of the byte (0-255).
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   *
   * @code
   * PacketBuffer p1(16);
@@ -243,11 +243,11 @@ int PacketBuffer::setByte(int position, uint8_t value)
     if (position < ptr->length)
     {
         ptr->payload[position] = value;
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
     else
     {
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
     }
 }
 
@@ -256,7 +256,7 @@ int PacketBuffer::setByte(int position, uint8_t value)
   *
   * @param position The index of the byte to read.
   *
-  * @return The value of the byte at the given position, or MICROBIT_INVALID_PARAMETER.
+  * @return The value of the byte at the given position, or DEVICE_INVALID_PARAMETER.
   *
   * @code
   * PacketBuffer p1(16);
@@ -269,7 +269,7 @@ int PacketBuffer::getByte(int position)
     if (position < ptr->length)
         return ptr->payload[position];
     else
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 }
 
 /**

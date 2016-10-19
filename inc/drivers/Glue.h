@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #define CODAL_DRIVER_GLUE_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 //
 // Processors and boards sometime contains "features" or even "silicon bugs" that occasionally means they need special treatement, or workarounds.

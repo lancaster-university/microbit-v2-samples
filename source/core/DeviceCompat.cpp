@@ -27,8 +27,8 @@ DEALINGS IN THE SOFTWARE.
   * This file contains functions used to maintain compatability and portability.
   * It also contains constants that are used elsewhere in the DAL.
   */
-#include "MicroBitConfig.h"
-#include "MicroBitCompat.h"
+#include "DeviceConfig.h"
+#include "DeviceCompat.h"
 #include "ErrorNo.h"
 
 
@@ -37,13 +37,13 @@ DEALINGS IN THE SOFTWARE.
   *
   * @param s the string to reverse.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int string_reverse(char *s)
 {
     //sanity check...
     if(s == NULL)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     char *j;
     int c;
@@ -57,7 +57,7 @@ int string_reverse(char *s)
         *j-- = c;
     }
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -67,7 +67,7 @@ int string_reverse(char *s)
   *
   * @param s A pointer to the buffer where the resulting string will be stored.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int itoa(int n, char *s)
 {
@@ -75,7 +75,7 @@ int itoa(int n, char *s)
     int positive = (n >= 0);
 
     if (s == NULL)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     // Record the sign of the number,
     // Ensure our working value is positive.
@@ -97,5 +97,5 @@ int itoa(int n, char *s)
     // Flip the order.
     string_reverse(s);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }

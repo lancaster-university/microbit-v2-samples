@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 /**
   * A simple 32 bit block based memory allocator. This allows one or more memory segments to
   * be designated as heap storage, and is designed to run in a static memory area or inside the standard C
-  * heap for use by the micro:bit runtime. This is required for several reasons:
+  * heap for use by the codal device runtime. This is required for several reasons:
   *
   * 1) It reduces memory fragmentation due to the high churn sometime placed on the heap
   * by ManagedTypes, fibers and user code. Underlying heap implentations are often have very simplistic
@@ -48,8 +48,8 @@ DEALINGS IN THE SOFTWARE.
   * TODO: Consider caching recently freed blocks to improve allocation time.
   */
 
-#include "MicroBitConfig.h"
-#include "MicroBitHeapAllocator.h"
+#include "DeviceConfig.h"
+#include "DeviceHeapAllocator.h"
 #include "CodalDevice.h"
 #include "ErrorNo.h"
 
@@ -60,12 +60,12 @@ struct HeapDefinition
 };
 
 // A list of all active heap regions, and their dimensions in memory.
-HeapDefinition heap[MICROBIT_MAXIMUM_HEAPS] = { };
+HeapDefinition heap[DEVICE_MAXIMUM_HEAPS] = { };
 uint8_t heap_count = 0;
 
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
 // Diplays a usage summary about a given heap...
-void microbit_heap_print(HeapDefinition &heap)
+void device_heap_print(HeapDefinition &heap)
 {
 	uint32_t	blockSize;
 	uint32_t	*block;
@@ -89,15 +89,15 @@ void microbit_heap_print(HeapDefinition &heap)
 	block = heap.heap_start;
 	while (block < heap.heap_end)
 	{
-		blockSize = *block & ~MICROBIT_HEAP_BLOCK_FREE;
-        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("[%c:%d] ", *block & MICROBIT_HEAP_BLOCK_FREE ? 'F' : 'U', blockSize*4);
+		blockSize = *block & ~DEVICE_HEAP_BLOCK_FREE;
+        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("[%c:%d] ", *block & DEVICE_HEAP_BLOCK_FREE ? 'F' : 'U', blockSize*4);
         if (cols++ == 20)
         {
             if(SERIAL_DEBUG) SERIAL_DEBUG->printf("\n");
             cols = 0;
         }
 
-        if (*block & MICROBIT_HEAP_BLOCK_FREE)
+        if (*block & DEVICE_HEAP_BLOCK_FREE)
             totalFreeBlock += blockSize;
         else
             totalUsedBlock += blockSize;
@@ -116,21 +116,21 @@ void microbit_heap_print(HeapDefinition &heap)
 
 
 // Diagnostics function. Displays a usage summary about all initialised heaps.
-void microbit_heap_print()
+void device_heap_print()
 {
     for (int i=0; i < heap_count; i++)
     {
         if(SERIAL_DEBUG) SERIAL_DEBUG->printf("\nHEAP %d: \n", i);
-        microbit_heap_print(heap[i]);
+        device_heap_print(heap[i]);
     }
 }
 #endif
 
-void microbit_initialise_heap(HeapDefinition &heap)
+void device_initialise_heap(HeapDefinition &heap)
 {
     // Simply mark the entire heap as free.
-    *heap.heap_start = ((uint32_t) heap.heap_end - (uint32_t) heap.heap_start) / MICROBIT_HEAP_BLOCK_SIZE;
-    *heap.heap_start |= MICROBIT_HEAP_BLOCK_FREE;
+    *heap.heap_start = ((uint32_t) heap.heap_end - (uint32_t) heap.heap_start) / DEVICE_HEAP_BLOCK_SIZE;
+    *heap.heap_start |= DEVICE_HEAP_BLOCK_FREE;
 }
 
 /**
@@ -143,21 +143,21 @@ void microbit_initialise_heap(HeapDefinition &heap)
   *
   * @param end The end address of memory to use as a heap region.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NO_RESOURCES if the heap could not be allocated.
+  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
   *
-  * @note Only code that #includes MicroBitHeapAllocator.h will use this heap. This includes all micro:bit runtime
+  * @note Only code that #includes DeviceHeapAllocator.h will use this heap. This includes all codal device runtime
   * code, and user code targetting the runtime. External code can choose to include this file, or
   * simply use the standard heap.
   */
-int microbit_create_heap(uint32_t start, uint32_t end)
+int device_create_heap(uint32_t start, uint32_t end)
 {
     // Ensure we don't exceed the maximum number of heap segments.
-    if (heap_count == MICROBIT_MAXIMUM_HEAPS)
-        return MICROBIT_NO_RESOURCES;
+    if (heap_count == DEVICE_MAXIMUM_HEAPS)
+        return DEVICE_NO_RESOURCES;
 
     // Sanity check. Ensure range is valid, large enough and word aligned.
-    if (end <= start || end - start < MICROBIT_HEAP_BLOCK_SIZE*2 || end % 4 != 0 || start % 4 != 0)
-        return MICROBIT_INVALID_PARAMETER;
+    if (end <= start || end - start < DEVICE_HEAP_BLOCK_SIZE*2 || end % 4 != 0 || start % 4 != 0)
+        return DEVICE_INVALID_PARAMETER;
 
 	// Disable IRQ temporarily to ensure no race conditions!
     __disable_irq();
@@ -167,17 +167,17 @@ int microbit_create_heap(uint32_t start, uint32_t end)
     heap[heap_count].heap_end = (uint32_t *)end;
 
     // Initialise the heap as being completely empty and available for use.
-    microbit_initialise_heap(heap[heap_count]);
+    device_initialise_heap(heap[heap_count]);
     heap_count++;
 
 	// Enable Interrupts
     __enable_irq();
 
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
-    microbit_heap_print();
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
+    device_heap_print();
 #endif
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -189,21 +189,21 @@ int microbit_create_heap(uint32_t start, uint32_t end)
   *
   * @param ratio The proportion of the underlying heap to allocate.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NO_RESOURCES if the heap could not be allocated.
+  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
   */
-int microbit_create_nested_heap(float ratio)
+int device_create_nested_heap(float ratio)
 {
     uint32_t length;
     void *p;
 
     if (ratio <= 0.0 || ratio > 1.0)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     // Snapshot something at the top of the main heap.
     p = native_malloc(sizeof(uint32_t));
 
     // Estimate the size left in our heap, taking care to ensure it lands on a word boundary.
-    length = (uint32_t) (((float)(MICROBIT_HEAP_END - (uint32_t)p)) * ratio);
+    length = (uint32_t) (((float)(DEVICE_HEAP_END - (uint32_t)p)) * ratio);
     length &= 0xFFFFFFFC;
 
     // Release our reference pointer.
@@ -219,14 +219,14 @@ int microbit_create_nested_heap(float ratio)
         {
             length -= 32;
             if (length <= 0)
-                return MICROBIT_NO_RESOURCES;
+                return DEVICE_NO_RESOURCES;
         }
     }
 
     uint32_t start = (uint32_t) p;
-    microbit_create_heap(start, start + length);
+    device_create_heap(start, start + length);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -237,10 +237,10 @@ int microbit_create_nested_heap(float ratio)
   *
   * @return A pointer to the allocated memory, or NULL if insufficient memory is available.
   */
-void *microbit_malloc(size_t size, HeapDefinition &heap)
+void *device_malloc(size_t size, HeapDefinition &heap)
 {
 	uint32_t	blockSize = 0;
-	uint32_t	blocksNeeded = size % MICROBIT_HEAP_BLOCK_SIZE == 0 ? size / MICROBIT_HEAP_BLOCK_SIZE : size / MICROBIT_HEAP_BLOCK_SIZE + 1;
+	uint32_t	blocksNeeded = size % DEVICE_HEAP_BLOCK_SIZE == 0 ? size / DEVICE_HEAP_BLOCK_SIZE : size / DEVICE_HEAP_BLOCK_SIZE + 1;
 	uint32_t	*block;
 	uint32_t	*next;
 
@@ -259,25 +259,25 @@ void *microbit_malloc(size_t size, HeapDefinition &heap)
 	while (block < heap.heap_end)
 	{
 		// If the block is used, then keep looking.
-		if(!(*block & MICROBIT_HEAP_BLOCK_FREE))
+		if(!(*block & DEVICE_HEAP_BLOCK_FREE))
 		{
 			block += *block;
 			continue;
 		}
 
-		blockSize = *block & ~MICROBIT_HEAP_BLOCK_FREE;
+		blockSize = *block & ~DEVICE_HEAP_BLOCK_FREE;
 
 		// We have a free block. Let's see if the subsequent ones are too. If so, we can merge...
 		next = block + blockSize;
 
-		while (*next & MICROBIT_HEAP_BLOCK_FREE)
+		while (*next & DEVICE_HEAP_BLOCK_FREE)
 		{
 			if (next >= heap.heap_end)
 				break;
 
 			// We can merge!
-			blockSize += (*next & ~MICROBIT_HEAP_BLOCK_FREE);
-			*block = blockSize | MICROBIT_HEAP_BLOCK_FREE;
+			blockSize += (*next & ~DEVICE_HEAP_BLOCK_FREE);
+			*block = blockSize | DEVICE_HEAP_BLOCK_FREE;
 
 			next = block + blockSize;
 		}
@@ -302,14 +302,14 @@ void *microbit_malloc(size_t size, HeapDefinition &heap)
 	if (blockSize <= blocksNeeded+1 || block+blocksNeeded+1 >= heap.heap_end)
 	{
 		// Just mark the whole block as used.
-		*block &= ~MICROBIT_HEAP_BLOCK_FREE;
+		*block &= ~DEVICE_HEAP_BLOCK_FREE;
 	}
 	else
 	{
 		// We need to split the block.
 		uint32_t *splitBlock = block + blocksNeeded;
 		*splitBlock = blockSize - blocksNeeded;
-		*splitBlock |= MICROBIT_HEAP_BLOCK_FREE;
+		*splitBlock |= DEVICE_HEAP_BLOCK_FREE;
 
 		*block = blocksNeeded;
 	}
@@ -327,18 +327,18 @@ void *microbit_malloc(size_t size, HeapDefinition &heap)
   *
   * @return A pointer to the allocated memory, or NULL if insufficient memory is available.
   */
-void *microbit_malloc(size_t size)
+void *device_malloc(size_t size)
 {
     void *p;
 
     // Assign the memory from the first heap created that has space.
     for (int i=0; i < heap_count; i++)
     {
-        p = microbit_malloc(size, heap[i]);
+        p = device_malloc(size, heap[i]);
         if (p != NULL)
         {
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
-            if(SERIAL_DEBUG) SERIAL_DEBUG->printf("microbit_malloc: ALLOCATED: %d [%p]\n", size, p);
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
+            if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: ALLOCATED: %d [%p]\n", size, p);
 #endif
             return p;
         }
@@ -350,23 +350,23 @@ void *microbit_malloc(size_t size)
     p = native_malloc(size);
     if (p != NULL)
     {
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
         // Keep everything trasparent if we've not been initialised yet
         if (heap_count > 0)
-            if(SERIAL_DEBUG) SERIAL_DEBUG->printf("microbit_malloc: NATIVE ALLOCATED: %d [%p]\n", size, p);
+            if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: NATIVE ALLOCATED: %d [%p]\n", size, p);
 #endif
         return p;
     }
 
     // We're totally out of options (and memory!).
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
     // Keep everything transparent if we've not been initialised yet
     if (heap_count > 0)
-        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("microbit_malloc: OUT OF MEMORY [%d]\n", size);
+        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: OUT OF MEMORY [%d]\n", size);
 #endif
 
-#if CONFIG_ENABLED(MICROBIT_PANIC_HEAP_FULL)
-	device.panic(MICROBIT_OOM);
+#if CONFIG_ENABLED(DEVICE_PANIC_HEAP_FULL)
+	device.panic(DEVICE_OOM);
 #endif
 
     return NULL;
@@ -377,14 +377,14 @@ void *microbit_malloc(size_t size)
   *
   * @param mem The memory area to release.
   */
-void microbit_free(void *mem)
+void device_free(void *mem)
 {
 	uint32_t	*memory = (uint32_t *)mem;
 	uint32_t	*cb = memory-1;
 
-#if CONFIG_ENABLED(MICROBIT_DBG) && CONFIG_ENABLED(MICROBIT_HEAP_DBG)
+#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
     if (heap_count > 0)
-        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("microbit_free:   %p\n", mem);
+        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_free:   %p\n", mem);
 #endif
     // Sanity check.
 	if (memory == NULL)
@@ -397,7 +397,7 @@ void microbit_free(void *mem)
         {
             // The memory block given is part of this heap, so we can simply
 	        // flag that this memory area is now free, and we're done.
-	        *cb |= MICROBIT_HEAP_BLOCK_FREE;
+	        *cb |= DEVICE_HEAP_BLOCK_FREE;
             return;
         }
     }

@@ -23,10 +23,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_MANAGED_TYPE_H
-#define MICROBIT_MANAGED_TYPE_H
+#ifndef DEVICE_MANAGED_TYPE_H
+#define DEVICE_MANAGED_TYPE_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 /**
   * Class definition for a Generic Managed Type.
@@ -128,7 +128,7 @@ public:
       */
     T* operator->() {
         if (object == NULL)
-            device.panic(MICROBIT_NULL_DEREFERENCE);
+            device.panic(DEVICE_NULL_DEREFERENCE);
         return object;
     }
 

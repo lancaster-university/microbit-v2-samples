@@ -23,12 +23,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_PIN_H
-#define MICROBIT_PIN_H
+#ifndef DEVICE_PIN_H
+#define DEVICE_PIN_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitComponent.h"
+#include "DeviceConfig.h"
+#include "DeviceComponent.h"
                                                         // Status Field flags...
 #define IO_STATUS_DIGITAL_IN                0x01        // Pin is configured as a digital input, with no pull up.
 #define IO_STATUS_DIGITAL_OUT               0x02        // Pin is configured as a digital output
@@ -39,41 +39,41 @@ DEALINGS IN THE SOFTWARE.
 #define IO_STATUS_EVENT_PULSE_ON_EDGE       0x40        // Pin will generate events on pin change
 
 //#defines for each edge connector pin
-#define MICROBIT_PIN_P0                     P0_3        //P0 is the left most pad (ANALOG/DIGITAL) used to be P0_3 on green board
-#define MICROBIT_PIN_P1                     P0_2        //P1 is the middle pad (ANALOG/DIGITAL)
-#define MICROBIT_PIN_P2                     P0_1        //P2 is the right most pad (ANALOG/DIGITAL) used to be P0_1 on green board
-#define MICROBIT_PIN_P3                     P0_4        //COL1 (ANALOG/DIGITAL)
-#define MICROBIT_PIN_P4                     P0_5        //COL2 (ANALOG/DIGITAL)
-#define MICROBIT_PIN_P5                     P0_17       //BTN_A
-#define MICROBIT_PIN_P6                     P0_12       //COL9
-#define MICROBIT_PIN_P7                     P0_11       //COL8
-#define MICROBIT_PIN_P8                     P0_18       //PIN 18
-#define MICROBIT_PIN_P9                     P0_10       //COL7
-#define MICROBIT_PIN_P10                    P0_6        //COL3 (ANALOG/DIGITAL)
-#define MICROBIT_PIN_P11                    P0_26       //BTN_B
-#define MICROBIT_PIN_P12                    P0_20       //PIN 20
-#define MICROBIT_PIN_P13                    P0_23       //SCK
-#define MICROBIT_PIN_P14                    P0_22       //MISO
-#define MICROBIT_PIN_P15                    P0_21       //MOSI
-#define MICROBIT_PIN_P16                    P0_16       //PIN 16
-#define MICROBIT_PIN_P19                    P0_0        //SCL
-#define MICROBIT_PIN_P20                    P0_30       //SDA
+#define DEVICE_PIN_P0                     P0_3        //P0 is the left most pad (ANALOG/DIGITAL) used to be P0_3 on green board
+#define DEVICE_PIN_P1                     P0_2        //P1 is the middle pad (ANALOG/DIGITAL)
+#define DEVICE_PIN_P2                     P0_1        //P2 is the right most pad (ANALOG/DIGITAL) used to be P0_1 on green board
+#define DEVICE_PIN_P3                     P0_4        //COL1 (ANALOG/DIGITAL)
+#define DEVICE_PIN_P4                     P0_5        //COL2 (ANALOG/DIGITAL)
+#define DEVICE_PIN_P5                     P0_17       //BTN_A
+#define DEVICE_PIN_P6                     P0_12       //COL9
+#define DEVICE_PIN_P7                     P0_11       //COL8
+#define DEVICE_PIN_P8                     P0_18       //PIN 18
+#define DEVICE_PIN_P9                     P0_10       //COL7
+#define DEVICE_PIN_P10                    P0_6        //COL3 (ANALOG/DIGITAL)
+#define DEVICE_PIN_P11                    P0_26       //BTN_B
+#define DEVICE_PIN_P12                    P0_20       //PIN 20
+#define DEVICE_PIN_P13                    P0_23       //SCK
+#define DEVICE_PIN_P14                    P0_22       //MISO
+#define DEVICE_PIN_P15                    P0_21       //MOSI
+#define DEVICE_PIN_P16                    P0_16       //PIN 16
+#define DEVICE_PIN_P19                    P0_0        //SCL
+#define DEVICE_PIN_P20                    P0_30       //SDA
 
-#define MICROBIT_PIN_MAX_OUTPUT             1023
+#define DEVICE_PIN_MAX_OUTPUT             1023
 
-#define MICROBIT_PIN_MAX_SERVO_RANGE        180
-#define MICROBIT_PIN_DEFAULT_SERVO_RANGE    2000
-#define MICROBIT_PIN_DEFAULT_SERVO_CENTER   1500
+#define DEVICE_PIN_MAX_SERVO_RANGE        180
+#define DEVICE_PIN_DEFAULT_SERVO_RANGE    2000
+#define DEVICE_PIN_DEFAULT_SERVO_CENTER   1500
 
-#define MICROBIT_PIN_EVENT_NONE             0
-#define MICROBIT_PIN_EVENT_ON_EDGE          1
-#define MICROBIT_PIN_EVENT_ON_PULSE         2
-#define MICROBIT_PIN_EVENT_ON_TOUCH         3
+#define DEVICE_PIN_EVENT_NONE             0
+#define DEVICE_PIN_EVENT_ON_EDGE          1
+#define DEVICE_PIN_EVENT_ON_PULSE         2
+#define DEVICE_PIN_EVENT_ON_TOUCH         3
 
-#define MICROBIT_PIN_EVT_RISE               2
-#define MICROBIT_PIN_EVT_FALL               3
-#define MICROBIT_PIN_EVT_PULSE_HI           4
-#define MICROBIT_PIN_EVT_PULSE_LO           5
+#define DEVICE_PIN_EVT_RISE               2
+#define DEVICE_PIN_EVT_FALL               3
+#define DEVICE_PIN_EVT_PULSE_HI           4
+#define DEVICE_PIN_EVT_PULSE_LO           5
 
 /**
   * Pin capabilities enum.
@@ -87,11 +87,11 @@ enum PinCapability{
 };
 
 /**
-  * Class definition for MicroBitPin.
+  * Class definition for DevicePin.
   *
   * Commonly represents an I/O pin on the edge connector.
   */
-class MicroBitPin : public MicroBitComponent
+class DevicePin : public DeviceComponent
 {
     // The mbed object looking after this pin at any point in time (untyped due to dynamic behaviour).
     void *pin;
@@ -136,15 +136,15 @@ class MicroBitPin : public MicroBitComponent
       * @param eventType the specific mode used in interrupt context to determine how an
       *                  edge/rise is processed.
       *
-      * @return MICROBIT_OK on success
+      * @return DEVICE_OK on success
       */
     int enableRiseFallEvents(int eventType);
 
     /**
       * If this pin is in a mode where the pin is generating events, it will destruct
-      * the current instance attached to this MicroBitPin instance.
+      * the current instance attached to this DevicePin instance.
       *
-      * @return MICROBIT_OK on success.
+      * @return DEVICE_OK on success.
       */
     int disableEvents();
 
@@ -155,31 +155,31 @@ class MicroBitPin : public MicroBitComponent
 
     /**
       * Constructor.
-      * Create a MicroBitPin instance, generally used to represent a pin on the edge connector.
+      * Create a DevicePin instance, generally used to represent a pin on the edge connector.
       *
       * @param id the unique EventModel id of this component.
       *
-      * @param name the mbed PinName for this MicroBitPin instance.
+      * @param name the mbed PinName for this DevicePin instance.
       *
-      * @param capability the capabilities this MicroBitPin instance should have.
+      * @param capability the capabilities this DevicePin instance should have.
       *                   (PIN_CAPABILITY_DIGITAL, PIN_CAPABILITY_ANALOG, PIN_CAPABILITY_AD, PIN_CAPABILITY_ALL)
       *
       * @code
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
       * @endcode
       */
-    MicroBitPin(int id, PinName name, PinCapability capability);
+    DevicePin(int id, PinName name, PinCapability capability);
 
     /**
       * Configures this IO pin as a digital output (if necessary) and sets the pin to 'value'.
       *
       * @param value 0 (LO) or 1 (HI)
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have digital capability.
       *
       * @code
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
       * P0.setDigitalValue(1); // P0 is now HI
       * @endcode
       */
@@ -189,11 +189,11 @@ class MicroBitPin : public MicroBitComponent
       * Configures this IO pin as a digital input (if necessary) and tests its current value.
       *
       *
-      * @return 1 if this input is high, 0 if input is LO, or MICROBIT_NOT_SUPPORTED
+      * @return 1 if this input is high, 0 if input is LO, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have digital capability.
       *
       * @code
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
       * P0.getDigitalValue(); // P0 is either 0 or 1;
       * @endcode
       */
@@ -204,11 +204,11 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
       *
-      * @return 1 if this input is high, 0 if input is LO, or MICROBIT_NOT_SUPPORTED
+      * @return 1 if this input is high, 0 if input is LO, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have digital capability.
       *
       * @code
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
       * P0.getDigitalValue(PullUp); // P0 is either 0 or 1;
       * @endcode
       */
@@ -219,7 +219,7 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param value the level to set on the output pin, in the range 0 - 1024
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have analog capability.
       */
     int setAnalogValue(int value);
@@ -234,23 +234,23 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param value the level to set on the output pin, in the range 0 - 180.
       *
-      * @param range which gives the span of possible values the i.e. the lower and upper bounds (center +/- range/2). Defaults to MICROBIT_PIN_DEFAULT_SERVO_RANGE.
+      * @param range which gives the span of possible values the i.e. the lower and upper bounds (center +/- range/2). Defaults to DEVICE_PIN_DEFAULT_SERVO_RANGE.
       *
-      * @param center the center point from which to calculate the lower and upper bounds. Defaults to MICROBIT_PIN_DEFAULT_SERVO_CENTER
+      * @param center the center point from which to calculate the lower and upper bounds. Defaults to DEVICE_PIN_DEFAULT_SERVO_CENTER
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have analog capability.
       */
-    int setServoValue(int value, int range = MICROBIT_PIN_DEFAULT_SERVO_RANGE, int center = MICROBIT_PIN_DEFAULT_SERVO_CENTER);
+    int setServoValue(int value, int range = DEVICE_PIN_DEFAULT_SERVO_RANGE, int center = DEVICE_PIN_DEFAULT_SERVO_CENTER);
 
     /**
       * Configures this IO pin as an analogue input (if necessary), and samples the Pin for its analog value.
       *
       * @return the current analogue level on the pin, in the range 0 - 1024, or
-      *         MICROBIT_NOT_SUPPORTED if the given pin does not have analog capability.
+      *         DEVICE_NOT_SUPPORTED if the given pin does not have analog capability.
       *
       * @code
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
       * P0.getAnalogValue(); // P0 is a value in the range of 0 - 1024
       * @endcode
       */
@@ -288,21 +288,21 @@ class MicroBitPin : public MicroBitComponent
       * Configures this IO pin as a "makey makey" style touch sensor (if necessary)
       * and tests its current debounced state.
       *
-      * Users can also subscribe to MicroBitButton events generated from this pin.
+      * Users can also subscribe to DeviceButton events generated from this pin.
       *
-      * @return 1 if pin is touched, 0 if not, or MICROBIT_NOT_SUPPORTED if this pin does not support touch capability.
+      * @return 1 if pin is touched, 0 if not, or DEVICE_NOT_SUPPORTED if this pin does not support touch capability.
       *
       * @code
-      * MicroBitMessageBus bus;
+      * DeviceMessageBus bus;
       *
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
       * if(P0.isTouched())
       * {
       *     //do something!
       * }
       *
       * // subscribe to events generated by this pin!
-      * bus.listen(MICROBIT_ID_IO_P0, MICROBIT_BUTTON_EVT_CLICK, someFunction);
+      * bus.listen(DEVICE_ID_IO_P0, DEVICE_BUTTON_EVT_CLICK, someFunction);
       * @endcode
       */
     int isTouched();
@@ -313,7 +313,7 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param pulseWidth the desired pulse width in microseconds.
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
       *         if the given pin does not have analog capability.
       */
     int setServoPulseUs(int pulseWidth);
@@ -323,7 +323,7 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param period The new period for the analog output in milliseconds.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_NOT_SUPPORTED if the
+      * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
       *         given pin is not configured as an analog output.
       */
     int setAnalogPeriod(int period);
@@ -333,7 +333,7 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param period The new period for the analog output in microseconds.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_NOT_SUPPORTED if the
+      * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
       *         given pin is not configured as an analog output.
       */
     int setAnalogPeriodUs(int period);
@@ -341,7 +341,7 @@ class MicroBitPin : public MicroBitComponent
     /**
       * Obtains the PWM period of the analog output in microseconds.
       *
-      * @return the period on success, or MICROBIT_NOT_SUPPORTED if the
+      * @return the period on success, or DEVICE_NOT_SUPPORTED if the
       *         given pin is not configured as an analog output.
       */
     int getAnalogPeriodUs();
@@ -349,7 +349,7 @@ class MicroBitPin : public MicroBitComponent
     /**
       * Obtains the PWM period of the analog output in milliseconds.
       *
-      * @return the period on success, or MICROBIT_NOT_SUPPORTED if the
+      * @return the period on success, or DEVICE_NOT_SUPPORTED if the
       *         given pin is not configured as an analog output.
       */
     int getAnalogPeriod();
@@ -359,38 +359,38 @@ class MicroBitPin : public MicroBitComponent
       *
       * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
       *
-      * @return MICROBIT_NOT_SUPPORTED if the current pin configuration is anything other
-      *         than a digital input, otherwise MICROBIT_OK.
+      * @return DEVICE_NOT_SUPPORTED if the current pin configuration is anything other
+      *         than a digital input, otherwise DEVICE_OK.
       */
     int setPull(PinMode pull);
 
     /**
-      * Configures the events generated by this MicroBitPin instance.
+      * Configures the events generated by this DevicePin instance.
       *
-      * MICROBIT_PIN_EVENT_ON_EDGE - Configures this pin to a digital input, and generates events whenever a rise/fall is detected on this pin. (MICROBIT_PIN_EVT_RISE, MICROBIT_PIN_EVT_FALL)
-      * MICROBIT_PIN_EVENT_ON_PULSE - Configures this pin to a digital input, and generates events where the timestamp is the duration that this pin was either HI or LO. (MICROBIT_PIN_EVT_PULSE_HI, MICROBIT_PIN_EVT_PULSE_LO)
-      * MICROBIT_PIN_EVENT_ON_TOUCH - Configures this pin as a makey makey style touch sensor, in the form of a MicroBitButton. Normal button events will be generated using the ID of this pin.
-      * MICROBIT_PIN_EVENT_NONE - Disables events for this pin.
+      * DEVICE_PIN_EVENT_ON_EDGE - Configures this pin to a digital input, and generates events whenever a rise/fall is detected on this pin. (DEVICE_PIN_EVT_RISE, DEVICE_PIN_EVT_FALL)
+      * DEVICE_PIN_EVENT_ON_PULSE - Configures this pin to a digital input, and generates events where the timestamp is the duration that this pin was either HI or LO. (DEVICE_PIN_EVT_PULSE_HI, DEVICE_PIN_EVT_PULSE_LO)
+      * DEVICE_PIN_EVENT_ON_TOUCH - Configures this pin as a makey makey style touch sensor, in the form of a DeviceButton. Normal button events will be generated using the ID of this pin.
+      * DEVICE_PIN_EVENT_NONE - Disables events for this pin.
       *
-      * @param eventType One of: MICROBIT_PIN_EVENT_ON_EDGE, MICROBIT_PIN_EVENT_ON_PULSE, MICROBIT_PIN_EVENT_ON_TOUCH, MICROBIT_PIN_EVENT_NONE
+      * @param eventType One of: DEVICE_PIN_EVENT_ON_EDGE, DEVICE_PIN_EVENT_ON_PULSE, DEVICE_PIN_EVENT_ON_TOUCH, DEVICE_PIN_EVENT_NONE
       *
       * @code
-      * MicroBitMessageBus bus;
+      * DeviceMessageBus bus;
       *
-      * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
-      * P0.eventOn(MICROBIT_PIN_EVENT_ON_PULSE);
+      * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+      * P0.eventOn(DEVICE_PIN_EVENT_ON_PULSE);
       *
-      * void onPulse(MicroBitEvent evt)
+      * void onPulse(DeviceEvent evt)
       * {
       *     int duration = evt.timestamp;
       * }
       *
-      * bus.listen(MICROBIT_ID_IO_P0, MICROBIT_PIN_EVT_PULSE_HI, onPulse, MESSAGE_BUS_LISTENER_IMMEDIATE)
+      * bus.listen(DEVICE_ID_IO_P0, DEVICE_PIN_EVT_PULSE_HI, onPulse, MESSAGE_BUS_LISTENER_IMMEDIATE)
       * @endcode
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER if the given eventype does not match
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER if the given eventype does not match
       *
-      * @note In the MICROBIT_PIN_EVENT_ON_PULSE mode, the smallest pulse that was reliably detected was 85us, around 5khz. If more precision is required,
+      * @note In the DEVICE_PIN_EVENT_ON_PULSE mode, the smallest pulse that was reliably detected was 85us, around 5khz. If more precision is required,
       *       please use the InterruptIn class supplied by ARM mbed.
       */
     int eventOn(int eventType);

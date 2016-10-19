@@ -23,11 +23,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_PACKET_BUFFER_H
-#define MICROBIT_PACKET_BUFFER_H
+#ifndef DEVICE_PACKET_BUFFER_H
+#define DEVICE_PACKET_BUFFER_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "RefCounted.h"
 
 struct PacketData : RefCounted
@@ -39,7 +39,7 @@ struct PacketData : RefCounted
 
 /**
   * Class definition for a PacketBuffer.
-  * A PacketBuffer holds a series of bytes that can be sent or received from the MicroBitRadio channel.
+  * A PacketBuffer holds a series of bytes that can be sent or received from the DeviceRadio channel.
   *
   * @note This is a mutable, managed type.
   */
@@ -187,7 +187,7 @@ class PacketBuffer
       * @return true if this PacketBuffer is identical to the one supplied, false otherwise.
       *
       * @code
-      * MicroBitDisplay display;
+      * DeviceDisplay display;
       * uint8_t buf = {13,5,2};
       * PacketBuffer p1();
       * PacketBuffer p2();
@@ -205,7 +205,7 @@ class PacketBuffer
       *
       * @param value The new value of the byte (0-255).
       *
-      * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * PacketBuffer p1(16);
@@ -219,7 +219,7 @@ class PacketBuffer
       *
       * @param position The index of the byte to read.
       *
-      * @return The value of the byte at the given position, or MICROBIT_INVALID_PARAMETER.
+      * @return The value of the byte at the given position, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * PacketBuffer p1(16);

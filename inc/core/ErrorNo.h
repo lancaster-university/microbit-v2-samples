@@ -26,48 +26,48 @@ DEALINGS IN THE SOFTWARE.
 #ifndef ERROR_NO_H
 #define ERROR_NO_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 /**
-  * Error codes used in the micro:bit runtime.
-  * These may be returned from functions implemented in the micro:bit runtime.
+  * Error codes used in the codal device runtime.
+  * These may be returned from functions implemented in the codal device runtime.
   */
 enum ErrorCode{
 
     // No error occurred.
-    MICROBIT_OK = 0,
+    DEVICE_OK = 0,
 
     // Invalid parameter given.
-    MICROBIT_INVALID_PARAMETER = -1001,
+    DEVICE_INVALID_PARAMETER = -1001,
 
     // Requested operation is unsupported.
-    MICROBIT_NOT_SUPPORTED = -1002,
+    DEVICE_NOT_SUPPORTED = -1002,
 
     // Device calibration errors
-    MICROBIT_CALIBRATION_IN_PROGRESS = -1003,
-    MICROBIT_CALIBRATION_REQUIRED = -1004,
+    DEVICE_CALIBRATION_IN_PROGRESS = -1003,
+    DEVICE_CALIBRATION_REQUIRED = -1004,
 
     // The requested operation could not be performed as the device has run out of some essential resource (e.g. allocated memory)
-    MICROBIT_NO_RESOURCES = -1005,
+    DEVICE_NO_RESOURCES = -1005,
 
     // The requested operation could not be performed as some essential resource is busy (e.g. the display)
-    MICROBIT_BUSY = -1006,
+    DEVICE_BUSY = -1006,
 
     // The requested operation was cancelled before it completed.
-    MICROBIT_CANCELLED = -1007,
+    DEVICE_CANCELLED = -1007,
 
     // I2C Communication error occured (typically I2C module on processor has locked up.)
-    MICROBIT_I2C_ERROR = -1010,
+    DEVICE_I2C_ERROR = -1010,
 
     // The serial bus is currently in use by another fiber.
-    MICROBIT_SERIAL_IN_USE = -1011,
+    DEVICE_SERIAL_IN_USE = -1011,
 
     // The requested operation had no data to return.
-    MICROBIT_NO_DATA = -1012
+    DEVICE_NO_DATA = -1012
 };
 
 /**
-  * Error codes used in the micro:bit runtime.
+  * Error codes used in the codal device runtime.
   */
 enum PanicCode{
     // PANIC Codes. These are not return codes, but are terminal conditions.
@@ -75,12 +75,12 @@ enum PanicCode{
     // entered where the panic code is diplayed.
 
     // Out out memory error. Heap storage was requested, but is not available.
-    MICROBIT_OOM = 20,
+    DEVICE_OOM = 20,
 
-    // Corruption detected in the micro:bit heap space
-    MICROBIT_HEAP_ERROR = 30,
+    // Corruption detected in the codal device heap space
+    DEVICE_HEAP_ERROR = 30,
 
     // Dereference of a NULL pointer through the ManagedType class,
-    MICROBIT_NULL_DEREFERENCE = 40,
+    DEVICE_NULL_DEREFERENCE = 40,
 };
 #endif

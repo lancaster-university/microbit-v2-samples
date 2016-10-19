@@ -28,11 +28,11 @@ DEALINGS IN THE SOFTWARE.
   * It also contains constants that are used elsewhere in the DAL.
   */
 
-#ifndef MICROBIT_COMPAT_H
-#define MICROBIT_COMPAT_H
+#ifndef DEVICE_COMPAT_H
+#define DEVICE_COMPAT_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 #define PI 3.14159265359
 
@@ -93,7 +93,7 @@ inline bool isdigit(char c)
   *
   * @param s the string to reverse.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int string_reverse(char *s);
 
@@ -104,7 +104,7 @@ int string_reverse(char *s);
   *
   * @param s A pointer to the buffer where the resulting string will be stored.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int itoa(int n, char *s);
 

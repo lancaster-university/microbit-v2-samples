@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  *	This structure defines a MicroBitListener used to invoke functions, or member
+  *	This structure defines a DeviceListener used to invoke functions, or member
   * functions if an instance of EventModel receives an event whose id and value
-  * match this MicroBitListener's id and value.
+  * match this DeviceListener's id and value.
   */
-#include "MicroBitConfig.h"
-#include "MicroBitListener.h"
+#include "DeviceConfig.h"
+#include "DeviceListener.h"
 
 /**
   * Constructor.
@@ -45,7 +45,7 @@ DEALINGS IN THE SOFTWARE.
   * @param flags User specified, implementation specific flags, that allow behaviour of this events listener
   * to be tuned.
   */
-MicroBitListener::MicroBitListener(uint16_t id, uint16_t value, void (*handler)(MicroBitEvent), uint16_t flags)
+DeviceListener::DeviceListener(uint16_t id, uint16_t value, void (*handler)(DeviceEvent), uint16_t flags)
 {
 	this->id = id;
 	this->value = value;
@@ -73,7 +73,7 @@ MicroBitListener::MicroBitListener(uint16_t id, uint16_t value, void (*handler)(
   * @param flags User specified, implementation specific flags, that allow behaviour of this events listener
   * to be tuned.
   */
-MicroBitListener::MicroBitListener(uint16_t id, uint16_t value, void (*handler)(MicroBitEvent, void *), void* arg, uint16_t flags)
+DeviceListener::DeviceListener(uint16_t id, uint16_t value, void (*handler)(DeviceEvent, void *), void* arg, uint16_t flags)
 {
 	this->id = id;
 	this->value = value;
@@ -87,7 +87,7 @@ MicroBitListener::MicroBitListener(uint16_t id, uint16_t value, void (*handler)(
 /**
   * Destructor. Ensures all resources used by this listener are freed.
   */
-MicroBitListener::~MicroBitListener()
+DeviceListener::~DeviceListener()
 {
     if(this->flags & MESSAGE_BUS_LISTENER_METHOD)
         delete cb_method;
@@ -98,14 +98,14 @@ MicroBitListener::~MicroBitListener()
   *
   * @param e The event to queue
   */
-void MicroBitListener::queue(MicroBitEvent e)
+void DeviceListener::queue(DeviceEvent e)
 {
     int queueDepth;
 
-    MicroBitEventQueueItem *p = evt_queue;
+    DeviceEventQueueItem *p = evt_queue;
 
     if (evt_queue == NULL)
-        evt_queue = new MicroBitEventQueueItem(e);
+        evt_queue = new DeviceEventQueueItem(e);
     else
     {
         queueDepth = 1;
@@ -117,6 +117,6 @@ void MicroBitListener::queue(MicroBitEvent e)
         }
 
         if (queueDepth < MESSAGE_BUS_LISTENER_MAX_QUEUE_DEPTH)
-            p->next = new MicroBitEventQueueItem(e);
+            p->next = new DeviceEventQueueItem(e);
     }
 }

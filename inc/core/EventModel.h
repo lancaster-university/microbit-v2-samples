@@ -27,29 +27,29 @@ DEALINGS IN THE SOFTWARE.
 #define EVENT_MODEL_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitComponent.h"
-#include "MicroBitEvent.h"
-#include "MicroBitListener.h"
+#include "DeviceConfig.h"
+#include "DeviceComponent.h"
+#include "DeviceEvent.h"
+#include "DeviceListener.h"
 #include "ErrorNo.h"
 
 /**
-  * Class definition for the micro:bit EventModel.
+  * Class definition for the codal device EventModel.
   *
   * It is common to need to send events from one part of a program (or system) to another.
   * The way that these events are stored and delivered is known as an Event Model...
   *
-  * The micro:bit can be programmed in a number of languages, and it not be good to
+  * The codal device can be programmed in a number of languages, and it not be good to
   * constrain those languages to any particular event model (e.g. they may have their own already).
   *
   * This class defines the functionality an event model needs to have to be able to interact
-  * with events generated and/or used by the micro:bit runtime. Programmer may choose to implement
+  * with events generated and/or used by the codal device runtime. Programmer may choose to implement
   * such funcitonality to integrate their own event models.
   *
   * This is an example of a key principle in computing - ABSTRACTION. This is now part of the
   * UK's Computing curriculum in schools... so ask your teacher about it. :-)
   *
-  * An EventModel implementation is provided in the MicroBitMessageBus class.
+  * An EventModel implementation is provided in the DeviceMessageBus class.
   */
 class EventModel
 {
@@ -63,71 +63,71 @@ class EventModel
 	  *
 	  * @param The event to send.
       *
-      * @return This default implementation simply returns MICROBIT_NOT_SUPPORTED.
+      * @return This default implementation simply returns DEVICE_NOT_SUPPORTED.
 	  */
-	virtual int send(MicroBitEvent evt)
+	virtual int send(DeviceEvent evt)
     {
         (void) evt;
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
     }
 
     /**
-     * Add the given MicroBitListener to the list of event handlers, unconditionally.
+     * Add the given DeviceListener to the list of event handlers, unconditionally.
      *
-     * @param listener The MicroBitListener to validate.
+     * @param listener The DeviceListener to validate.
      *
-     * @return This default implementation simply returns MICROBIT_NOT_SUPPORTED.
+     * @return This default implementation simply returns DEVICE_NOT_SUPPORTED.
      */
-    virtual int add(MicroBitListener *listener)
+    virtual int add(DeviceListener *listener)
     {
         (void) listener;
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
     }
 
     /**
-     * Remove the given MicroBitListener from the list of event handlers.
+     * Remove the given DeviceListener from the list of event handlers.
      *
-     * @param listener The MicroBitListener to remove.
+     * @param listener The DeviceListener to remove.
      *
-     * @return This default implementation simply returns MICROBIT_NOT_SUPPORTED.
+     * @return This default implementation simply returns DEVICE_NOT_SUPPORTED.
      */
-    virtual int remove(MicroBitListener *listener)
+    virtual int remove(DeviceListener *listener)
     {
         (void) listener;
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
     }
 
     /**
-      * Returns the MicroBitListener at the given position in the list.
+      * Returns the DeviceListener at the given position in the list.
       *
-      * @param n The index of the desired MicroBitListener.
+      * @param n The index of the desired DeviceListener.
       *
       * @return This default implementation simply returns NULL.
       */
-    MicroBitListener *elementAt(int n)
+    DeviceListener *elementAt(int n)
     {
         (void) n;
         return NULL;
     }
 
 	/**
-	  * Define the default EventModel to use for events raised and consumed by the microbit-dal runtime.
+	  * Define the default EventModel to use for events raised and consumed by the codal runtime.
       * The default EventModel may be changed at any time.
       *
 	  * @param model A new instance of an EventModel to use as the default.
       *
-      * @return MICROBIT_OK on success.
+      * @return DEVICE_OK on success.
 	  *
       * Example:
       * @code
-      * MicroBitMessageBus b();
+      * DeviceMessageBus b();
       * EventModel:setDefaultEventModel(b);
       * @endcode
 	  */
 	static int setDefaultEventModel(EventModel &model)
     {
         EventModel::defaultEventBus = &model;
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
 	/**
@@ -138,42 +138,42 @@ class EventModel
       * requirement to do so.
       *
 	  * @param id The source of messages to listen for. Events sent from any other IDs will be filtered.
-	  * Use MICROBIT_ID_ANY to receive events from all components.
+	  * Use DEVICE_ID_ANY to receive events from all components.
 	  *
 	  * @param value The value of messages to listen for. Events with any other values will be filtered.
-	  * Use MICROBIT_EVT_ANY to receive events of any value.
+	  * Use DEVICE_EVT_ANY to receive events of any value.
 	  *
 	  * @param handler The function to call when an event is received.
       *
       * @param flags User specified, implementation specific flags, that allow behaviour of this events listener
       * to be tuned.
       *
-      * @return MICROBIT_OK on success, or any valid error code defined in "ErrNo.h". The default implementation
-      * simply returns MICROBIT_NOT_SUPPORTED.
+      * @return DEVICE_OK on success, or any valid error code defined in "ErrNo.h". The default implementation
+      * simply returns DEVICE_NOT_SUPPORTED.
 	  *
       * @code
-      * void onButtonBClicked(MicroBitEvent)
+      * void onButtonBClicked(DeviceEvent)
       * {
       * 	//do something
       * }
       *
       * // call onButtonBClicked when ever a click event from buttonB is detected.
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       * @endcode
 	  */
-	int listen(int id, int value, void (*handler)(MicroBitEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+	int listen(int id, int value, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
         if (handler == NULL)
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
 
-        MicroBitListener *newListener = new MicroBitListener(id, value, handler, flags);
+        DeviceListener *newListener = new DeviceListener(id, value, handler, flags);
 
-        if(add(newListener) == MICROBIT_OK)
-            return MICROBIT_OK;
+        if(add(newListener) == DEVICE_OK)
+            return DEVICE_OK;
 
         delete newListener;
 
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
     }
 
     /**
@@ -184,10 +184,10 @@ class EventModel
       * requirement to do so.
       *
 	  * @param id The source of messages to listen for. Events sent from any other IDs will be filtered.
-	  * Use MICROBIT_ID_ANY to receive events from all components.
+	  * Use DEVICE_ID_ANY to receive events from all components.
 	  *
 	  * @param value The value of messages to listen for. Events with any other values will be filtered.
-	  * Use MICROBIT_EVT_ANY to receive events of any value.
+	  * Use DEVICE_EVT_ANY to receive events of any value.
 	  *
 	  * @param handler The function to call when an event is received.
       *
@@ -196,64 +196,64 @@ class EventModel
       * @param flags User specified, implementation specific flags, that allow behaviour of this events listener
       * to be tuned.
       *
-      * @return MICROBIT_OK on success, or any valid error code defined in "ErrNo.h". The default implementation
-      * simply returns MICROBIT_NOT_SUPPORTED.
+      * @return DEVICE_OK on success, or any valid error code defined in "ErrNo.h". The default implementation
+      * simply returns DEVICE_NOT_SUPPORTED.
 	  *
       * @code
-      * void onButtonBClicked(MicroBitEvent, void* data)
+      * void onButtonBClicked(DeviceEvent, void* data)
       * {
       * 	//do something
       * }
       *
       * // call onButtonBClicked when ever a click event from buttonB is detected.
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       * @endcode
 	  */
-    int listen(int id, int value, void (*handler)(MicroBitEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+    int listen(int id, int value, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
         if (handler == NULL)
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
 
-        MicroBitListener *newListener = new MicroBitListener(id, value, handler, arg, flags);
+        DeviceListener *newListener = new DeviceListener(id, value, handler, arg, flags);
 
-        if(add(newListener) == MICROBIT_OK)
-            return MICROBIT_OK;
+        if(add(newListener) == DEVICE_OK)
+            return DEVICE_OK;
 
         delete newListener;
 
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
     }
 
 	/**
 	  * Register a listener function.
 	  *
 	  * @param id The source of messages to listen for. Events sent from any other IDs will be filtered.
-	  * Use MICROBIT_ID_ANY to receive events from all components.
+	  * Use DEVICE_ID_ANY to receive events from all components.
 	  *
 	  * @param value The value of messages to listen for. Events with any other values will be filtered.
-	  * Use MICROBIT_EVT_ANY to receive events of any value.
+	  * Use DEVICE_EVT_ANY to receive events of any value.
 	  *
 	  * @param hander The function to call when an event is received.
       *
       * @param flags User specified, implementation specific flags, that allow behaviour of this events listener
       * to be tuned.
       *
-      * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler or object
+      * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler or object
       *         pointers are NULL.
       *
       * @code
-      * void SomeClass::onButtonBClicked(MicroBitEvent)
+      * void SomeClass::onButtonBClicked(DeviceEvent)
       * {
       * 	//do something
       * }
       *
       * SomeClass s = new SomeClass();
       *
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
       * @endcode
 	  */
     template <typename T>
-	int listen(uint16_t id, uint16_t value, T* object, void (T::*handler)(MicroBitEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+	int listen(uint16_t id, uint16_t value, T* object, void (T::*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
 
 
 	/**
@@ -264,31 +264,31 @@ class EventModel
 	  * @param value The Event value used to register the listener.
 	  * @param handler The function used to register the listener.
       *
-      * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler
+      * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler
       *         given is NULL.
 	  *
       * Example:
       * @code
-      * void onButtonBClick(MicroBitEvent)
+      * void onButtonBClick(DeviceEvent)
       * {
       * 	//do something
       * }
       *
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       *
       * // the previously created listener is now ignored.
-      * uBit.messageBus.ignore(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.ignore(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       * @endcode
 	  */
-	int ignore(int id, int value, void (*handler)(MicroBitEvent))
+	int ignore(int id, int value, void (*handler)(DeviceEvent))
     {
         if (handler == NULL)
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
 
-        MicroBitListener listener(id, value, handler);
+        DeviceListener listener(id, value, handler);
         remove(&listener);
 
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
     /**
@@ -299,31 +299,31 @@ class EventModel
 	  * @param value The Event value used to register the listener.
 	  * @param handler The function used to register the listener.
       *
-      * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler
+      * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler
       *         given is NULL.
 	  *
       * Example:
       * @code
-      * void onButtonBClick(MicroBitEvent, void* data)
+      * void onButtonBClick(DeviceEvent, void* data)
       * {
       * 	//do something
       * }
       *
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       *
       * // the previously created listener is now ignored.
-      * uBit.messageBus.ignore(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBClick);
+      * uBit.messageBus.ignore(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonBClick);
       * @endcode
 	  */
-	int ignore(int id, int value, void (*handler)(MicroBitEvent, void*))
+	int ignore(int id, int value, void (*handler)(DeviceEvent, void*))
     {
         if (handler == NULL)
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
 
-        MicroBitListener listener(id, value, handler, NULL);
+        DeviceListener listener(id, value, handler, NULL);
         remove(&listener);
 
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
 	/**
@@ -334,7 +334,7 @@ class EventModel
 	  * @param value The Event value used to register the listener.
 	  * @param handler The function used to register the listener.
       *
-      * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler or object
+      * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler or object
       *         pointers are NULL.
 	  *
       * Example:
@@ -346,14 +346,14 @@ class EventModel
       * }
       *
       * SomeClass s = new SomeClass();
-      * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
+      * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
       *
       * // the previously created listener is now ignored.
-      * uBit.messageBus.ignore(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
+      * uBit.messageBus.ignore(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
       * @endcode
 	  */
     template <typename T>
-	int ignore(uint16_t id, uint16_t value, T* object, void (T::*handler)(MicroBitEvent));
+	int ignore(uint16_t id, uint16_t value, T* object, void (T::*handler)(DeviceEvent));
 
 };
 
@@ -362,31 +362,31 @@ class EventModel
   * listener.
   *
   * @param id The source of messages to listen for. Events sent from any other IDs will be filtered.
-  * Use MICROBIT_ID_ANY to receive events from all components.
+  * Use DEVICE_ID_ANY to receive events from all components.
   *
   * @param value The value of messages to listen for. Events with any other values will be filtered.
-  * Use MICROBIT_EVT_ANY to receive events of any value.
+  * Use DEVICE_EVT_ANY to receive events of any value.
   *
   * @param object The object on which the method should be invoked.
   *
   * @param handler The method to call when an event is received.
   *
-  * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler or object
+  * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler or object
   *         pointers are NULL.
   */
 template <typename T>
-int EventModel::listen(uint16_t id, uint16_t value, T* object, void (T::*handler)(MicroBitEvent), uint16_t flags)
+int EventModel::listen(uint16_t id, uint16_t value, T* object, void (T::*handler)(DeviceEvent), uint16_t flags)
 {
 	if (object == NULL || handler == NULL)
-		return MICROBIT_INVALID_PARAMETER;
+		return DEVICE_INVALID_PARAMETER;
 
-	MicroBitListener *newListener = new MicroBitListener(id, value, object, handler, flags);
+	DeviceListener *newListener = new DeviceListener(id, value, object, handler, flags);
 
-    if(add(newListener) == MICROBIT_OK)
-        return MICROBIT_OK;
+    if(add(newListener) == DEVICE_OK)
+        return DEVICE_OK;
 
     delete newListener;
-    return MICROBIT_NOT_SUPPORTED;
+    return DEVICE_NOT_SUPPORTED;
 }
 
 /**
@@ -397,7 +397,7 @@ int EventModel::listen(uint16_t id, uint16_t value, T* object, void (T::*handler
   * @param value The Event value used to register the listener.
   * @param handler The function used to register the listener.
   *
-  * @return MICROBIT_OK on success or MICROBIT_INVALID_PARAMETER if the handler or object
+  * @return DEVICE_OK on success or DEVICE_INVALID_PARAMETER if the handler or object
   *         pointers are NULL.
   *
   * Example:
@@ -409,22 +409,22 @@ int EventModel::listen(uint16_t id, uint16_t value, T* object, void (T::*handler
   * }
   *
   * SomeClass s = new SomeClass();
-  * uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
+  * uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
   *
   * // the previously created listener is now ignored.
-  * uBit.messageBus.ignore(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
+  * uBit.messageBus.ignore(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, s, &SomeClass::onButtonBClick);
   * @endcode
   */
 template <typename T>
-int EventModel::ignore(uint16_t id, uint16_t value, T* object, void (T::*handler)(MicroBitEvent))
+int EventModel::ignore(uint16_t id, uint16_t value, T* object, void (T::*handler)(DeviceEvent))
 {
 	if (handler == NULL)
-		return MICROBIT_INVALID_PARAMETER;
+		return DEVICE_INVALID_PARAMETER;
 
-	MicroBitListener listener(id, value, object, handler);
+	DeviceListener listener(id, value, object, handler);
     remove(&listener);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 #endif

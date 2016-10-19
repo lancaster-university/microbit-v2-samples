@@ -7,26 +7,26 @@ enable_language(ASM)
 
 set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
-    "core/MicroBitCompat.cpp"
-    "core/MicroBitFiber.cpp"
-    "core/MicroBitFont.cpp"
-    "core/MicroBitHeapAllocator.cpp"
-    "core/MicroBitListener.cpp"
-    "core/MicroBitSystemTimer.cpp"
+    "core/DeviceCompat.cpp"
+    "core/DeviceFiber.cpp"
+    "core/DeviceFont.cpp"
+    "core/DeviceHeapAllocator.cpp"
+    "core/DeviceListener.cpp"
+    "core/DeviceSystemTimer.cpp"
 
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
-    "types/MicroBitEvent.cpp"
-    "types/MicroBitImage.cpp"
+    "types/DeviceEvent.cpp"
+    "types/DeviceImage.cpp"
     "types/PacketBuffer.cpp"
     "types/RefCounted.cpp"
 
     "drivers/DynamicPwm.cpp"
-    "drivers/MicroBitButton.cpp"
-    "drivers/MicroBitPin.cpp"
+    "drivers/DeviceButton.cpp"
+    "drivers/DevicePin.cpp"
     "drivers/TimedInterruptIn.cpp"
-    "drivers/MicroBitSerial.cpp"
-    "drivers/MicroBitMessageBus.cpp"
+    "drivers/DeviceSerial.cpp"
+    "drivers/DeviceMessageBus.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)

@@ -30,11 +30,11 @@ DEALINGS IN THE SOFTWARE.
   * representation than normal C functions. This class allows a reference to
   * a C++ member function to be stored then called at a later date.
   *
-  * This class is used extensively by the MicroBitMessageBus to deliver
+  * This class is used extensively by the DeviceMessageBus to deliver
   * events to C++ methods.
   */
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "MemberFunctionCallback.h"
 
 /**
@@ -42,7 +42,7 @@ DEALINGS IN THE SOFTWARE.
   *
   * @param e The event to deliver to the method
   */
-void MemberFunctionCallback::fire(MicroBitEvent e)
+void MemberFunctionCallback::fire(DeviceEvent e)
 {
     invoke(object, method, e);
 }

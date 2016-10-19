@@ -23,22 +23,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_FONT_H
-#define MICROBIT_FONT_H
+#ifndef DEVICE_FONT_H
+#define DEVICE_FONT_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
-#define MICROBIT_FONT_WIDTH 5
-#define MICROBIT_FONT_HEIGHT 5
-#define MICROBIT_FONT_ASCII_START 32
-#define MICROBIT_FONT_ASCII_END 126
+#define DEVICE_FONT_WIDTH 5
+#define DEVICE_FONT_HEIGHT 5
+#define DEVICE_FONT_ASCII_START 32
+#define DEVICE_FONT_ASCII_END 126
 
 /**
-  * Class definition for a MicrobitFont
+  * Class definition for a DeviceFont
   * This class represents a font that can be used by the display to render text.
   *
-  * A MicroBitFont is 5x5.
+  * A DeviceFont is 5x5.
   * Each Row is represented by a byte in the array.
   *
   * Row Format:
@@ -54,12 +54,12 @@ DEALINGS IN THE SOFTWARE.
   *
   * We could compress further, but the complexity of decode would likely outweigh the gains.
   */
-class MicroBitFont
+class DeviceFont
 {
     public:
 
     static const unsigned char* defaultFont;
-    static MicroBitFont systemFont;
+    static DeviceFont systemFont;
 
     const unsigned char* characters;
 
@@ -74,26 +74,26 @@ class MicroBitFont
       *
       * @param asciiEnd the char value at which this font finishes.
       */
-    MicroBitFont(const unsigned char* font, int asciiEnd = MICROBIT_FONT_ASCII_END);
+    DeviceFont(const unsigned char* font, int asciiEnd = DEVICE_FONT_ASCII_END);
 
     /**
       * Default Constructor.
       *
       * Configures the default font for the display to use.
       */
-    MicroBitFont();
+    DeviceFont();
 
     /**
-      * Modifies the current system font to the given instance of MicroBitFont.
+      * Modifies the current system font to the given instance of DeviceFont.
       *
       * @param font the new font that will be used to render characters on the display.
       */
-    static void setSystemFont(MicroBitFont font);
+    static void setSystemFont(DeviceFont font);
 
     /**
       * Retreives the font object used for rendering characters on the display.
       */
-    static MicroBitFont getSystemFont();
+    static DeviceFont getSystemFont();
 
 };
 

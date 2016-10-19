@@ -23,11 +23,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_IMAGE_H
-#define MICROBIT_IMAGE_H
+#ifndef DEVICE_IMAGE_H
+#define DEVICE_IMAGE_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "ManagedString.h"
 #include "RefCounted.h"
 
@@ -39,12 +39,12 @@ struct ImageData : RefCounted
 };
 
 /**
-  * Class definition for a MicroBitImage.
+  * Class definition for a DeviceImage.
   *
-  * An MicroBitImage is a simple bitmap representation of an image.
+  * An DeviceImage is a simple bitmap representation of an image.
   * n.b. This is a mutable, managed type.
   */
-class MicroBitImage
+class DeviceImage
 {
     ImageData *ptr;     // Pointer to payload data
 
@@ -66,7 +66,7 @@ class MicroBitImage
     void init_empty();
 
     public:
-    static MicroBitImage EmptyImage;    // Shared representation of a null image.
+    static DeviceImage EmptyImage;    // Shared representation of a null image.
 
     /**
       * Get current ptr, do not decr() it, and set the current instance to empty image.
@@ -91,34 +91,34 @@ class MicroBitImage
       *
       * @code
       * static const uint8_t heart[] __attribute__ ((aligned (4))) = { 0xff, 0xff, 10, 0, 5, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i((ImageData*)(void*)heart);
+      * DeviceImage i((ImageData*)(void*)heart);
       * @endcode
       */
-    MicroBitImage(ImageData *ptr);
+    DeviceImage(ImageData *ptr);
 
     /**
       * Default Constructor.
-      * Creates a new reference to the empty MicroBitImage bitmap
+      * Creates a new reference to the empty DeviceImage bitmap
       *
       * @code
-      * MicroBitImage i(); //an empty image instance
+      * DeviceImage i(); //an empty image instance
       * @endcode
       */
-    MicroBitImage();
+    DeviceImage();
 
 
     /**
       * Copy Constructor.
-      * Add ourselves as a reference to an existing MicroBitImage.
+      * Add ourselves as a reference to an existing DeviceImage.
       *
-      * @param image The MicroBitImage to reference.
+      * @param image The DeviceImage to reference.
       *
       * @code
-      * MicroBitImage i("0,1,0,1,0\n");
-      * MicroBitImage i2(i); //points to i
+      * DeviceImage i("0,1,0,1,0\n");
+      * DeviceImage i2(i); //points to i
       * @endcode
       */
-    MicroBitImage(const MicroBitImage &image);
+    DeviceImage(const DeviceImage &image);
 
     /**
       * Constructor.
@@ -127,10 +127,10 @@ class MicroBitImage
       * @param s A text based representation of the image given whitespace delimited numeric values.
       *
       * @code
-      * MicroBitImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
+      * DeviceImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
       * @endcode
       */
-    explicit MicroBitImage(const char *s);
+    explicit DeviceImage(const char *s);
 
     /**
       * Constructor.
@@ -148,7 +148,7 @@ class MicroBitImage
       *
       * A copy of the image is made in RAM, as images are mutable.
       */
-    MicroBitImage(const int16_t x, const int16_t y);
+    DeviceImage(const int16_t x, const int16_t y);
 
     /**
       * Constructor.
@@ -162,65 +162,65 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * @endcode
       */
-    MicroBitImage(const int16_t x, const int16_t y, const uint8_t *bitmap);
+    DeviceImage(const int16_t x, const int16_t y, const uint8_t *bitmap);
 
     /**
       * Destructor.
       *
       * Removes buffer resources held by the instance.
       */
-    ~MicroBitImage();
+    ~DeviceImage();
 
     /**
       * Copy assign operation.
       *
-      * Called when one MicroBitImage is assigned the value of another using the '=' operator.
+      * Called when one DeviceImage is assigned the value of another using the '=' operator.
       *
       * Decrement our reference count and free up the buffer as necessary.
       *
-      * Then, update our buffer to refer to that of the supplied MicroBitImage,
+      * Then, update our buffer to refer to that of the supplied DeviceImage,
       * and increase its reference count.
       *
-      * @param s The MicroBitImage to reference.
+      * @param s The DeviceImage to reference.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
-      * MicroBitImage i1();
+      * DeviceImage i(10,5,heart);
+      * DeviceImage i1();
       * i1 = i; // i1 now references i
       * @endcode
       */
-    MicroBitImage& operator = (const MicroBitImage& i);
+    DeviceImage& operator = (const DeviceImage& i);
 
 
     /**
       * Equality operation.
       *
-      * Called when one MicroBitImage is tested to be equal to another using the '==' operator.
+      * Called when one DeviceImage is tested to be equal to another using the '==' operator.
       *
-      * @param i The MicroBitImage to test ourselves against.
+      * @param i The DeviceImage to test ourselves against.
       *
-      * @return true if this MicroBitImage is identical to the one supplied, false otherwise.
+      * @return true if this DeviceImage is identical to the one supplied, false otherwise.
       *
       * @code
-      * MicroBitDisplay display;
-      * MicroBitImage i();
-      * MicroBitImage i1();
+      * DeviceDisplay display;
+      * DeviceImage i();
+      * DeviceImage i1();
       *
       * if(i == i1) //will be true
       *     display.scroll("true");
       * @endcode
       */
-    bool operator== (const MicroBitImage& i);
+    bool operator== (const DeviceImage& i);
 
     /**
       * Resets all pixels in this image to 0.
       *
       * @code
-      * MicroBitImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
+      * DeviceImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
       * i.clear();
       * @endcode
       */
@@ -235,10 +235,10 @@ class MicroBitImage
       *
       * @param value The new value of the pixel (the brightness level 0-255)
       *
-      * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
       *
       * @code
-      * MicroBitImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
+      * DeviceImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
       * i.setPixelValue(0,0,255);
       * @endcode
       *
@@ -253,10 +253,10 @@ class MicroBitImage
       *
       * @param y The y co-ordinate of the pixel to read. Must be within the dimensions of the image.
       *
-      * @return The value assigned to the given pixel location (the brightness level 0-255), or MICROBIT_INVALID_PARAMETER.
+      * @return The value assigned to the given pixel location (the brightness level 0-255), or DEVICE_INVALID_PARAMETER.
       *
       * @code
-      * MicroBitImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
+      * DeviceImage i("0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n1,0,1,0,1\n0,1,0,1,0\n"); // 5x5 image
       * i.getPixelValue(0,0); //should be 0;
       * @endcode
       */
@@ -272,11 +272,11 @@ class MicroBitImage
       *
       * @param bitmap a 2D array representing the image.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i();
+      * DeviceImage i();
       * i.printImage(0,0,heart);
       * @endcode
       *
@@ -289,7 +289,7 @@ class MicroBitImage
       *
       * Any pixels in the relevant area of this image are replaced.
       *
-      * @param image The MicroBitImage to paste.
+      * @param image The DeviceImage to paste.
       *
       * @param x The leftmost X co-ordinate in this image where the given image should be pasted. Defaults to 0.
       *
@@ -301,11 +301,11 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart); // a big heart
+      * DeviceImage i(10,5,heart); // a big heart
       * i.paste(i, -5, 0); // a small heart
       * @endcode
       */
-    int paste(const MicroBitImage &image, int16_t x = 0, int16_t y = 0, uint8_t alpha = 0);
+    int paste(const DeviceImage &image, int16_t x = 0, int16_t y = 0, uint8_t alpha = 0);
 
      /**
        * Prints a character to the display at the given location
@@ -316,10 +316,10 @@ class MicroBitImage
        *
        * @param y The y co-ordinate of on the image to place the top left of the character. Defaults to 0.
        *
-       * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+       * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
        *
        * @code
-       * MicroBitImage i(5,5);
+       * DeviceImage i(5,5);
        * i.print('a');
        * @endcode
        */
@@ -330,11 +330,11 @@ class MicroBitImage
       *
       * @param n The number of pixels to shift.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart); // a big heart
+      * DeviceImage i(10,5,heart); // a big heart
       * i.shiftLeft(5); // a small heart
       * @endcode
       */
@@ -345,11 +345,11 @@ class MicroBitImage
       *
       * @param n The number of pixels to shift.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart); // a big heart
+      * DeviceImage i(10,5,heart); // a big heart
       * i.shiftLeft(5); // a small heart
       * i.shiftRight(5); // a big heart
       * @endcode
@@ -361,11 +361,11 @@ class MicroBitImage
       *
       * @param n The number of pixels to shift.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.shiftUp(1);
       * @endcode
       */
@@ -376,11 +376,11 @@ class MicroBitImage
       *
       * @param n The number of pixels to shift.
       *
-      * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER.
+      * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER.
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.shiftDown(1);
       * @endcode
       */
@@ -393,7 +393,7 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.getWidth(); // equals 10...
       * @endcode
       */
@@ -409,7 +409,7 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.getHeight(); // equals 5...
       * @endcode
       */
@@ -425,7 +425,7 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.getSize(); // equals 50...
       * @endcode
       */
@@ -439,7 +439,7 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * uBit.serial.printString(i.toString()); // "0,1,0,1,0,0,0,0,0,0\n..."
       * @endcode
       */
@@ -458,11 +458,11 @@ class MicroBitImage
       *
       * @code
       * const uint8_t heart[] = { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, }; // a cute heart
-      * MicroBitImage i(10,5,heart);
+      * DeviceImage i(10,5,heart);
       * i.crop(0,0,2,2).toString() // "0,1\n1,1\n"
       * @endcode
       */
-    MicroBitImage crop(int startx, int starty, int finx, int finy);
+    DeviceImage crop(int startx, int starty, int finx, int finy);
 
     /**
       * Check if image is read-only (i.e., residing in flash).
@@ -472,9 +472,9 @@ class MicroBitImage
     /**
       * Create a copy of the image bitmap. Used particularly, when isReadOnly() is true.
       *
-      * @return an instance of MicroBitImage which can be modified independently of the current instance
+      * @return an instance of DeviceImage which can be modified independently of the current instance
       */
-    MicroBitImage clone();
+    DeviceImage clone();
 };
 
 #endif

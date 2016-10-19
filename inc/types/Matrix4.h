@@ -23,10 +23,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_MATRIX4_H
-#define MICROBIT_MATRIX4_H
+#ifndef DEVICE_MATRIX4_H
+#define DEVICE_MATRIX4_H
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
 /**
 * Class definition for a simple matrix, that is optimised for nx4 or 4xn matrices.

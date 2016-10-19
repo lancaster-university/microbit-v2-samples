@@ -24,16 +24,16 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Functionality definitions for the MicroBit Fiber scheduler.
+  * Functionality definitions for the Device Fiber scheduler.
   *
   * This lightweight, non-preemptive scheduler provides a simple threading mechanism for two main purposes:
   *
   * 1) To provide a clean abstraction for application languages to use when building async behaviour (callbacks).
   * 2) To provide ISR decoupling for EventModel events generated in an ISR context.
   */
-#include "MicroBitConfig.h"
-#include "MicroBitFiber.h"
-#include "MicroBitSystemTimer.h"
+#include "DeviceConfig.h"
+#include "DeviceFiber.h"
+#include "DeviceSystemTimer.h"
 
 /*
  * Statically allocated values used to create and destroy Fibers.
@@ -63,7 +63,7 @@ static uint8_t fiber_flags = 0;
 static EventModel *messageBus = NULL;
 
 // Array of components which are iterated during idle thread execution.
-static MicroBitComponent* idleThreadComponents[MICROBIT_IDLE_COMPONENTS];
+static DeviceComponent* idleThreadComponents[DEVICE_IDLE_COMPONENTS];
 
 /**
   * Utility function to add the currenty running fiber to the given queue.
@@ -208,14 +208,14 @@ void scheduler_init(EventModel &_messageBus)
 	if (messageBus)
 	{
 		// Register to receive events in the NOTIFY channel - this is used to implement wait-notify semantics
-		messageBus->listen(MICROBIT_ID_NOTIFY, MICROBIT_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
-		messageBus->listen(MICROBIT_ID_NOTIFY_ONE, MICROBIT_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
+		messageBus->listen(DEVICE_ID_NOTIFY, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
+		messageBus->listen(DEVICE_ID_NOTIFY_ONE, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
 	}
 
 	// register a period callback to drive the scheduler and any other registered components.
-    new MicroBitSystemTimerCallback(scheduler_tick);
+    new DeviceSystemTimerCallback(scheduler_tick);
 
-	fiber_flags |= MICROBIT_SCHEDULER_RUNNING;
+	fiber_flags |= DEVICE_SCHEDULER_RUNNING;
 }
 
 /**
@@ -225,7 +225,7 @@ void scheduler_init(EventModel &_messageBus)
   */
 int fiber_scheduler_running()
 {
-	if (fiber_flags & MICROBIT_SCHEDULER_RUNNING)
+	if (fiber_flags & DEVICE_SCHEDULER_RUNNING)
 		return 1;
 
 	return 0;
@@ -258,14 +258,14 @@ void scheduler_tick()
 }
 
 /**
-  * Event callback. Called from an instance of MicroBitMessageBus whenever an event is raised.
+  * Event callback. Called from an instance of DeviceMessageBus whenever an event is raised.
   *
   * This function checks to determine if any fibers blocked on the wait queue need to be woken up
   * and made runnable due to the event.
   *
-  * @param evt the event that has just been raised on an instance of MicroBitMessageBus.
+  * @param evt the event that has just been raised on an instance of DeviceMessageBus.
   */
-void scheduler_event(MicroBitEvent evt)
+void scheduler_event(DeviceEvent evt)
 {
     Fiber *f = waitQueue;
     Fiber *t;
@@ -287,7 +287,7 @@ void scheduler_event(MicroBitEvent evt)
         uint16_t value = (f->context & 0xFFFF0000) >> 16;
 
         // Special case for the NOTIFY_ONE channel...
-        if ((evt.source == MICROBIT_ID_NOTIFY_ONE && id == MICROBIT_ID_NOTIFY) && (value == MICROBIT_EVT_ANY || value == evt.value))
+        if ((evt.source == DEVICE_ID_NOTIFY_ONE && id == DEVICE_ID_NOTIFY) && (value == DEVICE_EVT_ANY || value == evt.value))
         {
             if (!notifyOneComplete)
             {
@@ -299,7 +299,7 @@ void scheduler_event(MicroBitEvent evt)
         }
 
         // Normal case.
-        else if ((id == MICROBIT_ID_ANY || id == evt.source) && (value == MICROBIT_EVT_ANY || value == evt.value))
+        else if ((id == DEVICE_ID_ANY || id == evt.source) && (value == DEVICE_EVT_ANY || value == evt.value))
         {
             // Wakey wakey!
             dequeue_fiber(f);
@@ -310,7 +310,7 @@ void scheduler_event(MicroBitEvent evt)
     }
 
     // Unregister this event, as we've woken up all the fibers with this match.
-    if (evt.source != MICROBIT_ID_NOTIFY && evt.source != MICROBIT_ID_NOTIFY_ONE)
+    if (evt.source != DEVICE_ID_NOTIFY && evt.source != DEVICE_ID_NOTIFY_ONE)
         messageBus->ignore(evt.source, evt.value, scheduler_event);
 }
 
@@ -338,7 +338,7 @@ void fiber_sleep(unsigned long t)
 
     // Sleep is a blocking call, so if we're in a fork on block context,
     // it's time to spawn a new fiber...
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_FOB)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_FOB)
     {
         // Allocate a new fiber. This will come from the fiber pool if availiable,
         // else a new one will be allocated on the heap.
@@ -368,14 +368,14 @@ void fiber_sleep(unsigned long t)
   * The calling thread will be immediateley descheduled, and placed onto a
   * wait queue until the requested event is received.
   *
-  * @param id The ID field of the event to listen for (e.g. MICROBIT_ID_BUTTON_A)
+  * @param id The ID field of the event to listen for (e.g. DEVICE_ID_BUTTON_A)
   *
-  * @param value The value of the event to listen for (e.g. MICROBIT_BUTTON_EVT_CLICK)
+  * @param value The value of the event to listen for (e.g. DEVICE_BUTTON_EVT_CLICK)
   *
-  * @return MICROBIT_OK, or MICROBIT_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
+  * @return DEVICE_OK, or DEVICE_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
   *
   * @code
-  * fiber_wait_for_event(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+  * fiber_wait_for_event(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
   * @endcode
   *
   * @note the fiber will not be be made runnable until after the event is raised, but there
@@ -385,7 +385,7 @@ int fiber_wait_for_event(uint16_t id, uint16_t value)
 {
     int ret = fiber_wake_on_event(id, value);
 
-    if(ret == MICROBIT_OK)
+    if(ret == DEVICE_OK)
         schedule();
 
 	return ret;
@@ -395,14 +395,14 @@ int fiber_wait_for_event(uint16_t id, uint16_t value)
   * Configures the fiber context for the current fiber to block on an event ID
   * and value, but does not deschedule the fiber.
   *
-  * @param id The ID field of the event to listen for (e.g. MICROBIT_ID_BUTTON_A)
+  * @param id The ID field of the event to listen for (e.g. DEVICE_ID_BUTTON_A)
   *
-  * @param value The value of the event to listen for (e.g. MICROBIT_BUTTON_EVT_CLICK)
+  * @param value The value of the event to listen for (e.g. DEVICE_BUTTON_EVT_CLICK)
   *
-  * @return MICROBIT_OK, or MICROBIT_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
+  * @return DEVICE_OK, or DEVICE_NOT_SUPPORTED if the fiber scheduler is not running, or associated with an EventModel.
   *
   * @code
-  * fiber_wake_on_event(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+  * fiber_wake_on_event(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
   *
   * //perform some time critical operation.
   *
@@ -415,11 +415,11 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
     Fiber *f = currentFiber;
 
 	if (messageBus == NULL || !fiber_scheduler_running())
-		return MICROBIT_NOT_SUPPORTED;
+		return DEVICE_NOT_SUPPORTED;
 
     // Sleep is a blocking call, so if we're in a fork on block context,
     // it's time to spawn a new fiber...
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_FOB)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_FOB)
     {
         // Allocate a TCB from the new fiber. This will come from the tread pool if availiable,
         // else a new one will be allocated on the heap.
@@ -447,10 +447,10 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
 
     // Register to receive this event, so we can wake up the fiber when it happens.
     // Special case for the notify channel, as we always stay registered for that.
-    if (id != MICROBIT_ID_NOTIFY && id != MICROBIT_ID_NOTIFY_ONE)
+    if (id != DEVICE_ID_NOTIFY && id != DEVICE_ID_NOTIFY_ONE)
         messageBus->listen(id, value, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -464,23 +464,23 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
   *
   * @param entry_fn The function to execute.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int invoke(void (*entry_fn)(void))
 {
     // Validate our parameters.
     if (entry_fn == NULL)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     if (!fiber_scheduler_running())
-		return MICROBIT_NOT_SUPPORTED;
+		return DEVICE_NOT_SUPPORTED;
 
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_FOB)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_FOB)
     {
         // If we attempt a fork on block whilst already in  fork n block context,
         // simply launch a fiber to deal with the request and we're done.
         create_fiber(entry_fn);
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
     // Snapshot current context, but also update the Link Register to
@@ -492,26 +492,26 @@ int invoke(void (*entry_fn)(void))
     // 2) We've already tried to execute the code, it blocked, and we've backtracked.
 
     // If we're returning from the user function and we forked another fiber then cleanup and exit.
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_PARENT)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_PARENT)
     {
-        currentFiber->flags &= ~MICROBIT_FIBER_FLAG_FOB;
-        currentFiber->flags &= ~MICROBIT_FIBER_FLAG_PARENT;
-        return MICROBIT_OK;
+        currentFiber->flags &= ~DEVICE_FIBER_FLAG_FOB;
+        currentFiber->flags &= ~DEVICE_FIBER_FLAG_PARENT;
+        return DEVICE_OK;
     }
 
     // Otherwise, we're here for the first time. Enter FORK ON BLOCK mode, and
     // execute the function directly. If the code tries to block, we detect this and
     // spawn a thread to deal with it.
-    currentFiber->flags |= MICROBIT_FIBER_FLAG_FOB;
+    currentFiber->flags |= DEVICE_FIBER_FLAG_FOB;
     entry_fn();
-    currentFiber->flags &= ~MICROBIT_FIBER_FLAG_FOB;
+    currentFiber->flags &= ~DEVICE_FIBER_FLAG_FOB;
 
     // If this is is an exiting fiber that for spawned to handle a blocking call, recycle it.
     // The fiber will then re-enter the scheduler, so no need for further cleanup.
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_CHILD)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_CHILD)
         release_fiber();
 
-     return MICROBIT_OK;
+     return DEVICE_OK;
 }
 
 /**
@@ -527,23 +527,23 @@ int invoke(void (*entry_fn)(void))
   *
   * @param param an untyped parameter passed into the entry_fn and completion_fn.
   *
-  * @return MICROBIT_OK, or MICROBIT_INVALID_PARAMETER.
+  * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
 int invoke(void (*entry_fn)(void *), void *param)
 {
     // Validate our parameters.
     if (entry_fn == NULL)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     if (!fiber_scheduler_running())
-		return MICROBIT_NOT_SUPPORTED;
+		return DEVICE_NOT_SUPPORTED;
 
-    if (currentFiber->flags & (MICROBIT_FIBER_FLAG_FOB | MICROBIT_FIBER_FLAG_PARENT | MICROBIT_FIBER_FLAG_CHILD))
+    if (currentFiber->flags & (DEVICE_FIBER_FLAG_FOB | DEVICE_FIBER_FLAG_PARENT | DEVICE_FIBER_FLAG_CHILD))
     {
         // If we attempt a fork on block whilst already in a fork on block context,
         // simply launch a fiber to deal with the request and we're done.
         create_fiber(entry_fn, param);
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
     // Snapshot current context, but also update the Link Register to
@@ -555,26 +555,26 @@ int invoke(void (*entry_fn)(void *), void *param)
     // 2) We've already tried to execute the code, it blocked, and we've backtracked.
 
     // If we're returning from the user function and we forked another fiber then cleanup and exit.
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_PARENT)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_PARENT)
     {
-        currentFiber->flags &= ~MICROBIT_FIBER_FLAG_FOB;
-        currentFiber->flags &= ~MICROBIT_FIBER_FLAG_PARENT;
-        return MICROBIT_OK;
+        currentFiber->flags &= ~DEVICE_FIBER_FLAG_FOB;
+        currentFiber->flags &= ~DEVICE_FIBER_FLAG_PARENT;
+        return DEVICE_OK;
     }
 
     // Otherwise, we're here for the first time. Enter FORK ON BLOCK mode, and
     // execute the function directly. If the code tries to block, we detect this and
     // spawn a thread to deal with it.
-    currentFiber->flags |= MICROBIT_FIBER_FLAG_FOB;
+    currentFiber->flags |= DEVICE_FIBER_FLAG_FOB;
     entry_fn(param);
-    currentFiber->flags &= ~MICROBIT_FIBER_FLAG_FOB;
+    currentFiber->flags &= ~DEVICE_FIBER_FLAG_FOB;
 
     // If this is is an exiting fiber that for spawned to handle a blocking call, recycle it.
     // The fiber will then re-enter the scheduler, so no need for further cleanup.
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_CHILD)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_CHILD)
         release_fiber(param);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -784,11 +784,11 @@ void schedule()
     // of the currently running thread in a newly created fiber, and restore the context of the
     // currently running fiber, back to the point where it entered FOB.
 
-    if (currentFiber->flags & MICROBIT_FIBER_FLAG_FOB)
+    if (currentFiber->flags & DEVICE_FIBER_FLAG_FOB)
     {
         // Record that the fibers have a parent/child relationship
-        currentFiber->flags |= MICROBIT_FIBER_FLAG_PARENT;
-        forkedFiber->flags |= MICROBIT_FIBER_FLAG_CHILD;
+        currentFiber->flags |= DEVICE_FIBER_FLAG_PARENT;
+        forkedFiber->flags |= DEVICE_FIBER_FLAG_CHILD;
 
         // Define the stack base of the forked fiber to be align with the entry point of the parent fiber
         forkedFiber->tcb.stack_base = currentFiber->tcb.SP;
@@ -800,9 +800,9 @@ void schedule()
         save_context(&forkedFiber->tcb, forkedFiber->stack_top);
 
         // We may now be either the newly created thread, or the one that created it.
-        // if the MICROBIT_FIBER_FLAG_PARENT flag is still set, we're the old thread, so
+        // if the DEVICE_FIBER_FLAG_PARENT flag is still set, we're the old thread, so
         // restore the current fiber to its stored context and we're done.
-        if (currentFiber->flags & MICROBIT_FIBER_FLAG_PARENT)
+        if (currentFiber->flags & DEVICE_FIBER_FLAG_PARENT)
             restore_register_context(&currentFiber->tcb);
 
         // If we're the new thread, we must have been unblocked by the scheduler, so simply return
@@ -823,7 +823,7 @@ void schedule()
         // Otherwise, just pick the head of the run queue.
         currentFiber = runQueue;
 
-    if (currentFiber == idleFiber && oldFiber->flags & MICROBIT_FIBER_FLAG_DO_NOT_PAGE)
+    if (currentFiber == idleFiber && oldFiber->flags & DEVICE_FIBER_FLAG_DO_NOT_PAGE)
     {
         // Run the idle task right here using the old fiber's stack.
         // Keep idling while the runqueue is empty, or there is data to process.
@@ -875,42 +875,42 @@ void schedule()
   * when the run queue is empty.
   *
   * @param component The component to add to the array.
-  * @return MICROBIT_OK on success or MICROBIT_NO_RESOURCES if the fiber components array is full.
+  * @return DEVICE_OK on success or DEVICE_NO_RESOURCES if the fiber components array is full.
   */
-int fiber_add_idle_component(MicroBitComponent *component)
+int fiber_add_idle_component(DeviceComponent *component)
 {
     int i = 0;
 
-    while(idleThreadComponents[i] != NULL && i < MICROBIT_IDLE_COMPONENTS)
+    while(idleThreadComponents[i] != NULL && i < DEVICE_IDLE_COMPONENTS)
         i++;
 
-    if(i == MICROBIT_IDLE_COMPONENTS)
-        return MICROBIT_NO_RESOURCES;
+    if(i == DEVICE_IDLE_COMPONENTS)
+        return DEVICE_NO_RESOURCES;
 
     idleThreadComponents[i] = component;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * remove a component from the array of idle thread components
   *
   * @param component the component to remove from the idle component array.
-  * @return MICROBIT_OK on success. MICROBIT_INVALID_PARAMETER is returned if the given component has not been previously added.
+  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
   */
-int fiber_remove_idle_component(MicroBitComponent *component)
+int fiber_remove_idle_component(DeviceComponent *component)
 {
     int i = 0;
 
-    while(idleThreadComponents[i] != component && i < MICROBIT_IDLE_COMPONENTS)
+    while(idleThreadComponents[i] != component && i < DEVICE_IDLE_COMPONENTS)
         i++;
 
-    if(i == MICROBIT_IDLE_COMPONENTS)
-        return MICROBIT_INVALID_PARAMETER;
+    if(i == DEVICE_IDLE_COMPONENTS)
+        return DEVICE_INVALID_PARAMETER;
 
     idleThreadComponents[i] = NULL;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -920,7 +920,7 @@ int fiber_remove_idle_component(MicroBitComponent *component)
 void idle()
 {
     // Service background tasks
-    for(int i = 0; i < MICROBIT_IDLE_COMPONENTS; i++)
+    for(int i = 0; i < DEVICE_IDLE_COMPONENTS; i++)
         if(idleThreadComponents[i] != NULL)
             idleThreadComponents[i]->idleTick();
 

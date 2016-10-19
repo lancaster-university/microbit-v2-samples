@@ -24,13 +24,13 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 
-#ifndef MICROBIT_DYNAMIC_PWM_H
-#define MICROBIT_DYNAMIC_PWM_H
+#ifndef DEVICE_DYNAMIC_PWM_H
+#define DEVICE_DYNAMIC_PWM_H
 
 #define NO_PWMS 3
-#define MICROBIT_DEFAULT_PWM_PERIOD 20000
+#define DEVICE_DEFAULT_PWM_PERIOD 20000
 
 enum PwmPersistence
 {
@@ -113,7 +113,7 @@ class DynamicPwm : public PwmOut
       *
       * @param value the duty cycle percentage in floating point format.
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range
       *
       * @code
       * DynamicPwm* pwm = DynamicPwm::allocate();
@@ -181,7 +181,7 @@ class DynamicPwm : public PwmOut
       *
       * @param period the desired period in microseconds.
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if period is out of range
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if period is out of range
       *
       * Example:
       * @code
@@ -200,7 +200,7 @@ class DynamicPwm : public PwmOut
       *
       * @param period the desired period in milliseconds.
       *
-      * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if period is out of range
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if period is out of range
       *
       * Example:
       * @code

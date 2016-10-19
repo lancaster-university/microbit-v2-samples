@@ -24,14 +24,14 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Class definition for MicroBitPin.
+  * Class definition for DevicePin.
   *
   * Commonly represents an I/O pin on the edge connector.
   */
-#include "MicroBitConfig.h"
-#include "MicroBitPin.h"
-#include "MicroBitButton.h"
-#include "MicroBitSystemTimer.h"
+#include "DeviceConfig.h"
+#include "DevicePin.h"
+#include "DeviceButton.h"
+#include "DeviceSystemTimer.h"
 #include "TimedInterruptIn.h"
 #include "DynamicPwm.h"
 #include "ErrorNo.h"
@@ -39,26 +39,26 @@ DEALINGS IN THE SOFTWARE.
 
 /**
   * Constructor.
-  * Create a MicroBitPin instance, generally used to represent a pin on the edge connector.
+  * Create a DevicePin instance, generally used to represent a pin on the edge connector.
   *
   * @param id the unique EventModel id of this component.
   *
-  * @param name the mbed PinName for this MicroBitPin instance.
+  * @param name the mbed PinName for this DevicePin instance.
   *
-  * @param capability the capabilities this MicroBitPin instance should have.
+  * @param capability the capabilities this DevicePin instance should have.
   *                   (PIN_CAPABILITY_DIGITAL, PIN_CAPABILITY_ANALOG, PIN_CAPABILITY_AD, PIN_CAPABILITY_ALL)
   *
   * @code
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
   * @endcode
   */
-MicroBitPin::MicroBitPin(int id, PinName name, PinCapability capability)
+DevicePin::DevicePin(int id, PinName name, PinCapability capability)
 {
     //set mandatory attributes
     this->id = id;
     this->name = name;
     this->capability = capability;
-    this->pullMode = MICROBIT_DEFAULT_PULLMODE;
+    this->pullMode = DEVICE_DEFAULT_PULLMODE;
 
     // Power up in a disconnected, low power state.
     // If we're unused, this is how it will stay...
@@ -72,7 +72,7 @@ MicroBitPin::MicroBitPin(int id, PinName name, PinCapability capability)
   *
   * Used only when pin changes mode (i.e. Input/Output/Analog/Digital)
   */
-void MicroBitPin::disconnect()
+void DevicePin::disconnect()
 {
     // This is a bit ugly, but rarely used code.
     // It would be much better to use some polymorphism here, but the mBed I/O classes aren't arranged in an inheritance hierarchy... yet. :-)
@@ -94,7 +94,7 @@ void MicroBitPin::disconnect()
     }
 
     if (status & IO_STATUS_TOUCH_IN)
-        delete ((MicroBitButton *)pin);
+        delete ((DeviceButton *)pin);
 
     if ((status & IO_STATUS_EVENT_ON_EDGE) || (status & IO_STATUS_EVENT_PULSE_ON_EDGE))
         delete ((TimedInterruptIn *)pin);
@@ -108,23 +108,23 @@ void MicroBitPin::disconnect()
   *
   * @param value 0 (LO) or 1 (HI)
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have digital capability.
   *
   * @code
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.setDigitalValue(1); // P0 is now HI
   * @endcode
   */
-int MicroBitPin::setDigitalValue(int value)
+int DevicePin::setDigitalValue(int value)
 {
     // Check if this pin has a digital mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     // Ensure we have a valid value.
     if (value < 0 || value > 1)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     // Move into a Digital input state if necessary.
     if (!(status & IO_STATUS_DIGITAL_OUT)){
@@ -136,26 +136,26 @@ int MicroBitPin::setDigitalValue(int value)
     // Write the value.
     ((DigitalOut *)pin)->write(value);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * Configures this IO pin as a digital input (if necessary) and tests its current value.
   *
   *
-  * @return 1 if this input is high, 0 if input is LO, or MICROBIT_NOT_SUPPORTED
+  * @return 1 if this input is high, 0 if input is LO, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have digital capability.
   *
   * @code
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.getDigitalValue(); // P0 is either 0 or 1;
   * @endcode
   */
-int MicroBitPin::getDigitalValue()
+int DevicePin::getDigitalValue()
 {
     //check if this pin has a digital mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     // Move into a Digital input state if necessary.
     if (!(status & (IO_STATUS_DIGITAL_IN | IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE)))
@@ -176,21 +176,21 @@ int MicroBitPin::getDigitalValue()
  *
  * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
  *
- * @return 1 if this input is high, 0 if input is LO, or MICROBIT_NOT_SUPPORTED
+ * @return 1 if this input is high, 0 if input is LO, or DEVICE_NOT_SUPPORTED
  *         if the given pin does not have digital capability.
  *
  * @code
- * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+ * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
  * P0.getDigitalValue(PullUp); // P0 is either 0 or 1;
  * @endcode
  */
-int MicroBitPin::getDigitalValue(PinMode pull)
+int DevicePin::getDigitalValue(PinMode pull)
 {
     setPull(pull);
     return getDigitalValue();
 }
 
-int MicroBitPin::obtainAnalogChannel()
+int DevicePin::obtainAnalogChannel()
 {
     // Move into an analogue input state if necessary, if we are no longer the focus of a DynamicPWM instance, allocate ourselves again!
     if (!(status & IO_STATUS_ANALOG_OUT) || !(((DynamicPwm *)pin)->getPinName() == name)){
@@ -199,7 +199,7 @@ int MicroBitPin::obtainAnalogChannel()
         status |= IO_STATUS_ANALOG_OUT;
     }
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -207,26 +207,26 @@ int MicroBitPin::obtainAnalogChannel()
   *
   * @param value the level to set on the output pin, in the range 0 - 1024
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int MicroBitPin::setAnalogValue(int value)
+int DevicePin::setAnalogValue(int value)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     //sanitise the level value
-    if(value < 0 || value > MICROBIT_PIN_MAX_OUTPUT)
-        return MICROBIT_INVALID_PARAMETER;
+    if(value < 0 || value > DEVICE_PIN_MAX_OUTPUT)
+        return DEVICE_INVALID_PARAMETER;
 
-    float level = (float)value / float(MICROBIT_PIN_MAX_OUTPUT);
+    float level = (float)value / float(DEVICE_PIN_MAX_OUTPUT);
 
     //obtain use of the DynamicPwm instance, if it has changed / configure if we do not have one
-    if(obtainAnalogChannel() == MICROBIT_OK)
+    if(obtainAnalogChannel() == DEVICE_OK)
         return ((DynamicPwm *)pin)->write(level);
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -239,26 +239,26 @@ int MicroBitPin::setAnalogValue(int value)
   *
   * @param value the level to set on the output pin, in the range 0 - 180.
   *
-  * @param range which gives the span of possible values the i.e. the lower and upper bounds (center +/- range/2). Defaults to MICROBIT_PIN_DEFAULT_SERVO_RANGE.
+  * @param range which gives the span of possible values the i.e. the lower and upper bounds (center +/- range/2). Defaults to DEVICE_PIN_DEFAULT_SERVO_RANGE.
   *
-  * @param center the center point from which to calculate the lower and upper bounds. Defaults to MICROBIT_PIN_DEFAULT_SERVO_CENTER
+  * @param center the center point from which to calculate the lower and upper bounds. Defaults to DEVICE_PIN_DEFAULT_SERVO_CENTER
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int MicroBitPin::setServoValue(int value, int range, int center)
+int DevicePin::setServoValue(int value, int range, int center)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     //sanitise the servo level
     if(value < 0 || range < 1 || center < 1)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     //clip - just in case
-    if(value > MICROBIT_PIN_MAX_SERVO_RANGE)
-        value = MICROBIT_PIN_MAX_SERVO_RANGE;
+    if(value > DEVICE_PIN_MAX_SERVO_RANGE)
+        value = DEVICE_PIN_MAX_SERVO_RANGE;
 
     //calculate the lower bound based on the midpoint
     int lower = (center - (range / 2)) * 1000;
@@ -266,7 +266,7 @@ int MicroBitPin::setServoValue(int value, int range, int center)
     value = value * 1000;
 
     //add the percentage of the range based on the value between 0 and 180
-    int scaled = lower + (range * (value / MICROBIT_PIN_MAX_SERVO_RANGE));
+    int scaled = lower + (range * (value / DEVICE_PIN_MAX_SERVO_RANGE));
 
     return setServoPulseUs(scaled / 1000);
 }
@@ -275,18 +275,18 @@ int MicroBitPin::setServoValue(int value, int range, int center)
   * Configures this IO pin as an analogue input (if necessary), and samples the Pin for its analog value.
   *
   * @return the current analogue level on the pin, in the range 0 - 1024, or
-  *         MICROBIT_NOT_SUPPORTED if the given pin does not have analog capability.
+  *         DEVICE_NOT_SUPPORTED if the given pin does not have analog capability.
   *
   * @code
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.getAnalogValue(); // P0 is a value in the range of 0 - 1024
   * @endcode
   */
-int MicroBitPin::getAnalogValue()
+int DevicePin::getAnalogValue()
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     // Move into an analogue input state if necessary.
     if (!(status & IO_STATUS_ANALOG_IN)){
@@ -304,7 +304,7 @@ int MicroBitPin::getAnalogValue()
   *
   * @return 1 if pin is an analog or digital input, 0 otherwise.
   */
-int MicroBitPin::isInput()
+int DevicePin::isInput()
 {
     return (status & (IO_STATUS_DIGITAL_IN | IO_STATUS_ANALOG_IN)) == 0 ? 0 : 1;
 }
@@ -314,7 +314,7 @@ int MicroBitPin::isInput()
   *
   * @return 1 if pin is an analog or digital output, 0 otherwise.
   */
-int MicroBitPin::isOutput()
+int DevicePin::isOutput()
 {
     return (status & (IO_STATUS_DIGITAL_OUT | IO_STATUS_ANALOG_OUT)) == 0 ? 0 : 1;
 }
@@ -324,7 +324,7 @@ int MicroBitPin::isOutput()
   *
   * @return 1 if pin is digital, 0 otherwise.
   */
-int MicroBitPin::isDigital()
+int DevicePin::isDigital()
 {
     return (status & (IO_STATUS_DIGITAL_IN | IO_STATUS_DIGITAL_OUT)) == 0 ? 0 : 1;
 }
@@ -334,7 +334,7 @@ int MicroBitPin::isDigital()
   *
   * @return 1 if pin is analog, 0 otherwise.
   */
-int MicroBitPin::isAnalog()
+int DevicePin::isAnalog()
 {
     return (status & (IO_STATUS_ANALOG_IN | IO_STATUS_ANALOG_OUT)) == 0 ? 0 : 1;
 }
@@ -343,37 +343,37 @@ int MicroBitPin::isAnalog()
   * Configures this IO pin as a "makey makey" style touch sensor (if necessary)
   * and tests its current debounced state.
   *
-  * Users can also subscribe to MicroBitButton events generated from this pin.
+  * Users can also subscribe to DeviceButton events generated from this pin.
   *
-  * @return 1 if pin is touched, 0 if not, or MICROBIT_NOT_SUPPORTED if this pin does not support touch capability.
+  * @return 1 if pin is touched, 0 if not, or DEVICE_NOT_SUPPORTED if this pin does not support touch capability.
   *
   * @code
-  * MicroBitMessageBus bus;
+  * DeviceMessageBus bus;
   *
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
   * if(P0.isTouched())
   * {
   *     //do something!
   * }
   *
   * // subscribe to events generated by this pin!
-  * bus.listen(MICROBIT_ID_IO_P0, MICROBIT_BUTTON_EVT_CLICK, someFunction);
+  * bus.listen(DEVICE_ID_IO_P0, DEVICE_BUTTON_EVT_CLICK, someFunction);
   * @endcode
   */
-int MicroBitPin::isTouched()
+int DevicePin::isTouched()
 {
     //check if this pin has a touch mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     // Move into a touch input state if necessary.
     if (!(status & IO_STATUS_TOUCH_IN)){
         disconnect();
-        pin = new MicroBitButton(name, id);
+        pin = new DeviceButton(name, id);
         status |= IO_STATUS_TOUCH_IN;
     }
 
-    return ((MicroBitButton *)pin)->isPressed();
+    return ((DeviceButton *)pin)->isPressed();
 }
 
 /**
@@ -382,30 +382,30 @@ int MicroBitPin::isTouched()
   *
   * @param pulseWidth the desired pulse width in microseconds.
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range, or MICROBIT_NOT_SUPPORTED
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int MicroBitPin::setServoPulseUs(int pulseWidth)
+int DevicePin::setServoPulseUs(int pulseWidth)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     //sanitise the pulse width
     if(pulseWidth < 0)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     //Check we still have the control over the DynamicPwm instance
-    if(obtainAnalogChannel() == MICROBIT_OK)
+    if(obtainAnalogChannel() == DEVICE_OK)
     {
         //check if the period is set to 20ms
-        if(((DynamicPwm *)pin)->getPeriodUs() != MICROBIT_DEFAULT_PWM_PERIOD)
-            ((DynamicPwm *)pin)->setPeriodUs(MICROBIT_DEFAULT_PWM_PERIOD);
+        if(((DynamicPwm *)pin)->getPeriodUs() != DEVICE_DEFAULT_PWM_PERIOD)
+            ((DynamicPwm *)pin)->setPeriodUs(DEVICE_DEFAULT_PWM_PERIOD);
 
         ((DynamicPwm *)pin)->pulsewidth_us(pulseWidth);
     }
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -413,13 +413,13 @@ int MicroBitPin::setServoPulseUs(int pulseWidth)
   *
   * @param period The new period for the analog output in microseconds.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NOT_SUPPORTED if the
+  * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int MicroBitPin::setAnalogPeriodUs(int period)
+int DevicePin::setAnalogPeriodUs(int period)
 {
     if (!(status & IO_STATUS_ANALOG_OUT))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     return ((DynamicPwm *)pin)->setPeriodUs(period);
 }
@@ -429,10 +429,10 @@ int MicroBitPin::setAnalogPeriodUs(int period)
   *
   * @param period The new period for the analog output in milliseconds.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NOT_SUPPORTED if the
+  * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int MicroBitPin::setAnalogPeriod(int period)
+int DevicePin::setAnalogPeriod(int period)
 {
     return setAnalogPeriodUs(period*1000);
 }
@@ -440,13 +440,13 @@ int MicroBitPin::setAnalogPeriod(int period)
 /**
   * Obtains the PWM period of the analog output in microseconds.
   *
-  * @return the period on success, or MICROBIT_NOT_SUPPORTED if the
+  * @return the period on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int MicroBitPin::getAnalogPeriodUs()
+int DevicePin::getAnalogPeriodUs()
 {
     if (!(status & IO_STATUS_ANALOG_OUT))
-        return MICROBIT_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     return ((DynamicPwm *)pin)->getPeriodUs();
 }
@@ -454,10 +454,10 @@ int MicroBitPin::getAnalogPeriodUs()
 /**
   * Obtains the PWM period of the analog output in milliseconds.
   *
-  * @return the period on success, or MICROBIT_NOT_SUPPORTED if the
+  * @return the period on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int MicroBitPin::getAnalogPeriod()
+int DevicePin::getAnalogPeriod()
 {
     return getAnalogPeriodUs()/1000;
 }
@@ -467,26 +467,26 @@ int MicroBitPin::getAnalogPeriod()
   *
   * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
   *
-  * @return MICROBIT_NOT_SUPPORTED if the current pin configuration is anything other
-  *         than a digital input, otherwise MICROBIT_OK.
+  * @return DEVICE_NOT_SUPPORTED if the current pin configuration is anything other
+  *         than a digital input, otherwise DEVICE_OK.
   */
-int MicroBitPin::setPull(PinMode pull)
+int DevicePin::setPull(PinMode pull)
 {
     pullMode = pull;
 
     if ((status & IO_STATUS_DIGITAL_IN))
     {
         ((DigitalIn *)pin)->mode(pull);
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
     if((status & IO_STATUS_EVENT_ON_EDGE) || (status & IO_STATUS_EVENT_PULSE_ON_EDGE))
     {
         ((TimedInterruptIn *)pin)->mode(pull);
-        return MICROBIT_OK;
+        return DEVICE_OK;
     }
 
-    return MICROBIT_NOT_SUPPORTED;
+    return DEVICE_NOT_SUPPORTED;
 }
 
 /**
@@ -495,9 +495,9 @@ int MicroBitPin::setPull(PinMode pull)
   *
   * @param eventValue the event value to distribute onto the message bus.
   */
-void MicroBitPin::pulseWidthEvent(int eventValue)
+void DevicePin::pulseWidthEvent(int eventValue)
 {
-    MicroBitEvent evt(id, eventValue, CREATE_ONLY);
+    DeviceEvent evt(id, eventValue, CREATE_ONLY);
     uint64_t now = evt.timestamp;
     uint64_t previous = ((TimedInterruptIn *)pin)->getTimestamp();
 
@@ -513,25 +513,25 @@ void MicroBitPin::pulseWidthEvent(int eventValue)
 /**
   * Interrupt handler for when an rise interrupt is triggered.
   */
-void MicroBitPin::onRise()
+void DevicePin::onRise()
 {
     if(status & IO_STATUS_EVENT_PULSE_ON_EDGE)
-        pulseWidthEvent(MICROBIT_PIN_EVT_PULSE_LO);
+        pulseWidthEvent(DEVICE_PIN_EVT_PULSE_LO);
 
     if(status & IO_STATUS_EVENT_ON_EDGE)
-        MicroBitEvent(id, MICROBIT_PIN_EVT_RISE);
+        DeviceEvent(id, DEVICE_PIN_EVT_RISE);
 }
 
 /**
   * Interrupt handler for when an fall interrupt is triggered.
   */
-void MicroBitPin::onFall()
+void DevicePin::onFall()
 {
     if(status & IO_STATUS_EVENT_PULSE_ON_EDGE)
-        pulseWidthEvent(MICROBIT_PIN_EVT_PULSE_HI);
+        pulseWidthEvent(DEVICE_PIN_EVT_PULSE_HI);
 
     if(status & IO_STATUS_EVENT_ON_EDGE)
-        MicroBitEvent(id, MICROBIT_PIN_EVT_FALL);
+        DeviceEvent(id, DEVICE_PIN_EVT_FALL);
 }
 
 /**
@@ -541,9 +541,9 @@ void MicroBitPin::onFall()
   * @param eventType the specific mode used in interrupt context to determine how an
   *                  edge/rise is processed.
   *
-  * @return MICROBIT_OK on success
+  * @return DEVICE_OK on success
   */
-int MicroBitPin::enableRiseFallEvents(int eventType)
+int DevicePin::enableRiseFallEvents(int eventType)
 {
     // if we are in neither of the two modes, configure pin as a TimedInterruptIn.
     if (!(status & (IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE)))
@@ -552,84 +552,84 @@ int MicroBitPin::enableRiseFallEvents(int eventType)
         pin = new TimedInterruptIn(name);
 
         ((TimedInterruptIn *)pin)->mode((PinMode)pullMode);
-        ((TimedInterruptIn *)pin)->rise(this, &MicroBitPin::onRise);
-        ((TimedInterruptIn *)pin)->fall(this, &MicroBitPin::onFall);
+        ((TimedInterruptIn *)pin)->rise(this, &DevicePin::onRise);
+        ((TimedInterruptIn *)pin)->fall(this, &DevicePin::onFall);
     }
 
     status &= ~(IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE);
 
     // set our status bits accordingly.
-    if(eventType == MICROBIT_PIN_EVENT_ON_EDGE)
+    if(eventType == DEVICE_PIN_EVENT_ON_EDGE)
         status |= IO_STATUS_EVENT_ON_EDGE;
-    else if(eventType == MICROBIT_PIN_EVENT_ON_PULSE)
+    else if(eventType == DEVICE_PIN_EVENT_ON_PULSE)
         status |= IO_STATUS_EVENT_PULSE_ON_EDGE;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
   * If this pin is in a mode where the pin is generating events, it will destruct
-  * the current instance attached to this MicroBitPin instance.
+  * the current instance attached to this DevicePin instance.
   *
-  * @return MICROBIT_OK on success.
+  * @return DEVICE_OK on success.
   */
-int MicroBitPin::disableEvents()
+int DevicePin::disableEvents()
 {
     if (status & (IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE | IO_STATUS_TOUCH_IN))
         disconnect();
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
-  * Configures the events generated by this MicroBitPin instance.
+  * Configures the events generated by this DevicePin instance.
   *
-  * MICROBIT_PIN_EVENT_ON_EDGE - Configures this pin to a digital input, and generates events whenever a rise/fall is detected on this pin. (MICROBIT_PIN_EVT_RISE, MICROBIT_PIN_EVT_FALL)
-  * MICROBIT_PIN_EVENT_ON_PULSE - Configures this pin to a digital input, and generates events where the timestamp is the duration that this pin was either HI or LO. (MICROBIT_PIN_EVT_PULSE_HI, MICROBIT_PIN_EVT_PULSE_LO)
-  * MICROBIT_PIN_EVENT_ON_TOUCH - Configures this pin as a makey makey style touch sensor, in the form of a MicroBitButton. Normal button events will be generated using the ID of this pin.
-  * MICROBIT_PIN_EVENT_NONE - Disables events for this pin.
+  * DEVICE_PIN_EVENT_ON_EDGE - Configures this pin to a digital input, and generates events whenever a rise/fall is detected on this pin. (DEVICE_PIN_EVT_RISE, DEVICE_PIN_EVT_FALL)
+  * DEVICE_PIN_EVENT_ON_PULSE - Configures this pin to a digital input, and generates events where the timestamp is the duration that this pin was either HI or LO. (DEVICE_PIN_EVT_PULSE_HI, DEVICE_PIN_EVT_PULSE_LO)
+  * DEVICE_PIN_EVENT_ON_TOUCH - Configures this pin as a makey makey style touch sensor, in the form of a DeviceButton. Normal button events will be generated using the ID of this pin.
+  * DEVICE_PIN_EVENT_NONE - Disables events for this pin.
   *
-  * @param eventType One of: MICROBIT_PIN_EVENT_ON_EDGE, MICROBIT_PIN_EVENT_ON_PULSE, MICROBIT_PIN_EVENT_ON_TOUCH, MICROBIT_PIN_EVENT_NONE
+  * @param eventType One of: DEVICE_PIN_EVENT_ON_EDGE, DEVICE_PIN_EVENT_ON_PULSE, DEVICE_PIN_EVENT_ON_TOUCH, DEVICE_PIN_EVENT_NONE
   *
   * @code
-  * MicroBitMessageBus bus;
+  * DeviceMessageBus bus;
   *
-  * MicroBitPin P0(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_BOTH);
-  * P0.eventOn(MICROBIT_PIN_EVENT_ON_PULSE);
+  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+  * P0.eventOn(DEVICE_PIN_EVENT_ON_PULSE);
   *
-  * void onPulse(MicroBitEvent evt)
+  * void onPulse(DeviceEvent evt)
   * {
   *     int duration = evt.timestamp;
   * }
   *
-  * bus.listen(MICROBIT_ID_IO_P0, MICROBIT_PIN_EVT_PULSE_HI, onPulse, MESSAGE_BUS_LISTENER_IMMEDIATE)
+  * bus.listen(DEVICE_ID_IO_P0, DEVICE_PIN_EVT_PULSE_HI, onPulse, MESSAGE_BUS_LISTENER_IMMEDIATE)
   * @endcode
   *
-  * @return MICROBIT_OK on success, or MICROBIT_INVALID_PARAMETER if the given eventype does not match
+  * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER if the given eventype does not match
   *
-  * @note In the MICROBIT_PIN_EVENT_ON_PULSE mode, the smallest pulse that was reliably detected was 85us, around 5khz. If more precision is required,
+  * @note In the DEVICE_PIN_EVENT_ON_PULSE mode, the smallest pulse that was reliably detected was 85us, around 5khz. If more precision is required,
   *       please use the InterruptIn class supplied by ARM mbed.
   */
-int MicroBitPin::eventOn(int eventType)
+int DevicePin::eventOn(int eventType)
 {
     switch(eventType)
     {
-        case MICROBIT_PIN_EVENT_ON_EDGE:
-        case MICROBIT_PIN_EVENT_ON_PULSE:
+        case DEVICE_PIN_EVENT_ON_EDGE:
+        case DEVICE_PIN_EVENT_ON_PULSE:
             enableRiseFallEvents(eventType);
             break;
 
-        case MICROBIT_PIN_EVENT_ON_TOUCH:
+        case DEVICE_PIN_EVENT_ON_TOUCH:
             isTouched();
             break;
 
-        case MICROBIT_PIN_EVENT_NONE:
+        case DEVICE_PIN_EVENT_NONE:
             disableEvents();
             break;
 
         default:
-            return MICROBIT_INVALID_PARAMETER;
+            return DEVICE_INVALID_PARAMETER;
     }
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }

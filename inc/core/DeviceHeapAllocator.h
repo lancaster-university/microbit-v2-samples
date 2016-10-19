@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 /**
   * A simple 32 bit block based memory allocator. This allows one or more memory segments to
   * be designated as heap storage, and is designed to run in a static memory area or inside the standard C
-  * heap for use by the micro:bit runtime. This is required for several reasons:
+  * heap for use by the codal device runtime. This is required for several reasons:
   *
   * 1) It reduces memory fragmentation due to the high churn sometime placed on the heap
   * by ManagedTypes, fibers and user code. Underlying heap implentations are often have very simplistic
@@ -48,18 +48,18 @@ DEALINGS IN THE SOFTWARE.
   * TODO: Consider caching recently freed blocks to improve allocation time.
   */
 
-#ifndef MICROBIT_HEAP_ALLOCTOR_H
-#define MICROBIT_HEAP_ALLOCTOR_H
+#ifndef DEVICE_HEAP_ALLOCTOR_H
+#define DEVICE_HEAP_ALLOCTOR_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include <new>
 
 // The maximum number of heap segments that can be created.
-#define MICROBIT_MAXIMUM_HEAPS          2
+#define DEVICE_MAXIMUM_HEAPS          2
 
 // Flag to indicate that a given block is FREE/USED
-#define MICROBIT_HEAP_BLOCK_FREE		0x80000000
+#define DEVICE_HEAP_BLOCK_FREE		0x80000000
 
 /**
   * Create and initialise a given memory region as for heap storage.
@@ -71,13 +71,13 @@ DEALINGS IN THE SOFTWARE.
   *
   * @param end The end address of memory to use as a heap region.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NO_RESOURCES if the heap could not be allocated.
+  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
   *
-  * @note Only code that #includes MicroBitHeapAllocator.h will use this heap. This includes all micro:bit runtime
+  * @note Only code that #includes DeviceHeapAllocator.h will use this heap. This includes all codal device runtime
   * code, and user code targetting the runtime. External code can choose to include this file, or
   * simply use the standard heap.
   */
-int microbit_create_heap(uint32_t start, uint32_t end);
+int device_create_heap(uint32_t start, uint32_t end);
 
 /**
   * Create and initialise a heap region within the current the heap region specified
@@ -88,9 +88,9 @@ int microbit_create_heap(uint32_t start, uint32_t end);
   *
   * @param ratio The proportion of the underlying heap to allocate.
   *
-  * @return MICROBIT_OK on success, or MICROBIT_NO_RESOURCES if the heap could not be allocated.
+  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
   */
-int microbit_create_nested_heap(float ratio);
+int device_create_nested_heap(float ratio);
 
 /**
   * Attempt to allocate a given amount of memory from any of our configured heap areas.
@@ -99,7 +99,7 @@ int microbit_create_nested_heap(float ratio);
   *
   * @return A pointer to the allocated memory, or NULL if insufficient memory is available.
   */
-void *microbit_malloc(size_t size);
+void *device_malloc(size_t size);
 
 
 /**
@@ -107,7 +107,7 @@ void *microbit_malloc(size_t size);
   *
   * @param mem The memory area to release.
   */
-void microbit_free(void *mem);
+void device_free(void *mem);
 
 /*
  * Wrapper function to ensure we have an explicit handle on the heap allocator provided
@@ -134,34 +134,34 @@ inline void native_free(void *p)
 }
 
 /**
-  * Overrides the 'new' operator globally, and redirects calls to the micro:bit heap allocator.
+  * Overrides the 'new' operator globally, and redirects calls to the codal device heap allocator.
   */
 inline void* operator new(size_t size) throw(std::bad_alloc)
 {
-    return microbit_malloc(size);
+    return device_malloc(size);
 }
 
 /**
-  * Overrides the 'new' operator globally, and redirects calls to the micro:bit theap allocator.
+  * Overrides the 'new' operator globally, and redirects calls to the codal device theap allocator.
   */
 inline void* operator new[](size_t size) throw(std::bad_alloc)
 {
-    return microbit_malloc(size);
+    return device_malloc(size);
 }
 
 /**
-  * Overrides the 'delete' operator globally, and redirects calls to the micro:bit theap allocator.
+  * Overrides the 'delete' operator globally, and redirects calls to the codal device theap allocator.
   */
 inline void operator delete(void *ptr) throw()
 {
-    microbit_free(ptr);
+    device_free(ptr);
 }
 
 
 // Macros to override overrides the 'malloc' and 'delete' functions globally, and redirects calls
-// to the micro:bit theap allocator.
+// to the codal device theap allocator.
 
-#define malloc(X) microbit_malloc( X )
-#define free(X) microbit_free( X )
+#define malloc(X) device_malloc( X )
+#define free(X) device_free( X )
 
 #endif

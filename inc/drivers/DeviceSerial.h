@@ -23,26 +23,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_SERIAL_H
-#define MICROBIT_SERIAL_H
+#ifndef DEVICE_SERIAL_H
+#define DEVICE_SERIAL_H
 
 #include "mbed.h"
 #include "ManagedString.h"
 
-#define MICROBIT_SERIAL_DEFAULT_BAUD_RATE   115200
-#define MICROBIT_SERIAL_DEFAULT_BUFFER_SIZE 20
+#define DEVICE_SERIAL_DEFAULT_BAUD_RATE   115200
+#define DEVICE_SERIAL_DEFAULT_BUFFER_SIZE 20
 
-#define MICROBIT_SERIAL_EVT_DELIM_MATCH     1
-#define MICROBIT_SERIAL_EVT_HEAD_MATCH      2
-#define MICROBIT_SERIAL_EVT_RX_FULL         3
+#define DEVICE_SERIAL_EVT_DELIM_MATCH     1
+#define DEVICE_SERIAL_EVT_HEAD_MATCH      2
+#define DEVICE_SERIAL_EVT_RX_FULL         3
 
-#define MICROBIT_SERIAL_RX_IN_USE           1
-#define MICROBIT_SERIAL_TX_IN_USE           2
-#define MICROBIT_SERIAL_RX_BUFF_INIT        4
-#define MICROBIT_SERIAL_TX_BUFF_INIT        8
+#define DEVICE_SERIAL_RX_IN_USE           1
+#define DEVICE_SERIAL_TX_IN_USE           2
+#define DEVICE_SERIAL_RX_BUFF_INIT        4
+#define DEVICE_SERIAL_TX_BUFF_INIT        8
 
 
-enum MicroBitSerialMode
+enum DeviceSerialMode
 {
     ASYNC,
 	SYNC_SPINWAIT,
@@ -50,17 +50,17 @@ enum MicroBitSerialMode
 };
 
 /**
-  * Class definition for MicroBitSerial.
+  * Class definition for DeviceSerial.
   *
-  * Represents an instance of RawSerial which accepts micro:bit specific data types.
+  * Represents an instance of RawSerial which accepts codal device specific data types.
   */
-class MicroBitSerial : public RawSerial
+class DeviceSerial : public RawSerial
 {
 
-    //holds that state of the mutex locks for all MicroBitSerial instances.
+    //holds that state of the mutex locks for all DeviceSerial instances.
     static uint8_t status;
 
-    //holds the state of the baudrate for all MicroBitSerial instances.
+    //holds the state of the baudrate for all DeviceSerial instances.
     static int baudrate;
 
     //delimeters used for matching on receive.
@@ -81,7 +81,7 @@ class MicroBitSerial : public RawSerial
     volatile uint16_t txBuffTail;
 
     /**
-      * An internal interrupt callback for MicroBitSerial configured for when a
+      * An internal interrupt callback for DeviceSerial configured for when a
       * character is received.
       *
       * Each time a character is received fill our circular buffer!
@@ -89,7 +89,7 @@ class MicroBitSerial : public RawSerial
     void dataReceived();
 
     /**
-      * An internal interrupt callback for MicroBitSerial.
+      * An internal interrupt callback for DeviceSerial.
       *
       * Each time the Serial module's buffer is empty, write a character if we have
       * characters to write.
@@ -111,7 +111,7 @@ class MicroBitSerial : public RawSerial
       *
       * @return the number of bytes copied into the buffer.
       */
-    int setTxInterrupt(uint8_t *string, int len, MicroBitSerialMode mode);
+    int setTxInterrupt(uint8_t *string, int len, DeviceSerialMode mode);
 
     /**
       * Locks the mutex so that others can't use this serial instance for reception
@@ -151,7 +151,7 @@ class MicroBitSerial : public RawSerial
       *
       * @param mode the selected mode, one of: ASYNC, SYNC_SPINWAIT, SYNC_SLEEP
       */
-    void send(MicroBitSerialMode mode);
+    void send(DeviceSerialMode mode);
 
     /**
       * Reads a single character from the rxBuff
@@ -172,10 +172,10 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return a character from the circular buffer, or MICROBIT_NO_DATA is there
+      * @return a character from the circular buffer, or DEVICE_NO_DATA is there
       *         are no characters in the buffer.
       */
-    int getChar(MicroBitSerialMode mode);
+    int getChar(DeviceSerialMode mode);
 
     /**
       * An internal method that copies values from a circular buffer to a linear buffer.
@@ -199,7 +199,7 @@ class MicroBitSerial : public RawSerial
 
     /**
       * Constructor.
-      * Create an instance of MicroBitSerial
+      * Create an instance of DeviceSerial
       *
       * @param tx the Pin to be used for transmission
       *
@@ -210,7 +210,7 @@ class MicroBitSerial : public RawSerial
       * @param txBufferSize the size of the buffer to be used for transmitting bytes
       *
       * @code
-      * MicroBitSerial serial(USBTX, USBRX);
+      * DeviceSerial serial(USBTX, USBRX);
       * @endcode
       * @note the default baud rate is 115200. More API details can be found:
       *       -https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/api/SerialBase.h
@@ -218,7 +218,7 @@ class MicroBitSerial : public RawSerial
       *
       *       Buffers aren't allocated until the first send or receive respectively.
       */
-    MicroBitSerial(PinName tx, PinName rx, uint8_t rxBufferSize = MICROBIT_SERIAL_DEFAULT_BUFFER_SIZE, uint8_t txBufferSize = MICROBIT_SERIAL_DEFAULT_BUFFER_SIZE);
+    DeviceSerial(PinName tx, PinName rx, uint8_t rxBufferSize = DEVICE_SERIAL_DEFAULT_BUFFER_SIZE, uint8_t txBufferSize = DEVICE_SERIAL_DEFAULT_BUFFER_SIZE);
 
     /**
       * Sends a single character over the serial line.
@@ -240,10 +240,10 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return the number of bytes written, or MICROBIT_SERIAL_IN_USE if another fiber
+      * @return the number of bytes written, or DEVICE_SERIAL_IN_USE if another fiber
       *         is using the serial instance for transmission.
       */
-    int sendChar(char c, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    int sendChar(char c, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Sends a ManagedString over the serial line.
@@ -265,11 +265,11 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return the number of bytes written, MICROBIT_SERIAL_IN_USE if another fiber
-      *         is using the serial instance for transmission, MICROBIT_INVALID_PARAMETER
+      * @return the number of bytes written, DEVICE_SERIAL_IN_USE if another fiber
+      *         is using the serial instance for transmission, DEVICE_INVALID_PARAMETER
       *         if buffer is invalid, or the given bufferLen is <= 0.
       */
-    int send(ManagedString s, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    int send(ManagedString s, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Sends a buffer of known length over the serial line.
@@ -293,11 +293,11 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return the number of bytes written, MICROBIT_SERIAL_IN_USE if another fiber
-      *         is using the serial instance for transmission, MICROBIT_INVALID_PARAMETER
+      * @return the number of bytes written, DEVICE_SERIAL_IN_USE if another fiber
+      *         is using the serial instance for transmission, DEVICE_INVALID_PARAMETER
       *         if buffer is invalid, or the given bufferLen is <= 0.
       */
-    int send(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    int send(uint8_t *buffer, int bufferLen, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Reads a single character from the rxBuff
@@ -306,7 +306,7 @@ class MicroBitSerial : public RawSerial
       *        gives a different behaviour:
       *
       *            ASYNC - A character is read from the rxBuff if available, if there
-      *                    are no characters to be read, a value of MICROBIT_NO_DATA is returned immediately.
+      *                    are no characters to be read, a value of DEVICE_NO_DATA is returned immediately.
       *
       *            SYNC_SPINWAIT - A character is read from the rxBuff if available, if there
       *                            are no characters to be read, this method will spin
@@ -318,11 +318,11 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return a character, MICROBIT_SERIAL_IN_USE if another fiber is using the serial instance for reception,
-      *         MICROBIT_NO_RESOURCES if buffer allocation did not complete successfully, or MICROBIT_NO_DATA if
+      * @return a character, DEVICE_SERIAL_IN_USE if another fiber is using the serial instance for reception,
+      *         DEVICE_NO_RESOURCES if buffer allocation did not complete successfully, or DEVICE_NO_DATA if
       *         the rx buffer is empty and the mode given is ASYNC.
       */
-    int read(MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    int read(DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Reads multiple characters from the rxBuff and returns them as a ManagedString
@@ -348,7 +348,7 @@ class MicroBitSerial : public RawSerial
       *
       * @return A ManagedString, or an empty ManagedString if an error was encountered during the read.
       */
-    ManagedString read(int size, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    ManagedString read(int size, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Reads multiple characters from the rxBuff and fills a user buffer.
@@ -374,10 +374,10 @@ class MicroBitSerial : public RawSerial
       *
       *         Defaults to SYNC_SLEEP.
       *
-      * @return the number of characters read, or MICROBIT_SERIAL_IN_USE if another fiber
+      * @return the number of characters read, or DEVICE_SERIAL_IN_USE if another fiber
       *         is using the instance for receiving.
       */
-    int read(uint8_t *buffer, int bufferLen, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    int read(uint8_t *buffer, int bufferLen, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * Reads until one of the delimeters matches a character in the rxBuff
@@ -408,7 +408,7 @@ class MicroBitSerial : public RawSerial
       *
       * @note delimeters are matched on a per byte basis.
       */
-    ManagedString readUntil(ManagedString delimeters, MicroBitSerialMode mode = MICROBIT_DEFAULT_SERIAL_MODE);
+    ManagedString readUntil(ManagedString delimeters, DeviceSerialMode mode = DEVICE_DEFAULT_SERIAL_MODE);
 
     /**
       * A wrapper around the inherited method "baud" so we can trap the baud rate
@@ -418,7 +418,7 @@ class MicroBitSerial : public RawSerial
       *         - https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/targets/hal/TARGET_NORDIC/TARGET_MCU_NRF51822/serial_api.c
       *        for permitted baud rates.
       *
-      * @return MICROBIT_INVALID_PARAMETER if baud rate is less than 0, otherwise MICROBIT_OK.
+      * @return DEVICE_INVALID_PARAMETER if baud rate is less than 0, otherwise DEVICE_OK.
       *
       * @note the underlying implementation chooses the first allowable rate at or above that requested.
       */
@@ -431,14 +431,14 @@ class MicroBitSerial : public RawSerial
       *
       * @param rx the new reception pin.
       *
-      * @return MICROBIT_SERIAL_IN_USE if another fiber is currently transmitting or receiving, otherwise MICROBIT_OK.
+      * @return DEVICE_SERIAL_IN_USE if another fiber is currently transmitting or receiving, otherwise DEVICE_OK.
       */
     int redirect(PinName tx, PinName rx);
 
     /**
       * Configures an event to be fired after "len" characters.
       *
-      * Will generate an event with the ID: MICROBIT_ID_SERIAL and the value MICROBIT_SERIAL_EVT_HEAD_MATCH.
+      * Will generate an event with the ID: DEVICE_ID_SERIAL and the value DEVICE_SERIAL_EVT_HEAD_MATCH.
       *
       * @param len the number of characters to wait before triggering the event.
       *
@@ -447,19 +447,19 @@ class MicroBitSerial : public RawSerial
       *
       *            ASYNC - Will configure the event and return immediately.
       *
-      *            SYNC_SPINWAIT - will return MICROBIT_INVALID_PARAMETER
+      *            SYNC_SPINWAIT - will return DEVICE_INVALID_PARAMETER
       *
       *            SYNC_SLEEP - Will configure the event and block the current fiber until the
       *                         event is received.
       *
-      * @return MICROBIT_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise MICROBIT_OK.
+      * @return DEVICE_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise DEVICE_OK.
       */
-    int eventAfter(int len, MicroBitSerialMode mode = ASYNC);
+    int eventAfter(int len, DeviceSerialMode mode = ASYNC);
 
     /**
       * Configures an event to be fired on a match with one of the delimeters.
       *
-      * Will generate an event with the ID: MICROBIT_ID_SERIAL and the value MICROBIT_SERIAL_EVT_DELIM_MATCH.
+      * Will generate an event with the ID: DEVICE_ID_SERIAL and the value DEVICE_SERIAL_EVT_DELIM_MATCH.
       *
       * @param delimeters the characters to match received characters against e.g. ManagedString("\n")
       *
@@ -468,16 +468,16 @@ class MicroBitSerial : public RawSerial
       *
       *            ASYNC - Will configure the event and return immediately.
       *
-      *            SYNC_SPINWAIT - will return MICROBIT_INVALID_PARAMETER
+      *            SYNC_SPINWAIT - will return DEVICE_INVALID_PARAMETER
       *
       *            SYNC_SLEEP - Will configure the event and block the current fiber until the
       *                         event is received.
       *
-      * @return MICROBIT_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise MICROBIT_OK.
+      * @return DEVICE_INVALID_PARAMETER if the mode given is SYNC_SPINWAIT, otherwise DEVICE_OK.
       *
       * @note delimeters are matched on a per byte basis.
       */
-    int eventOn(ManagedString delimeters, MicroBitSerialMode mode = ASYNC);
+    int eventOn(ManagedString delimeters, DeviceSerialMode mode = ASYNC);
 
     /**
       * Determines whether there is any data waiting in our Rx buffer.
@@ -504,8 +504,8 @@ class MicroBitSerial : public RawSerial
       *
       * @param size the new size for our rxBuff
       *
-      * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-      *         for reception, otherwise MICROBIT_OK.
+      * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+      *         for reception, otherwise DEVICE_OK.
       */
     int setRxBufferSize(uint8_t size);
 
@@ -514,8 +514,8 @@ class MicroBitSerial : public RawSerial
       *
       * @param size the new size for our txBuff
       *
-      * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-      *         for transmission, otherwise MICROBIT_OK.
+      * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+      *         for transmission, otherwise DEVICE_OK.
       */
     int setTxBufferSize(uint8_t size);
 
@@ -537,8 +537,8 @@ class MicroBitSerial : public RawSerial
       * Sets the tail to match the head of our circular buffer for reception,
       * effectively clearing the reception buffer.
       *
-      * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-      *         for reception, otherwise MICROBIT_OK.
+      * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+      *         for reception, otherwise DEVICE_OK.
       */
     int clearRxBuffer();
 
@@ -546,8 +546,8 @@ class MicroBitSerial : public RawSerial
       * Sets the tail to match the head of our circular buffer for transmission,
       * effectively clearing the transmission buffer.
       *
-      * @return MICROBIT_SERIAL_IN_USE if another fiber is currently using this instance
-      *         for transmission, otherwise MICROBIT_OK.
+      * @return DEVICE_SERIAL_IN_USE if another fiber is currently using this instance
+      *         for transmission, otherwise DEVICE_OK.
       */
     int clearTxBuffer();
 

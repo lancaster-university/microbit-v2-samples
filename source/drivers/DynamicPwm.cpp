@@ -30,9 +30,9 @@ DEALINGS IN THE SOFTWARE.
   * This provides the ability for a neat, clean swap between PWM channels.
   */
 
-#include "MicroBitConfig.h"
+#include "DeviceConfig.h"
 #include "DynamicPwm.h"
-#include "MicroBitPin.h"
+#include "DevicePin.h"
 #include "ErrorNo.h"
 #include "Glue.h"
 
@@ -162,7 +162,7 @@ void DynamicPwm::release()
   *
   * @param value the duty cycle percentage in floating point format.
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if value is out of range
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range
   *
   * @code
   * DynamicPwm* pwm = DynamicPwm::allocate();
@@ -172,12 +172,12 @@ void DynamicPwm::release()
 int DynamicPwm::write(float value){
 
     if(value < 0)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     PwmOut::write(value);
     lastValue = value;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -212,7 +212,7 @@ PinName DynamicPwm::getPinName()
   */
 int DynamicPwm::getValue()
 {
-    return (float)lastValue * float(MICROBIT_PIN_MAX_OUTPUT);
+    return (float)lastValue * float(DEVICE_PIN_MAX_OUTPUT);
 }
 
 /**
@@ -251,7 +251,7 @@ int DynamicPwm::getPeriod()
   *
   * @param period the desired period in microseconds.
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if period is out of range
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if period is out of range
   *
   * Example:
   * @code
@@ -266,14 +266,14 @@ int DynamicPwm::getPeriod()
 int DynamicPwm::setPeriodUs(int period)
 {
     if(period < 0)
-        return MICROBIT_INVALID_PARAMETER;
+        return DEVICE_INVALID_PARAMETER;
 
     //#HACK this forces mbed to update the pulse width calculation.
     period_us(period);
     write(lastValue);
     sharedPeriod = period;
 
-    return MICROBIT_OK;
+    return DEVICE_OK;
 }
 
 /**
@@ -281,7 +281,7 @@ int DynamicPwm::setPeriodUs(int period)
   *
   * @param period the desired period in milliseconds.
   *
-  * @return MICROBIT_OK on success, MICROBIT_INVALID_PARAMETER if period is out of range
+  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if period is out of range
   *
   * Example:
   * @code

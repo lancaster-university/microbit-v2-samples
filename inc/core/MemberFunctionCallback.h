@@ -27,9 +27,9 @@ DEALINGS IN THE SOFTWARE.
 #define MEMBER_FUNCTION_CALLBACK_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitEvent.h"
-#include "MicroBitCompat.h"
+#include "DeviceConfig.h"
+#include "DeviceEvent.h"
+#include "DeviceCompat.h"
 
 /**
   * Class definition for a MemberFunctionCallback.
@@ -38,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
   * representation than normal C functions. This class allows a reference to
   * a C++ member function to be stored then called at a later date.
   *
-  * This class is used extensively by the MicroBitMessageBus to deliver
+  * This class is used extensively by the DeviceMessageBus to deliver
   * events to C++ methods.
   */
 class MemberFunctionCallback
@@ -46,8 +46,8 @@ class MemberFunctionCallback
     private:
     void* object;
     uint32_t method[4];
-    void (*invoke)(void *object, uint32_t *method, MicroBitEvent e);
-    template <typename T> static void methodCall(void* object, uint32_t*method, MicroBitEvent e);
+    void (*invoke)(void *object, uint32_t *method, DeviceEvent e);
+    template <typename T> static void methodCall(void* object, uint32_t*method, DeviceEvent e);
 
     public:
 
@@ -58,7 +58,7 @@ class MemberFunctionCallback
       *
       * @param method The method to invoke.
       */
-    template <typename T> MemberFunctionCallback(T* object, void (T::*method)(MicroBitEvent e));
+    template <typename T> MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e));
 
     /**
       * A comparison of two MemberFunctionCallback objects.
@@ -72,7 +72,7 @@ class MemberFunctionCallback
       *
       * @param e The event to deliver to the method
       */
-    void fire(MicroBitEvent e);
+    void fire(DeviceEvent e);
 };
 
 /**
@@ -83,7 +83,7 @@ class MemberFunctionCallback
   * @param method The method to invoke.
   */
 template <typename T>
-MemberFunctionCallback::MemberFunctionCallback(T* object, void (T::*method)(MicroBitEvent e))
+MemberFunctionCallback::MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e))
 {
     this->object = object;
     memclr(this->method, sizeof(this->method));
@@ -99,13 +99,13 @@ MemberFunctionCallback::MemberFunctionCallback(T* object, void (T::*method)(Micr
   *
   * @param method The method to invoke.
   *
-  * @param method The MicroBitEvent to supply to the given member function.
+  * @param method The DeviceEvent to supply to the given member function.
   */
 template <typename T>
-void MemberFunctionCallback::methodCall(void *object, uint32_t *method, MicroBitEvent e)
+void MemberFunctionCallback::methodCall(void *object, uint32_t *method, DeviceEvent e)
 {
     T* o = (T*)object;
-    void (T::*m)(MicroBitEvent);
+    void (T::*m)(DeviceEvent);
     memcpy(&m, method, sizeof(m));
 
     (o->*m)(e);

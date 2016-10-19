@@ -23,21 +23,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROBIT_MESSAGE_BUS_H
-#define MICROBIT_MESSAGE_BUS_H
+#ifndef DEVICE_MESSAGE_BUS_H
+#define DEVICE_MESSAGE_BUS_H
 
 #include "mbed.h"
-#include "MicroBitConfig.h"
-#include "MicroBitComponent.h"
-#include "MicroBitEvent.h"
-#include "MicroBitListener.h"
+#include "DeviceConfig.h"
+#include "DeviceComponent.h"
+#include "DeviceEvent.h"
+#include "DeviceListener.h"
 #include "EventModel.h"
 
 /**
-  * Class definition for the MicroBitMessageBus.
+  * Class definition for the DeviceMessageBus.
   *
-  * The MicroBitMessageBus is the common mechanism to deliver asynchronous events on the
-  * MicroBit platform. It serves a number of purposes:
+  * The DeviceMessageBus is the common mechanism to deliver asynchronous events on the
+  * Device platform. It serves a number of purposes:
   *
   * 1) It provides an eventing abstraction that is independent of the underlying substrate.
   *
@@ -57,7 +57,7 @@ DEALINGS IN THE SOFTWARE.
   *
   * 2) Make few assumptions about the underlying platform, but allow optimizations where possible.
   */
-class MicroBitMessageBus : public EventModel, public MicroBitComponent
+class DeviceMessageBus : public EventModel, public DeviceComponent
 {
     public:
 
@@ -67,7 +67,7 @@ class MicroBitMessageBus : public EventModel, public MicroBitComponent
       * Adds itself as a fiber component, and also configures itself to be the
       * default EventModel if defaultEventBus is NULL.
 	  */
-    MicroBitMessageBus();
+    DeviceMessageBus();
 
 	/**
 	  * Queues the given event to be sent to all registered recipients.
@@ -75,13 +75,13 @@ class MicroBitMessageBus : public EventModel, public MicroBitComponent
 	  * @param evt The event to send.
       *
       * @code
-      * MicroBitMessageBus bus;
+      * DeviceMessageBus bus;
       *
-      * // Creates and sends the MicroBitEvent using bus.
-	  * MicrobitEvent evt(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK);
+      * // Creates and sends the DeviceEvent using bus.
+	  * DeviceEvent evt(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
       *
-      * // Creates the MicrobitEvent, but delays the sending of that event.
-      * MicrobitEvent evt1(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, CREATE_ONLY);
+      * // Creates the DeviceEvent, but delays the sending of that event.
+      * DeviceEvent evt1(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, CREATE_ONLY);
       *
       * bus.send(evt1);
       *
@@ -89,7 +89,7 @@ class MicroBitMessageBus : public EventModel, public MicroBitComponent
       * evt1.fire()
       * @endcode
 	  */
-	virtual int send(MicroBitEvent evt);
+	virtual int send(DeviceEvent evt);
 
 	/**
       * Internal function, used to deliver the given event to all relevant recipients.
@@ -103,52 +103,52 @@ class MicroBitMessageBus : public EventModel, public MicroBitComponent
       * @return 1 if all matching listeners were processed, 0 if further processing is required.
       *
       * @note It is recommended that all external code uses the send() function instead of this function,
-      *       or the constructors provided by MicrobitEvent.
+      *       or the constructors provided by DeviceEvent.
       */
-	int process(MicroBitEvent &evt, bool urgent = false);
+	int process(DeviceEvent &evt, bool urgent = false);
 
     /**
       * Returns the microBitListener with the given position in our list.
       *
       * @param n The position in the list to return.
       *
-      * @return the MicroBitListener at postion n in the list, or NULL if the position is invalid.
+      * @return the DeviceListener at postion n in the list, or NULL if the position is invalid.
       */
-    virtual MicroBitListener *elementAt(int n);
+    virtual DeviceListener *elementAt(int n);
 
     /**
-      * Destructor for MicroBitMessageBus, where we deregister this instance from the array of fiber components.
+      * Destructor for DeviceMessageBus, where we deregister this instance from the array of fiber components.
       */
-    ~MicroBitMessageBus();
+    ~DeviceMessageBus();
 
     /**
-      * Add the given MicroBitListener to the list of event handlers, unconditionally.
+      * Add the given DeviceListener to the list of event handlers, unconditionally.
       *
-      * @param listener The MicroBitListener to add.
+      * @param listener The DeviceListener to add.
       *
-      * @return MICROBIT_OK if the listener is valid, MICROBIT_INVALID_PARAMETER otherwise.
+      * @return DEVICE_OK if the listener is valid, DEVICE_INVALID_PARAMETER otherwise.
       */
-    virtual int add(MicroBitListener *newListener);
+    virtual int add(DeviceListener *newListener);
 
     /**
-      * Remove the given MicroBitListener from the list of event handlers.
+      * Remove the given DeviceListener from the list of event handlers.
       *
-      * @param listener The MicroBitListener to remove.
+      * @param listener The DeviceListener to remove.
       *
-      * @return MICROBIT_OK if the listener is valid, MICROBIT_INVALID_PARAMETER otherwise.
+      * @return DEVICE_OK if the listener is valid, DEVICE_INVALID_PARAMETER otherwise.
       */
-    virtual int remove(MicroBitListener *newListener);
+    virtual int remove(DeviceListener *newListener);
 
 	private:
 
-    MicroBitListener            *listeners;		    // Chain of active listeners.
-    MicroBitEventQueueItem      *evt_queue_head;    // Head of queued events to be processed.
-    MicroBitEventQueueItem      *evt_queue_tail;    // Tail of queued events to be processed.
+    DeviceListener            *listeners;		    // Chain of active listeners.
+    DeviceEventQueueItem      *evt_queue_head;    // Head of queued events to be processed.
+    DeviceEventQueueItem      *evt_queue_tail;    // Tail of queued events to be processed.
     uint16_t                    nonce_val;          // The last nonce issued.
     uint16_t                    queueLength;        // The number of events currently waiting to be processed.
 
     /**
-      * Cleanup any MicroBitListeners marked for deletion from the list.
+      * Cleanup any DeviceListeners marked for deletion from the list.
       *
       * @return The number of listeners removed from the list.
       */
@@ -160,17 +160,17 @@ class MicroBitMessageBus : public EventModel, public MicroBitComponent
       *
       * @param The event to queue.
       */
-    void queueEvent(MicroBitEvent &evt);
+    void queueEvent(DeviceEvent &evt);
 
     /**
       * Extract the next event from the front of the event queue (if present).
       *
-      * @return a pointer to the MicroBitEventQueueItem that is at the head of the list.
+      * @return a pointer to the DeviceEventQueueItem that is at the head of the list.
       */
-    MicroBitEventQueueItem* dequeueEvent();
+    DeviceEventQueueItem* dequeueEvent();
 
     /**
-      * Periodic callback from MicroBit.
+      * Periodic callback from Device.
       *
       * Process at least one event from the event queue, if it is not empty.
       * We then continue processing events until something appears on the runqueue.
