@@ -48,7 +48,7 @@ DEALINGS IN THE SOFTWARE.
 #include "mbed.h"
 #include "DeviceConfig.h"
 #include "ManagedString.h"
-#include "DeviceCompat.h"
+#include "CodalCompat.h"
 
 static const char empty[] __attribute__ ((aligned (4))) = "\xff\xff\0\0\0";
 

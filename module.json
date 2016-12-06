@@ -19,6 +19,7 @@
     "inc/core",
     "inc/types",
     "inc/drivers",
+    "inc/device/SAMD21",
     "inc/platform"
   ]
 }

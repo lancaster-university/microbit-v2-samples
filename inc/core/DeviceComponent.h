@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 // Enumeration of core components.
 #define DEVICE_ID_BUTTON_A            1                         // IDs used by commonly used components. Used by convention.
 #define DEVICE_ID_BUTTON_B            2
-#define DEVICE_ID_BUTTON_AB           3         
+#define DEVICE_ID_BUTTON_AB           3
 #define DEVICE_ID_BUTTON_RESET        4
 #define DEVICE_ID_ACCELEROMETER       5
 #define DEVICE_ID_COMPASS             6
@@ -41,7 +41,9 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_ID_RADIO_DATA_READY    10
 #define DEVICE_ID_MULTIBUTTON_ATTACH  11
 #define DEVICE_ID_SERIAL              12
-#define DEVICE_ID_GESTURE             13          
+#define DEVICE_ID_GESTURE             13
+#define DEVICE_ID_TIMER_1             14
+#define DEVICE_ID_SCHEDULER           15
 
 #define DEVICE_ID_IO_P0               100                       // IDs 100-227 are reserved for I/O Pin IDs.
 
@@ -50,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_ID_NOTIFY                          1023          // Notfication channel, for general purpose synchronisation
 
 // Universal flags used as part of the status field
-#define DEVICE_COMPONENT_RUNNING		0x01
+#define DEVICE_COMPONENT_RUNNING        0x01
 
 
 /**
@@ -58,17 +60,17 @@ DEALINGS IN THE SOFTWARE.
   *
   * All components should inherit from this class.
   *
-  * If a component requires regular updates, then that component can be added to the 
+  * If a component requires regular updates, then that component can be added to the
   * to the systemTick and/or idleTick queues. This provides a simple, extensible mechanism
   * for code that requires periodic/occasional background processing but does not warrant
-  * the complexity of maintaining its own thread. 
+  * the complexity of maintaining its own thread.
   *
-  * Two levels of support are available. 
+  * Two levels of support are available.
   *
   * systemTick() provides a periodic callback during the
   * codal device's system timer interrupt. This provides a guaranteed periodic callback, but in interrupt context
   * and is suitable for code with lightweight processing requirements, but strict time constraints.
-  * 
+  *
   * idleTick() provides a periodic callback whenever the scheduler is idle. This provides occasional, callbacks
   * in the main thread context, but with no guarantees of frequency. This is suitable for non-urgent background tasks.
   *
@@ -92,23 +94,6 @@ class DeviceComponent
     {
         this->id = 0;
         this->status = 0;
-    }
-
-    /**
-      * The system timer will call this member function once the component has been added to
-      * the array of system components using system_timer_add_component. This callback
-      * will be in interrupt context.
-      */
-    virtual void systemTick()
-    {
-    }
-
-    /**
-      * The idle thread will call this member function once the component has been added to the array
-      * of idle components using fiber_add_idle_component. 
-      */
-    virtual void idleTick()
-    {
     }
 
     /**

@@ -26,12 +26,12 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_MESSAGE_BUS_H
 #define DEVICE_MESSAGE_BUS_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 #include "DeviceComponent.h"
 #include "DeviceEvent.h"
 #include "DeviceListener.h"
 #include "EventModel.h"
+#include "SystemClock.h"
 
 /**
   * Class definition for the DeviceMessageBus.
@@ -61,24 +61,24 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
 {
     public:
 
-	/**
-	  * Default constructor.
+    /**
+      * Default constructor.
       *
       * Adds itself as a fiber component, and also configures itself to be the
       * default EventModel if defaultEventBus is NULL.
-	  */
-    DeviceMessageBus();
+      */
+    DeviceMessageBus(SystemClock& timer);
 
-	/**
-	  * Queues the given event to be sent to all registered recipients.
-	  *
-	  * @param evt The event to send.
+    /**
+      * Queues the given event to be sent to all registered recipients.
+      *
+      * @param evt The event to send.
       *
       * @code
       * DeviceMessageBus bus;
       *
       * // Creates and sends the DeviceEvent using bus.
-	  * DeviceEvent evt(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
+      * DeviceEvent evt(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK);
       *
       * // Creates the DeviceEvent, but delays the sending of that event.
       * DeviceEvent evt1(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, CREATE_ONLY);
@@ -88,14 +88,14 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       * // This has the same effect!
       * evt1.fire()
       * @endcode
-	  */
-	virtual int send(DeviceEvent evt);
+      */
+    virtual int send(DeviceEvent evt);
 
-	/**
+    /**
       * Internal function, used to deliver the given event to all relevant recipients.
       * Normally, this is called once an event has been removed from the event queue.
-	  *
-	  * @param evt The event to send.
+      *
+      * @param evt The event to send.
       *
       * @param urgent The type of listeners to process (optional). If set to true, only listeners defined as urgent and non-blocking will be processed
       *               otherwise, all other (standard) listeners will be processed. Defaults to false.
@@ -105,7 +105,7 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       * @note It is recommended that all external code uses the send() function instead of this function,
       *       or the constructors provided by DeviceEvent.
       */
-	int process(DeviceEvent &evt, bool urgent = false);
+    int process(DeviceEvent &evt, bool urgent = false);
 
     /**
       * Returns the microBitListener with the given position in our list.
@@ -139,9 +139,45 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       */
     virtual int remove(DeviceListener *newListener);
 
-	private:
+    /**
+      *
+      */
+    virtual int everyUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
 
-    DeviceListener            *listeners;		    // Chain of active listeners.
+    /**
+      *
+      */
+    virtual int everyUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+
+    /**
+      *
+      */
+    template <typename T>
+    int everyUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+
+    /**
+      *
+      */
+    virtual int afterUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+
+    /**
+      *
+      */
+    virtual int afterUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+
+    /**
+      *
+      */
+    template <typename T>
+    int afterUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
+
+
+    private:
+
+    SystemClock&    clock;
+    uint16_t        eventHandle;
+
+    DeviceListener            *listeners;           // Chain of active listeners.
     DeviceEventQueueItem      *evt_queue_head;    // Head of queued events to be processed.
     DeviceEventQueueItem      *evt_queue_tail;    // Tail of queued events to be processed.
     uint16_t                    nonce_val;          // The last nonce issued.
@@ -175,7 +211,7 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       * Process at least one event from the event queue, if it is not empty.
       * We then continue processing events until something appears on the runqueue.
       */
-    virtual void idleTick();
+    void idle(DeviceEvent);
 };
 
 #endif

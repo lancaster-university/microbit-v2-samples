@@ -79,8 +79,8 @@ DeviceEvent::DeviceEvent()
   */
 void DeviceEvent::fire()
 {
-	if(EventModel::defaultEventBus)
-		EventModel::defaultEventBus->send(*this);
+    if(EventModel::defaultEventBus)
+        EventModel::defaultEventBus->send(*this);
 }
 
 
@@ -93,5 +93,5 @@ void DeviceEvent::fire()
 DeviceEventQueueItem::DeviceEventQueueItem(DeviceEvent evt)
 {
     this->evt = evt;
-	this->next = NULL;
+    this->next = NULL;
 }

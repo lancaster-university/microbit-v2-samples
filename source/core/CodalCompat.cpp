@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
   * It also contains constants that are used elsewhere in the DAL.
   */
 #include "DeviceConfig.h"
-#include "DeviceCompat.h"
+#include "CodalCompat.h"
 #include "ErrorNo.h"
 
 

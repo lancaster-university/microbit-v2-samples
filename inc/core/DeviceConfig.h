@@ -30,8 +30,8 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_CONFIG_H
 #define DEVICE_CONFIG_H
 
-#include "mbed.h"
 #include "yotta_cfg_mappings.h"
+#include "common_includes.h"
 
 //
 // Memory configuration
@@ -76,7 +76,7 @@ DEALINGS IN THE SOFTWARE.
 // reserved for SoftDevice is possible, and out of memory condition will no longer be trapped...
 // i.e. panic() will no longer be triggered on memory full conditions.
 #ifndef DEVICE_HEAP_ALLOCATOR
-#define DEVICE_HEAP_ALLOCATOR                 1
+#define DEVICE_HEAP_ALLOCATOR                 0
 #endif
 
 // Block size used by the allocator in bytes.
@@ -110,8 +110,8 @@ DEALINGS IN THE SOFTWARE.
 
 // Scheduling quantum (milliseconds)
 // Also used to drive the codal device runtime system ticker.
-#ifndef SYSTEM_TICK_PERIOD_MS
-#define SYSTEM_TICK_PERIOD_MS                   6
+#ifndef SCHEDULER_TICK_PERIOD_MS
+#define SCHEDULER_TICK_PERIOD_MS                   6
 #endif
 
 //
@@ -134,24 +134,6 @@ DEALINGS IN THE SOFTWARE.
 //
 #ifndef MESSAGE_BUS_LISTENER_MAX_QUEUE_DEPTH
 #define MESSAGE_BUS_LISTENER_MAX_QUEUE_DEPTH    10
-#endif
-
-//
-// Core codal device services
-//
-
-// To reduce memory cost and complexity, the codal device allows components to register for
-// periodic callback events during interrupt context, which occur every scheduling quantum (FIBER_TICK_PERIOD_MS)
-// This defines the maximum size of interrupt callback list.
-#ifndef DEVICE_SYSTEM_COMPONENTS
-#define DEVICE_SYSTEM_COMPONENTS              10
-#endif
-
-// To reduce memory cost and complexity, the codal device allows components to register for
-// periodic callback events when the processor is idle.
-// This defines the maximum size of the idle callback list.
-#ifndef DEVICE_IDLE_COMPONENTS
-#define DEVICE_IDLE_COMPONENTS                6
 #endif
 
 //
@@ -369,6 +351,9 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_DAL_VERSION                    "unknown"
 #endif
 
+#ifndef DEVICE_USB
+#define DEVICE_USB                            0
+#endif
 
 //
 // Helper macro used by the codal device runtime to determine if a boolean configuration option is set.

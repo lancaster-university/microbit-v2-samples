@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_EVENT_H
 #define DEVICE_EVENT_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 
 // Wildcard event codes

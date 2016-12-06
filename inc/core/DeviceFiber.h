@@ -37,54 +37,31 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_FIBER_H
 #define DEVICE_FIBER_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 #include "DeviceEvent.h"
 #include "EventModel.h"
+#include "device_fiber.h"
 
 // Fiber Scheduler Flags
-#define DEVICE_SCHEDULER_RUNNING	     	0x01
+#define DEVICE_SCHEDULER_RUNNING            0x01
+#define DEVICE_SCHEDULER_IDLE               0x02
 
 // Fiber Flags
-#define DEVICE_FIBER_FLAG_FOB             0x01
-#define DEVICE_FIBER_FLAG_PARENT          0x02
-#define DEVICE_FIBER_FLAG_CHILD           0x04
-#define DEVICE_FIBER_FLAG_DO_NOT_PAGE     0x08
+#define DEVICE_FIBER_FLAG_FOB               0x01
+#define DEVICE_FIBER_FLAG_PARENT            0x02
+#define DEVICE_FIBER_FLAG_CHILD             0x04
+#define DEVICE_FIBER_FLAG_DO_NOT_PAGE       0x08
 
-/**
-  *  Thread Context for an ARM Cortex M0 core.
-  *
-  * This is probably overkill, but the ARMCC compiler uses a lot register optimisation
-  * in its calling conventions, so better safe than sorry!
-  */
-struct Cortex_M0_TCB
-{
-    uint32_t R0;
-    uint32_t R1;
-    uint32_t R2;
-    uint32_t R3;
-    uint32_t R4;
-    uint32_t R5;
-    uint32_t R6;
-    uint32_t R7;
-    uint32_t R8;
-    uint32_t R9;
-    uint32_t R10;
-    uint32_t R11;
-    uint32_t R12;
-    uint32_t SP;
-    uint32_t LR;
-    uint32_t stack_base;
-};
+#define DEVICE_SCHEDULER_EVT_IDLE           1
 
 /**
   * Representation of a single Fiber
   */
 struct Fiber
 {
-    Cortex_M0_TCB tcb;                  // Thread context when last scheduled out.
-    uint32_t stack_bottom;              // The start address of this Fiber's stack. The stack is heap allocated, and full descending.
-    uint32_t stack_top;                 // The end address of this Fiber's stack.
+    PROCESSOR_TCB tcb;                  // Thread context when last scheduled out.
+    PROCESSOR_WORD_TYPE stack_bottom;              // The start address of this Fiber's stack. The stack is heap allocated, and full descending.
+    PROCESSOR_WORD_TYPE stack_top;                 // The end address of this Fiber's stack.
     uint32_t context;                   // Context specific information.
     uint32_t flags;                     // Information about this fiber.
     Fiber **queue;                      // The queue this fiber is stored on.
@@ -92,7 +69,6 @@ struct Fiber
 };
 
 extern Fiber *currentFiber;
-
 
 /**
   * Initialises the Fiber scheduler.
@@ -180,7 +156,11 @@ Fiber *create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)
   * The calling Fiber will likely be blocked, and control given to another waiting fiber.
   * Call this function to yield control of the processor when you have nothing more to do.
   */
-void schedule();
+void schedule()
+#ifdef __GCC__
+    __attribute__((naked))
+#endif
+;
 
 /**
   * Blocks the calling thread for the given period of time.
@@ -199,7 +179,7 @@ void fiber_sleep(unsigned long t);
   * This function checks to determine if any fibers blocked on the sleep queue need to be woken up
   * and made runnable.
   */
-void scheduler_tick();
+void scheduler_tick(DeviceEvent);
 
 /**
   * Blocks the calling thread until the specified event is raised.
@@ -338,39 +318,12 @@ void idle();
 void idle_task();
 
 /**
-  * Adds a component to the array of idle thread components, which are processed
-  * when the run queue is empty.
-  *
-  * @param component The component to add to the array.
-  * @return DEVICE_OK on success or DEVICE_NO_RESOURCES if the fiber components array is full.
-  */
-int fiber_add_idle_component(DeviceComponent *component);
-
-/**
-  * remove a component from the array of idle thread components
-  *
-  * @param component the component to remove from the idle component array.
-  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
-  */
-int fiber_remove_idle_component(DeviceComponent *component);
-
-/**
-  * Determines if the processor is executing in interrupt context.
-  *
-  * @return true if any the processor is currently executing any interrupt service routine. False otherwise.
-  */
-inline int inInterruptContext()
-{
-    return (((int)__get_IPSR()) & 0x003F) > 0;
-}
-
-/**
   * Assembler Context switch routing.
   * Defined in CortexContextSwitch.s.
   */
-extern "C" void swap_context(Cortex_M0_TCB *from, Cortex_M0_TCB *to, uint32_t from_stack, uint32_t to_stack);
-extern "C" void save_context(Cortex_M0_TCB *tcb, uint32_t stack);
-extern "C" void save_register_context(Cortex_M0_TCB *tcb);
-extern "C" void restore_register_context(Cortex_M0_TCB *tcb);
+extern "C" void swap_context(PROCESSOR_TCB *from, PROCESSOR_TCB *to, PROCESSOR_WORD_TYPE from_stack, PROCESSOR_WORD_TYPE to_stack);
+extern "C" void save_context(PROCESSOR_TCB *tcb, PROCESSOR_WORD_TYPE stack);
+extern "C" void save_register_context(PROCESSOR_TCB *tcb);
+extern "C" void restore_register_context(PROCESSOR_TCB *tcb);
 
 #endif

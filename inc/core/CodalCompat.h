@@ -31,10 +31,11 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_COMPAT_H
 #define DEVICE_COMPAT_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 
+#ifndef PI
 #define PI 3.14159265359
+#endif
 
 /**
   * Determines the smallest of the two numbers
@@ -45,11 +46,12 @@ DEALINGS IN THE SOFTWARE.
   *
   * @return The smallest of the two given values.
   */
+#ifndef min
 inline int min(int a, int b)
 {
     return (a < b ? a : b);
 }
-
+#endif
 /**
   * Determines the largest of the two numbers
   *
@@ -59,10 +61,12 @@ inline int min(int a, int b)
   *
   * @return The larger of the two given values.
   */
+#ifndef max
 inline int max(int a, int b)
 {
     return (a > b ? a : b);
 }
+#endif
 
 /**
   * Sets a given area of memory to zero.
@@ -71,10 +75,12 @@ inline int max(int a, int b)
   *
   * @param b the number of bytes to clear.
   */
+#ifndef memclr
 inline void *memclr(void *a, size_t b)
 {
     return memset(a,0,b);
 }
+#endif
 
 /**
   * Determines if the given character is a printable ASCII/UTF8 decimal digit (0..9).
@@ -83,10 +89,41 @@ inline void *memclr(void *a, size_t b)
   *
   * @return true if the character is a digit, false otherwise.
   */
+#ifndef isdigit
 inline bool isdigit(char c)
 {
     return (c > 47 && c < 58);
 }
+#endif
+
+/**
+  * Extracts the upper 8 bits of a 16 bit integer
+  *
+  * @param val the 16 bit value.
+  *
+  * @return the upper 8 bits of the given val.
+  */
+#ifndef high
+inline uint8_t high(uint16_t val)
+{
+    return val >> 8;
+}
+#endif
+
+/**
+  * Extracts the lower 8 bits of a 16 bit integer
+  *
+  * @param val the 16 bit value.
+  *
+  * @return the lower 8 bits of the given val.
+  */
+#ifndef low
+inline uint8_t low(uint16_t val)
+{
+    return val & 0xFF;
+}
+#endif
+
 
 /**
   * Performs an in buffer reverse of a given char array.

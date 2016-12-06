@@ -134,7 +134,7 @@ class DeviceButton : public DeviceComponent
       *
       * Check for state change for this button, and fires various events on a state change.
       */
-    virtual void systemTick();
+    void systemTick(DeviceEvent);
 
     /**
       * Destructor for DeviceButton, where we deregister this instance from the array of fiber components.

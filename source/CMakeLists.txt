@@ -7,9 +7,8 @@ enable_language(ASM)
 
 set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
-    "core/DeviceCompat.cpp"
+    "core/CodalCompat.cpp"
     "core/DeviceFiber.cpp"
-    "core/DeviceFont.cpp"
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"
     "core/DeviceSystemTimer.cpp"
@@ -17,9 +16,11 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
     "types/DeviceEvent.cpp"
-    "types/DeviceImage.cpp"
+
     "types/PacketBuffer.cpp"
     "types/RefCounted.cpp"
+
+    "device/DeviceTimer.cpp"
 
     "drivers/DynamicPwm.cpp"
     "drivers/DeviceButton.cpp"

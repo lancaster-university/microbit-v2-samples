@@ -38,93 +38,17 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceSystemTimer.h"
 #include "ErrorNo.h"
 
-/*
- * Time since power on. Measured in milliseconds.
- * When stored as an unsigned long, this gives us approx 50 days between rollover, which is ample. :-)
- */
-static uint64_t time_us = 0;
-static unsigned int tick_period = 0;
-
-// Array of components which are iterated during a system tick
-static DeviceComponent* systemTickComponents[DEVICE_SYSTEM_COMPONENTS];
-
-// Periodic callback interrupt
-static Ticker *ticker = NULL;
-
 // System timer.
-static Timer *timer = NULL;
+static SystemClock* system_clock = NULL;
 
-
-/**
-  * Initialises a system wide timer, used to drive the various components used in the runtime.
-  *
-  * This must be called before any components register to receive periodic periodic callbacks.
-  *
-  * @param timer_period The initial period between interrupts, in millseconds.
-  *
-  * @return DEVICE_OK on success.
-  */
-int system_timer_init(int period)
+SystemClock* system_timer_get_instance()
 {
-    if (ticker == NULL)
-        ticker = new Ticker();
-
-    if (timer == NULL)
-    {
-        timer = new Timer();
-        timer->start();
-    }
-
-    return system_timer_set_period(period);
+    return system_clock;
 }
 
-/**
-  * Reconfigures the system wide timer to the given period in milliseconds.
-  *
-  * @param period the new period of the timer in milliseconds
-  *
-  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if period < 1
-  */
-int system_timer_set_period(int period)
+void system_timer_set_instance(SystemClock* systemClock)
 {
-    if (period < 1)
-        return DEVICE_INVALID_PARAMETER;
-
-    // If a timer is already running, ensure it is disabled before reconfiguring.
-    if (tick_period)
-        ticker->detach();
-
-	// register a period callback to drive the scheduler and any other registered components.
-    tick_period = period;
-    ticker->attach_us(system_timer_tick, period * 1000);
-
-    return DEVICE_OK;
-}
-
-/**
-  * Accessor to obtain the current tick period in milliseconds
-  *
-  * @return the current tick period in milliseconds
-  */
-int system_timer_get_period()
-{
-    return tick_period;
-}
-
-/**
-  * Updates the current time in microseconds, since power on.
-  *
-  * If the mbed Timer hasn't been initialised, it will be initialised
-  * on the first call to this function.
-  */
-void update_time()
-{
-    // If we haven't been initialized, bring up the timer with the default period.
-    if (timer == NULL || ticker == NULL)
-        system_timer_init(SYSTEM_TICK_PERIOD_MS);
-
-    time_us += timer->read_us();
-    timer->reset();
+    system_clock = systemClock;
 }
 
 /**
@@ -134,7 +58,10 @@ void update_time()
   */
 uint64_t system_timer_current_time()
 {
-    return system_timer_current_time_us() / 1000;
+    if(system_clock == NULL)
+        return 0;
+
+    return system_clock->getTime();
 }
 
 /**
@@ -144,73 +71,8 @@ uint64_t system_timer_current_time()
   */
 uint64_t system_timer_current_time_us()
 {
-    update_time();
-    return time_us;
-}
+    if(system_clock == NULL)
+        return 0;
 
-/**
-  * Timer callback. Called from interrupt context, once per period.
-  *
-  * Simply checks to determine if any fibers blocked on the sleep queue need to be woken up
-  * and made runnable.
-  */
-void system_timer_tick()
-{
-    update_time();
-
-    // Update any components registered for a callback
-    for(int i = 0; i < DEVICE_SYSTEM_COMPONENTS; i++)
-        if(systemTickComponents[i] != NULL)
-            systemTickComponents[i]->systemTick();
-}
-
-/**
-  * Add a component to the array of system components. This component will then receive
-  * periodic callbacks, once every tick period.
-  *
-  * @param component The component to add.
-  *
-  * @return DEVICE_OK on success. DEVICE_NO_RESOURCES is returned if the component array is full.
-  *
-  * @note The callback will be in interrupt context.
-  */
-int system_timer_add_component(DeviceComponent *component)
-{
-    int i = 0;
-
-    // If we haven't been initialized, bring up the timer with the default period.
-    if (timer == NULL || ticker == NULL)
-        system_timer_init(SYSTEM_TICK_PERIOD_MS);
-
-    while(systemTickComponents[i] != NULL && i < DEVICE_SYSTEM_COMPONENTS)
-        i++;
-
-    if(i == DEVICE_SYSTEM_COMPONENTS)
-        return DEVICE_NO_RESOURCES;
-
-    systemTickComponents[i] = component;
-    return DEVICE_OK;
-}
-
-/**
-  * Remove a component from the array of system components. This component will no longer receive
-  * periodic callbacks.
-  *
-  * @param component The component to remove.
-  *
-  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
-  */
-int system_timer_remove_component(DeviceComponent *component)
-{
-    int i = 0;
-
-    while(systemTickComponents[i] != component && i < DEVICE_SYSTEM_COMPONENTS)
-        i++;
-
-    if(i == DEVICE_SYSTEM_COMPONENTS)
-        return DEVICE_INVALID_PARAMETER;
-
-    systemTickComponents[i] = NULL;
-
-    return DEVICE_OK;
+    return system_clock->getTimeUs();
 }

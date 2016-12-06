@@ -35,6 +35,10 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceFiber.h"
 #include "DeviceSystemTimer.h"
 
+#define INITIAL_STACK_DEPTH (get_stack_base() - sizeof(PROCESSOR_WORD_TYPE))
+
+//Serial serial(USBTX, USBRX);
+
 /*
  * Statically allocated values used to create and destroy Fibers.
  * required to be defined here to allow persistence during context switches.
@@ -56,14 +60,10 @@ static Fiber *fiberPool = NULL;                    // Pool of unused fibers, jus
  */
 static uint8_t fiber_flags = 0;
 
-
 /*
  * Fibers may perform wait/notify semantics on events. If set, these operations will be permitted on this EventModel.
  */
 static EventModel *messageBus = NULL;
-
-// Array of components which are iterated during idle thread execution.
-static DeviceComponent* idleThreadComponents[DEVICE_IDLE_COMPONENTS];
 
 /**
   * Utility function to add the currenty running fiber to the given queue.
@@ -136,7 +136,6 @@ void dequeue_fiber(Fiber *f)
     f->queue = NULL;
 
     __enable_irq();
-
 }
 
 /**
@@ -152,12 +151,9 @@ Fiber *getFiberContext()
     {
         f = fiberPool;
         dequeue_fiber(f);
-        // dequeue_fiber() exits with irqs enabled, so no need to do this again!
     }
     else
     {
-        __enable_irq();
-
         f = new Fiber();
 
         if (f == NULL)
@@ -167,9 +163,12 @@ Fiber *getFiberContext()
         f->stack_top = 0;
     }
 
+    __enable_irq();
+
     // Ensure this fiber is in suitable state for reuse.
     f->flags = 0;
-    f->tcb.stack_base = CORTEX_M0_STACK_BASE;
+
+    configure_sp(&f->tcb, INITIAL_STACK_DEPTH);
 
     return f;
 }
@@ -189,9 +188,9 @@ void scheduler_init(EventModel &_messageBus)
     if (fiber_scheduler_running())
         return;
 
-	// Store a reference to the messageBus provided.
-	// This parameter will be NULL if we're being run without a message bus.
-	messageBus = &_messageBus;
+        // Store a reference to the messageBus provided.
+    // This parameter will be NULL if we're being run without a message bus.
+    messageBus = &_messageBus;
 
     // Create a new fiber context
     currentFiber = getFiberContext();
@@ -202,20 +201,20 @@ void scheduler_init(EventModel &_messageBus)
     // Create the IDLE fiber.
     // Configure the fiber to directly enter the idle task.
     idleFiber = getFiberContext();
-    idleFiber->tcb.SP = CORTEX_M0_STACK_BASE - 0x04;
-    idleFiber->tcb.LR = (uint32_t) &idle_task;
 
-	if (messageBus)
-	{
-		// Register to receive events in the NOTIFY channel - this is used to implement wait-notify semantics
-		messageBus->listen(DEVICE_ID_NOTIFY, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
-		messageBus->listen(DEVICE_ID_NOTIFY_ONE, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
-	}
+    configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
+    configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
 
-	// register a period callback to drive the scheduler and any other registered components.
-    new DeviceSystemTimerCallback(scheduler_tick);
+    if (messageBus)
+    {
+        // Register to receive events in the NOTIFY channel - this is used to implement wait-notify semantics
+        messageBus->listen(DEVICE_ID_NOTIFY, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
+        messageBus->listen(DEVICE_ID_NOTIFY_ONE, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
-	fiber_flags |= DEVICE_SCHEDULER_RUNNING;
+        messageBus->every(SCHEDULER_TICK_PERIOD_MS, scheduler_tick, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    }
+
+    fiber_flags |= DEVICE_SCHEDULER_RUNNING;
 }
 
 /**
@@ -225,10 +224,10 @@ void scheduler_init(EventModel &_messageBus)
   */
 int fiber_scheduler_running()
 {
-	if (fiber_flags & DEVICE_SCHEDULER_RUNNING)
-		return 1;
+    if (fiber_flags & DEVICE_SCHEDULER_RUNNING)
+        return 1;
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -236,17 +235,19 @@ int fiber_scheduler_running()
   * This function checks to determine if any fibers blocked on the sleep queue need to be woken up
   * and made runnable.
   */
-void scheduler_tick()
+void scheduler_tick(DeviceEvent evt)
 {
     Fiber *f = sleepQueue;
     Fiber *t;
+
+    evt.timestamp /= 1000;
 
     // Check the sleep queue, and wake up any fibers as necessary.
     while (f != NULL)
     {
         t = f->next;
 
-        if (system_timer_current_time() >= f->context)
+        if (evt.timestamp >= f->context)
         {
             // Wakey wakey!
             dequeue_fiber(f);
@@ -271,11 +272,11 @@ void scheduler_event(DeviceEvent evt)
     Fiber *t;
     int notifyOneComplete = 0;
 
-	// This should never happen.
-	// It is however, safe to simply ignore any events provided, as if no messageBus if recorded,
-	// no fibers are permitted to block on events.
-	if (messageBus == NULL)
-		return;
+    // This should never happen.
+    // It is however, safe to simply ignore any events provided, as if no messageBus if recorded,
+    // no fibers are permitted to block on events.
+    if (messageBus == NULL)
+        return;
 
     // Check the wait queue, and wake up any fibers as necessary.
     while (f != NULL)
@@ -347,7 +348,7 @@ void fiber_sleep(unsigned long t)
         // If we're out of memory, there's nothing we can do.
         // keep running in the context of the current thread as a best effort.
         if (forkedFiber != NULL)
-                f = forkedFiber;
+            f = forkedFiber;
     }
 
     // Calculate and store the time we want to wake up.
@@ -388,7 +389,7 @@ int fiber_wait_for_event(uint16_t id, uint16_t value)
     if(ret == DEVICE_OK)
         schedule();
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -414,8 +415,8 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
 {
     Fiber *f = currentFiber;
 
-	if (messageBus == NULL || !fiber_scheduler_running())
-		return DEVICE_NOT_SUPPORTED;
+    if (messageBus == NULL || !fiber_scheduler_running())
+        return DEVICE_NOT_SUPPORTED;
 
     // Sleep is a blocking call, so if we're in a fork on block context,
     // it's time to spawn a new fiber...
@@ -437,7 +438,7 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
     }
 
     // Encode the event data in the context field. It's handy having a 32 bit core. :-)
-    f->context = value << 16 | id;
+    f->context = (uint32_t)value << 16 | id;
 
     // Remove ourselves from the run queue
     dequeue_fiber(f);
@@ -473,7 +474,7 @@ int invoke(void (*entry_fn)(void))
         return DEVICE_INVALID_PARAMETER;
 
     if (!fiber_scheduler_running())
-		return DEVICE_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     if (currentFiber->flags & DEVICE_FIBER_FLAG_FOB)
     {
@@ -536,7 +537,7 @@ int invoke(void (*entry_fn)(void *), void *param)
         return DEVICE_INVALID_PARAMETER;
 
     if (!fiber_scheduler_running())
-		return DEVICE_NOT_SUPPORTED;
+        return DEVICE_NOT_SUPPORTED;
 
     if (currentFiber->flags & (DEVICE_FIBER_FLAG_FOB | DEVICE_FIBER_FLAG_PARENT | DEVICE_FIBER_FLAG_CHILD))
     {
@@ -546,9 +547,15 @@ int invoke(void (*entry_fn)(void *), void *param)
         return DEVICE_OK;
     }
 
+    //Serial.println("BEFORE SAVE");
+    //while (!(UCSR0A & _BV(TXC0)));
+
     // Snapshot current context, but also update the Link Register to
     // refer to our calling function.
     save_register_context(&currentFiber->tcb);
+
+    //Serial.println("AFTER SAVE");
+    //while (!(UCSR0A & _BV(TXC0)));
 
     // If we're here, there are two possibilities:
     // 1) We're about to attempt to execute the user code
@@ -617,6 +624,7 @@ void launch_new_fiber_param(void (*ep)(void *), void (*cp)(void *), void *pm)
     release_fiber(pm);
 }
 
+
 Fiber *__create_fiber(uint32_t ep, uint32_t cp, uint32_t pm, int parameterised)
 {
     // Validate our parameters.
@@ -631,13 +639,8 @@ Fiber *__create_fiber(uint32_t ep, uint32_t cp, uint32_t pm, int parameterised)
     if (newFiber == NULL)
         return NULL;
 
-    newFiber->tcb.R0 = (uint32_t) ep;
-    newFiber->tcb.R1 = (uint32_t) cp;
-    newFiber->tcb.R2 = (uint32_t) pm;
-
-    // Set the stack and assign the link register to refer to the appropriate entry point wrapper.
-    newFiber->tcb.SP = CORTEX_M0_STACK_BASE - 0x04;
-    newFiber->tcb.LR = parameterised ? (uint32_t) &launch_new_fiber_param : (uint32_t) &launch_new_fiber;
+    configure_tcb(&newFiber->tcb, ep, cp, pm);
+    configure_lr(&newFiber->tcb, parameterised ? (PROCESSOR_WORD_TYPE) &launch_new_fiber_param : (PROCESSOR_WORD_TYPE) &launch_new_fiber);
 
     // Add new fiber to the run queue.
     queue_fiber(newFiber, &runQueue);
@@ -658,7 +661,7 @@ Fiber *__create_fiber(uint32_t ep, uint32_t cp, uint32_t pm, int parameterised)
 Fiber *create_fiber(void (*entry_fn)(void), void (*completion_fn)(void))
 {
     if (!fiber_scheduler_running())
-		return NULL;
+        return NULL;
 
     return __create_fiber((uint32_t) entry_fn, (uint32_t)completion_fn, 0, 0);
 }
@@ -679,7 +682,7 @@ Fiber *create_fiber(void (*entry_fn)(void), void (*completion_fn)(void))
 Fiber *create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)(void *))
 {
     if (!fiber_scheduler_running())
-		return NULL;
+        return NULL;
 
     return __create_fiber((uint32_t) entry_fn, (uint32_t)completion_fn, (uint32_t) param, 1);
 }
@@ -692,7 +695,7 @@ Fiber *create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)
 void release_fiber(void *)
 {
     if (!fiber_scheduler_running())
-		return;
+        return;
 
     release_fiber();
 }
@@ -705,7 +708,7 @@ void release_fiber(void *)
 void release_fiber(void)
 {
     if (!fiber_scheduler_running())
-		return;
+        return;
 
     // Remove ourselves form the runqueue.
     dequeue_fiber(currentFiber);
@@ -730,11 +733,11 @@ void release_fiber(void)
 void verify_stack_size(Fiber *f)
 {
     // Ensure the stack buffer is large enough to hold the stack Reallocate if necessary.
-    uint32_t stackDepth;
-    uint32_t bufferSize;
+    PROCESSOR_WORD_TYPE stackDepth;
+    PROCESSOR_WORD_TYPE bufferSize;
 
     // Calculate the stack depth.
-    stackDepth = f->tcb.stack_base - ((uint32_t) __get_MSP());
+    stackDepth = get_stack_base() - get_current_sp();
 
     // Calculate the size of our allocated stack buffer
     bufferSize = f->stack_top - f->stack_bottom;
@@ -750,7 +753,7 @@ void verify_stack_size(Fiber *f)
             free((void *)f->stack_bottom);
 
         // Allocate a new one of the appropriate size.
-        f->stack_bottom = (uint32_t) malloc(bufferSize);
+        f->stack_bottom = (PROCESSOR_WORD_TYPE)malloc(bufferSize);
 
         // Recalculate where the top of the stack is and we're done.
         f->stack_top = f->stack_bottom + bufferSize;
@@ -775,7 +778,7 @@ int scheduler_runqueue_empty()
 void schedule()
 {
     if (!fiber_scheduler_running())
-		return;
+        return;
 
     // First, take a reference to the currently running fiber;
     Fiber *oldFiber = currentFiber;
@@ -791,7 +794,7 @@ void schedule()
         forkedFiber->flags |= DEVICE_FIBER_FLAG_CHILD;
 
         // Define the stack base of the forked fiber to be align with the entry point of the parent fiber
-        forkedFiber->tcb.stack_base = currentFiber->tcb.SP;
+        configure_sp(&forkedFiber->tcb, get_sp(&currentFiber->tcb));
 
         // Ensure the stack allocation of the new fiber is large enough
         verify_stack_size(forkedFiber);
@@ -847,11 +850,12 @@ void schedule()
     // Don't bother with the overhead of switching if there's only one fiber on the runqueue!
     if (currentFiber != oldFiber)
     {
+
         // Special case for the idle task, as we don't maintain a stack context (just to save memory).
         if (currentFiber == idleFiber)
         {
-            idleFiber->tcb.SP = CORTEX_M0_STACK_BASE - 0x04;
-            idleFiber->tcb.LR = (uint32_t) &idle_task;
+            configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
+            configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
         }
 
         if (oldFiber == idleFiber)
@@ -871,62 +875,30 @@ void schedule()
 }
 
 /**
-  * Adds a component to the array of idle thread components, which are processed
-  * when the run queue is empty.
-  *
-  * @param component The component to add to the array.
-  * @return DEVICE_OK on success or DEVICE_NO_RESOURCES if the fiber components array is full.
-  */
-int fiber_add_idle_component(DeviceComponent *component)
-{
-    int i = 0;
-
-    while(idleThreadComponents[i] != NULL && i < DEVICE_IDLE_COMPONENTS)
-        i++;
-
-    if(i == DEVICE_IDLE_COMPONENTS)
-        return DEVICE_NO_RESOURCES;
-
-    idleThreadComponents[i] = component;
-
-    return DEVICE_OK;
-}
-
-/**
-  * remove a component from the array of idle thread components
-  *
-  * @param component the component to remove from the idle component array.
-  * @return DEVICE_OK on success. DEVICE_INVALID_PARAMETER is returned if the given component has not been previously added.
-  */
-int fiber_remove_idle_component(DeviceComponent *component)
-{
-    int i = 0;
-
-    while(idleThreadComponents[i] != component && i < DEVICE_IDLE_COMPONENTS)
-        i++;
-
-    if(i == DEVICE_IDLE_COMPONENTS)
-        return DEVICE_INVALID_PARAMETER;
-
-    idleThreadComponents[i] = NULL;
-
-    return DEVICE_OK;
-}
-
-/**
   * Set of tasks to perform when idle.
   * Service any background tasks that are required, and attempt a power efficient sleep.
   */
 void idle()
 {
-    // Service background tasks
-    for(int i = 0; i < DEVICE_IDLE_COMPONENTS; i++)
-        if(idleThreadComponents[i] != NULL)
-            idleThreadComponents[i]->idleTick();
+    // Prevent an idle loop of death:
+    // We will return to idle after processing any idle events that add anything
+    // to our run queue, we use the DEVICE_SCHEDULER_IDLE flag to determine this
+    // scenario.
+    if(!(fiber_flags & DEVICE_SCHEDULER_IDLE))
+    {
+        fiber_flags |= DEVICE_SCHEDULER_IDLE;
+        DeviceEvent(DEVICE_ID_SCHEDULER, DEVICE_SCHEDULER_EVT_IDLE);
+    }
 
     // If the above did create any useful work, enter power efficient sleep.
     if(scheduler_runqueue_empty())
-    	__WFE();
+    {
+        // unset our DEVICE_SCHEDULER_IDLE flag, we have processed all of the events
+        // because we enforce MESSAGE_BUS_LISTENER_IMMEDIATE for listeners placed
+        // on the scheduler.
+        fiber_flags &= ~DEVICE_SCHEDULER_IDLE;
+        __WFE();
+    }
 }
 
 /**

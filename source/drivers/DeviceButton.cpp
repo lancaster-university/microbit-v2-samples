@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "DeviceButton.h"
 #include "DeviceSystemTimer.h"
+#include "EventModel.h"
 
 /**
   * Constructor.
@@ -52,7 +53,9 @@ DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfigura
     this->eventConfiguration = eventConfiguration;
     this->downStartTime = 0;
     this->sigma = 0;
-    system_timer_add_component(this);
+
+    if(EventModel::defaultEventBus != NULL)
+        EventModel::defaultEventBus->every(SCHEDULER_TICK_PERIOD_MS, this, &DeviceButton::systemTick, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
 /**
@@ -81,7 +84,7 @@ void DeviceButton::setEventConfiguration(DeviceButtonEventConfiguration config)
   *
   * Check for state change for this button, and fires various events on a state change.
   */
-void DeviceButton::systemTick()
+void DeviceButton::systemTick(DeviceEvent)
 {
     //
     // If the pin is pulled low (touched), increment our culumative counter.
@@ -158,5 +161,5 @@ int DeviceButton::isPressed()
   */
 DeviceButton::~DeviceButton()
 {
-    system_timer_remove_component(this);
+    //TODO: add ignore eventEvery!!
 }
