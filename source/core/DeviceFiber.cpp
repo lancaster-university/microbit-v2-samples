@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceFiber.h"
 #include "DeviceSystemTimer.h"
 
-#define INITIAL_STACK_DEPTH (get_stack_base() - sizeof(PROCESSOR_WORD_TYPE))
+#define INITIAL_STACK_DEPTH (fiber_initial_stack_base() - 0x04)
 
 //Serial serial(USBTX, USBRX);
 
@@ -168,7 +168,7 @@ Fiber *getFiberContext()
     // Ensure this fiber is in suitable state for reuse.
     f->flags = 0;
 
-    configure_sp(&f->tcb, INITIAL_STACK_DEPTH);
+    tcb_configure_stack_base(&f->tcb, fiber_initial_stack_base());
 
     return f;
 }
@@ -202,8 +202,8 @@ void scheduler_init(EventModel &_messageBus)
     // Configure the fiber to directly enter the idle task.
     idleFiber = getFiberContext();
 
-    configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
-    configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
+    tcb_configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
+    tcb_configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
 
     if (messageBus)
     {
@@ -639,8 +639,9 @@ Fiber *__create_fiber(uint32_t ep, uint32_t cp, uint32_t pm, int parameterised)
     if (newFiber == NULL)
         return NULL;
 
-    configure_tcb(&newFiber->tcb, ep, cp, pm);
-    configure_lr(&newFiber->tcb, parameterised ? (PROCESSOR_WORD_TYPE) &launch_new_fiber_param : (PROCESSOR_WORD_TYPE) &launch_new_fiber);
+    tcb_configure_args(&newFiber->tcb, ep, cp, pm);
+    tcb_configure_sp(&newFiber->tcb, INITIAL_STACK_DEPTH);
+    tcb_configure_lr(&newFiber->tcb, parameterised ? (PROCESSOR_WORD_TYPE) &launch_new_fiber_param : (PROCESSOR_WORD_TYPE) &launch_new_fiber);
 
     // Add new fiber to the run queue.
     queue_fiber(newFiber, &runQueue);
@@ -737,7 +738,7 @@ void verify_stack_size(Fiber *f)
     PROCESSOR_WORD_TYPE bufferSize;
 
     // Calculate the stack depth.
-    stackDepth = get_stack_base() - get_current_sp();
+    stackDepth = tcb_get_stack_base(&f->tcb) - (PROCESSOR_WORD_TYPE)get_current_sp();
 
     // Calculate the size of our allocated stack buffer
     bufferSize = f->stack_top - f->stack_bottom;
@@ -794,7 +795,7 @@ void schedule()
         forkedFiber->flags |= DEVICE_FIBER_FLAG_CHILD;
 
         // Define the stack base of the forked fiber to be align with the entry point of the parent fiber
-        configure_sp(&forkedFiber->tcb, get_sp(&currentFiber->tcb));
+        tcb_configure_stack_base(&forkedFiber->tcb, tcb_get_sp(&currentFiber->tcb));
 
         // Ensure the stack allocation of the new fiber is large enough
         verify_stack_size(forkedFiber);
@@ -854,8 +855,8 @@ void schedule()
         // Special case for the idle task, as we don't maintain a stack context (just to save memory).
         if (currentFiber == idleFiber)
         {
-            configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
-            configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
+            tcb_configure_sp(&idleFiber->tcb, INITIAL_STACK_DEPTH);
+            tcb_configure_lr(&idleFiber->tcb, (PROCESSOR_WORD_TYPE)&idle_task);
         }
 
         if (oldFiber == idleFiber)

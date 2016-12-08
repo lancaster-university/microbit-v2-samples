@@ -29,13 +29,18 @@ struct PROCESSOR_TCB
     uint32_t stack_base;
 };
 
+inline PROCESSOR_WORD_TYPE fiber_initial_stack_base()
+{
+    return CORTEX_M0_STACK_BASE;
+}
+
 /**
   * Configures the link register of the given tcb to have the value function.
   *
   * @param tcb The tcb to modify
   * @param function the function the link register should point to.
   */
-inline void configure_lr(PROCESSOR_TCB* tcb, uint32_t function)
+inline void tcb_configure_lr(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE function)
 {
     tcb->LR = function;
 }
@@ -46,40 +51,36 @@ inline void configure_lr(PROCESSOR_TCB* tcb, uint32_t function)
   * @param tcb The tcb to modify
   * @param function the function the link register should point to.
   */
-inline void configure_sp(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE sp)
+inline void tcb_configure_sp(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE sp)
 {
     tcb->SP = sp;
 }
 
-inline PROCESSOR_WORD_TYPE get_stack_base()
+inline void tcb_configure_stack_base(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE stack_base)
 {
-    return CORTEX_M0_STACK_BASE;
+    tcb->stack_base = stack_base;
+}
+
+inline PROCESSOR_WORD_TYPE tcb_get_stack_base(PROCESSOR_TCB* tcb)
+{
+    return tcb->stack_base;
 }
 
 inline PROCESSOR_WORD_TYPE get_current_sp()
 {
-    uint32_t sp;
-    __asm volatile(
-        "mov r0, sp"
-        : "=r"(sp)
-    );
-
-    return sp;
+    return __get_MSP();
 }
 
-inline PROCESSOR_WORD_TYPE get_sp(PROCESSOR_TCB* tcb)
+inline PROCESSOR_WORD_TYPE tcb_get_sp(PROCESSOR_TCB* tcb)
 {
     return tcb->SP;
 }
 
-inline void configure_tcb(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE ep, PROCESSOR_WORD_TYPE cp, PROCESSOR_WORD_TYPE pm)
+inline void tcb_configure_args(PROCESSOR_TCB* tcb, PROCESSOR_WORD_TYPE ep, PROCESSOR_WORD_TYPE cp, PROCESSOR_WORD_TYPE pm)
 {
     tcb->R0 = (uint32_t) ep;
     tcb->R1 = (uint32_t) cp;
     tcb->R2 = (uint32_t) pm;
-
-    // Set the stack and assign the link register to refer to the appropriate entry point wrapper.
-    tcb->SP = CORTEX_M0_STACK_BASE - 0x04;
 }
 
 #ifndef __MBED__
