@@ -13,11 +13,17 @@ struct ClockEvent
 {
     uint16_t value;
     uint64_t period;
-    uint64_t countUs;
+    uint64_t timestamp;
     struct list_head list;
 
     void addToList(list_head* head)
     {
+        if(list_empty(head))
+        {
+            list_add(&this->list, head);
+            return;
+        }
+
         ClockEvent* tmp = NULL;
         struct list_head *iter, *q = NULL;
 
@@ -25,24 +31,25 @@ struct ClockEvent
         {
             tmp = list_entry(iter, ClockEvent, list);
 
-            if(tmp->countUs < this->countUs)
+            if(tmp->timestamp < this->timestamp)
                 continue;
 
-            break;
+            list_add(&this->list, iter);
+            return;
         }
-
-        list_add(&this->list, iter);
     }
 
-    ClockEvent(uint64_t period, int value, list_head* head, bool repeating = false)
+    ClockEvent()
     {
-        this->countUs = period;
+        INIT_LIST_HEAD(&list);
+    }
+
+    ClockEvent(uint64_t timestamp, uint64_t period, uint16_t value, list_head* head, bool repeating = false)
+    {
+        this->timestamp = timestamp;
         this->value = value;
 
-        this->period = 0;
-
-        if(repeating)
-            this->period = period;
+        this->period = repeating ? period : 0;
 
         addToList(head);
     };

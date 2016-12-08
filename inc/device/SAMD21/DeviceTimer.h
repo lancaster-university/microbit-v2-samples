@@ -5,6 +5,18 @@
 
 class DeviceTimer : public SystemClock
 {
+    Timer timer;
+    Timeout timeout;
+    Timeout overflowTimeout;
+
+    void eventReady();
+
+    void processEvents();
+
+    void timerOverflow();
+
+    int configureEvent(uint64_t period, uint16_t value, bool repeating);
+
 public:
 
     /**
@@ -95,19 +107,4 @@ public:
       * @param value the value to place into the Events' value field.
       */
     int eventEveryUs(uint64_t period, uint16_t value);
-
-    /**
-      * Start this Timer1 instance.
-      *
-      * @param precisionUs The precisions that the timer should use. Defaults to
-      *        TIMER_ONE_DEFAULT_PRECISION_US (1 us)
-      */
-    int start(uint64_t precisionUs = TIMER_ONE_DEFAULT_PRECISION_US);
-
-    /**
-      * Stop this Timer1 instance
-      */
-    int stop();
-
-    ~DeviceTimer();
 };

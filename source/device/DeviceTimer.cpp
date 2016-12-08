@@ -4,84 +4,65 @@
 #include "DeviceSystemTimer.h"
 
 static uint64_t current_time_us = 0;
-static uint8_t compare_event = 0;
-static uint16_t timer_id = 0;
-static uint32_t overflow_period = 0;
+static uint32_t overflow_period_us = 0;
 
+static ClockEvent event_list;
 
-static Ticker* ticker = NULL;
-static Timer* timer = NULL;
+//DigitalOut led(LED);
 
-LIST_HEAD(event_list);
-
-void consume_events();
-
-void set_interrupt(uint32_t time_us)
+void DeviceTimer::eventReady()
 {
-    if(time_us > overflow_period)
-        return;
-
-    compare_event = 0;
-    ticker->detach();
-    ticker->attach_us(consume_events,time_us);
-
-    return;
-}
-
-void consume_events()
-{
-    if(list_empty(&event_list))
+    if(list_empty(&event_list.list))
         return;
 
     ClockEvent* tmp = NULL;
     struct list_head *iter, *q = NULL;
 
-    uint32_t period_us = timer->read_us();
-    timer->reset();
+    tmp = list_entry(event_list.list.next, ClockEvent, list);
 
-    current_time_us += period_us;
+    // fire our event and process the next event
+    DeviceEvent(this->id, tmp->value);
 
-    uint8_t interrupt_set = 0;
-    uint8_t first = 1;
+    // remove from the event list
+    list_del(event_list.list.next);
 
-    list_for_each_safe(iter, q, &event_list)
+    // if this event is non-repeating, delete
+    if(tmp->period == 0)
+        delete tmp;
+    else
     {
-        tmp = list_entry(iter, ClockEvent, list);
-
-        // if we have received a compare event, we know we will be ripping off the top!
-        if(first && compare_event)
-        {
-            first = 0;
-            compare_event = 0;
-
-            // fire our event and process the next event
-            DeviceEvent(timer_id, tmp->value);
-
-            // remove from the event list
-            list_del(iter);
-
-            // if this event is repeating, reset our timestamp
-            if(tmp->period == 0)
-            {
-                delete tmp;
-                continue;
-            }
-            else
-            {
-                // update our count, and readd to our event list
-                tmp->countUs = tmp->period;
-                tmp->addToList(&event_list);
-            }
-        }
-        else
-            tmp->countUs -= period_us;
-
-        if(!interrupt_set && tmp->countUs < overflow_period)
-        {
-            set_interrupt(tmp->countUs);
-            interrupt_set = 1;
-        }
+        // update our count, and readd to our event list
+        tmp->timestamp = getTimeUs() + tmp->period;
+        tmp->addToList(&event_list.list);
     }
+
+    processEvents();
+}
+
+void DeviceTimer::processEvents()
+{
+    if(list_empty(&event_list.list))
+        return;
+
+    ClockEvent* tmp = NULL;
+    struct list_head *iter, *q = NULL;
+
+    tmp = list_entry(event_list.list.next, ClockEvent, list);
+
+    uint64_t usRemaining = tmp->timestamp - getTimeUs();
+
+    if(usRemaining < overflow_period_us)
+        timeout.attach_us(this, &DeviceTimer::eventReady, usRemaining);
+}
+
+void DeviceTimer::timerOverflow()
+{
+    timer.reset();
+    overflowTimeout.attach_us(this, &DeviceTimer::timerOverflow, overflow_period_us);
+
+    current_time_us += overflow_period_us;
+
+    processEvents();
 }
 
 /**
@@ -89,11 +70,9 @@ void consume_events()
   *
   * @param id The id to use for the message bus when transmitting events.
   */
-DeviceTimer::DeviceTimer(uint16_t id)
+DeviceTimer::DeviceTimer(uint16_t id) : timer(), timeout(), overflowTimeout()
 {
-    timer = NULL;
-    ticker = NULL;
-    this->id = timer_id = id;
+    this->id = id;
 }
 
 /**
@@ -112,7 +91,11 @@ int DeviceTimer::init()
     if(status & SYSTEM_CLOCK_INIT)
         return DEVICE_OK;
 
-    start();
+    timer.start();
+
+    overflow_period_us = 60000000;
+
+    overflowTimeout.attach_us(this, &DeviceTimer::timerOverflow, overflow_period_us);
 
     status |= SYSTEM_CLOCK_INIT;
 
@@ -161,9 +144,20 @@ uint64_t DeviceTimer::getTime()
   */
 uint64_t DeviceTimer::getTimeUs()
 {
-    current_time_us += timer->read_us();
-    timer->reset();
-    return current_time_us;
+    return current_time_us + timer.read_us();
+}
+
+int DeviceTimer::configureEvent(uint64_t period, uint16_t value, bool repeating)
+{
+    ClockEvent* clk = new ClockEvent(getTimeUs() + period, period, value, &event_list.list, repeating);
+
+    if(!clk)
+        return DEVICE_NO_RESOURCES;
+
+    if(event_list.list.next == &clk->list && period < overflow_period_us)
+        timeout.attach_us(this, &DeviceTimer::eventReady, period);
+
+    return DEVICE_OK;
 }
 
 /**
@@ -189,10 +183,7 @@ int DeviceTimer::eventAfter(uint64_t interval, uint16_t value)
   */
 int DeviceTimer::eventAfterUs(uint64_t interval, uint16_t value)
 {
-    if(new ClockEvent(interval, value, &event_list))
-        return DEVICE_OK;
-
-    return DEVICE_NO_RESOURCES;
+    return configureEvent(interval, value, false);
 }
 
 /**
@@ -218,62 +209,5 @@ int DeviceTimer::eventEvery(uint64_t period, uint16_t value)
   */
 int DeviceTimer::eventEveryUs(uint64_t period, uint16_t value)
 {
-    ClockEvent* clk = new ClockEvent(period, value, &event_list, true);
-
-    if(!clk)
-        return DEVICE_NO_RESOURCES;
-
-    if(event_list.next == &clk->list && period < overflow_period)
-    {
-        __disable_irq();
-        set_interrupt(period);
-        __enable_irq();
-    }
-
-    return DEVICE_OK;
-}
-
-/**
-  * Start this DeviceTimer instance.
-  *
-  * @param precisionUs The precisions that the timer should use. Defaults to
-  *        TIMER_ONE_DEFAULT_PRECISION_US (1 us)
-  */
-int DeviceTimer::start(uint64_t precisionUs)
-{
-    if(!ticker)
-        ticker = new Ticker();
-
-    if(!timer)
-        timer = new Timer();
-
-    timer->start();
-    ticker->attach_us(consume_events, precisionUs);
-
-    return DEVICE_OK;
-}
-
-/**
-  * Stop this DeviceTimer instance
-  */
-int DeviceTimer::stop()
-{
-    if(!status & SYSTEM_CLOCK_INIT)
-        return DEVICE_NOT_SUPPORTED;
-
-    timer->stop();
-    ticker->detach();
-
-    return DEVICE_OK;
-}
-
-DeviceTimer::~DeviceTimer()
-{
-    stop();
-
-    if(ticker)
-        free(ticker);
-
-    if(timer)
-        free(timer);
+    return configureEvent(period, value, true);
 }
