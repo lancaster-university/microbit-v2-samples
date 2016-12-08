@@ -29,9 +29,12 @@ struct ClockEvent
 
         list_for_each_safe(iter, q, head)
         {
+            if(iter == head)
+                continue;
+
             tmp = list_entry(iter, ClockEvent, list);
 
-            if(tmp->timestamp < this->timestamp)
+            if(tmp->timestamp < this->timestamp && iter->next != head)
                 continue;
 
             list_add(&this->list, iter);
@@ -42,6 +45,9 @@ struct ClockEvent
     ClockEvent()
     {
         INIT_LIST_HEAD(&list);
+        this->timestamp = 0;
+        this->value = 0;
+        this->period = 0;
     }
 
     ClockEvent(uint64_t timestamp, uint64_t period, uint16_t value, list_head* head, bool repeating = false)
@@ -50,6 +56,8 @@ struct ClockEvent
         this->value = value;
 
         this->period = repeating ? period : 0;
+
+
 
         addToList(head);
     };
