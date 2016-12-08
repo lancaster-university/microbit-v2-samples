@@ -36,15 +36,14 @@ DEALINGS IN THE SOFTWARE.
 //
 // Memory configuration
 //
-
 // The start address of usable RAM memory.
 #ifndef DEVICE_SRAM_BASE
-#define DEVICE_SRAM_BASE                      0x20000008
+#define DEVICE_SRAM_BASE                      0x20000000
 #endif
 
 // Physical address of the top of SRAM.
 #ifndef DEVICE_SRAM_END
-#define DEVICE_SRAM_END                       0x20004000
+#define DEVICE_SRAM_END                       0x20008000
 #endif
 
 // The end address of memory normally reserved for Soft Device.
