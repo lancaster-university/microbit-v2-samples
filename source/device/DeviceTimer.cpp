@@ -72,6 +72,9 @@ void DeviceTimer::timerOverflow()
   */
 DeviceTimer::DeviceTimer(uint16_t id) : timer(), timeout(), overflowTimeout()
 {
+    if(system_timer_get_instance() == NULL)
+        system_timer_set_instance(this);
+
     this->id = id;
 }
 
