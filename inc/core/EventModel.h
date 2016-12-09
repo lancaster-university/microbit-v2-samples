@@ -31,6 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "DeviceListener.h"
 #include "ErrorNo.h"
+#include "DeviceSystemTimer.h"
 
 /**
   * Class definition for the codal device EventModel.
@@ -52,6 +53,8 @@ DEALINGS IN THE SOFTWARE.
   */
 class EventModel
 {
+    uint16_t eventHandle;
+
     public:
 
     static EventModel *defaultEventBus;
@@ -260,7 +263,7 @@ class EventModel
     /**
       *
       */
-    virtual int after(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+    int after(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
         return afterUs(period * 1000, handler, flags);
     }
@@ -268,7 +271,7 @@ class EventModel
     /**
       *
       */
-    virtual int after(uint64_t period, void (* handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+    int after(uint64_t period, void (* handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
         return afterUs(period * 1000, handler, arg, flags);
     }
@@ -282,18 +285,50 @@ class EventModel
     /**
       *
       */
-    virtual int afterUs(uint64_t, void (*)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+    int afterUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
-        (void)flags;
+        if (handler == NULL)
+            return DEVICE_INVALID_PARAMETER;
+
+        eventHandle++;
+
+        DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, handler, flags);
+
+        if(add(newListener) == DEVICE_OK)
+        {
+            if(system_timer_event_after_us(period, eventHandle) == DEVICE_OK)
+                return DEVICE_OK;
+        }
+
+        eventHandle--;
+
+        delete newListener;
+
         return DEVICE_NOT_SUPPORTED;
     }
 
     /**
       *
       */
-    virtual int afterUs(uint64_t, void (*)(DeviceEvent, void*), void*, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+    int afterUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
     {
-        (void)flags;
+        if (handler == NULL)
+            return DEVICE_INVALID_PARAMETER;
+
+        eventHandle++;
+
+        DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, handler, arg, flags);
+
+        if(add(newListener) == DEVICE_OK)
+        {
+            if(system_timer_event_after_us(period, eventHandle) == DEVICE_OK)
+                return DEVICE_OK;
+        }
+
+        eventHandle--;
+
+        delete newListener;
+
         return DEVICE_NOT_SUPPORTED;
     }
 
@@ -306,7 +341,7 @@ class EventModel
      /**
        *
        */
-     virtual int every(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+     int every(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
      {
          return everyUs(period * 1000, handler, flags);
      }
@@ -314,7 +349,7 @@ class EventModel
      /**
        *
        */
-     virtual int every(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+     int every(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
      {
          return everyUs(period * 1000, handler, arg, flags);
      }
@@ -328,18 +363,50 @@ class EventModel
      /**
        *
        */
-     virtual int everyUs(uint64_t, void (*)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+     int everyUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
      {
-         (void)flags;
+         if (handler == NULL)
+             return DEVICE_INVALID_PARAMETER;
+
+         eventHandle++;
+
+         DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, handler, flags);
+
+         if(add(newListener) == DEVICE_OK)
+         {
+             if(system_timer_event_every_us(period, eventHandle) == DEVICE_OK)
+                 return DEVICE_OK;
+         }
+
+         eventHandle--;
+
+         delete newListener;
+
          return DEVICE_NOT_SUPPORTED;
      }
 
      /**
        *
        */
-     virtual int everyUs(uint64_t, void (*)(DeviceEvent, void*), void*, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
+     int everyUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS)
      {
-         (void)flags;
+         if (handler == NULL)
+             return DEVICE_INVALID_PARAMETER;
+
+         eventHandle++;
+
+         DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, handler, arg, flags);
+
+         if(add(newListener) == DEVICE_OK)
+         {
+             if(system_timer_event_every_us(period, eventHandle) == DEVICE_OK)
+                 return DEVICE_OK;
+         }
+
+         eventHandle--;
+
+         delete newListener;
+
          return DEVICE_NOT_SUPPORTED;
      }
 
@@ -492,9 +559,24 @@ int EventModel::after(uint64_t period, T* object, void (T::*handler)(DeviceEvent
 }
 
 template <typename T>
-int EventModel::afterUs(uint64_t, T*, void (T::*)(DeviceEvent), uint16_t flags)
+int EventModel::afterUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags)
 {
-    (void)flags;
+    if (object == NULL || handler == NULL)
+        return DEVICE_INVALID_PARAMETER;
+
+    eventHandle++;
+
+    DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, object, handler, flags);
+
+    if(add(newListener) == DEVICE_OK)
+    {
+        system_timer_event_after_us(period, eventHandle);
+        return DEVICE_OK;
+    }
+
+    eventHandle--;
+
+    delete newListener;
     return DEVICE_NOT_SUPPORTED;
 }
 
@@ -505,9 +587,24 @@ int EventModel::every(uint64_t period, T* object, void (T::* handler)(DeviceEven
 }
 
 template <typename T>
-int EventModel::everyUs(uint64_t, T*, void (T::*)(DeviceEvent), uint16_t flags)
+int EventModel::everyUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags)
 {
-    (void)flags;
+    if (object == NULL || handler == NULL)
+        return DEVICE_INVALID_PARAMETER;
+
+    eventHandle++;
+
+    DeviceListener *newListener = new DeviceListener(system_timer_get_id(), eventHandle, object, handler, flags);
+
+    if(add(newListener) == DEVICE_OK)
+    {
+        system_timer_event_every_us(period,eventHandle);
+        return DEVICE_OK;
+    }
+
+    eventHandle--;
+
+    delete newListener;
     return DEVICE_NOT_SUPPORTED;
 }
 

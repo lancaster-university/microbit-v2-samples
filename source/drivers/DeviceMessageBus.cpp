@@ -58,15 +58,12 @@ DEALINGS IN THE SOFTWARE.
   * Adds itself as a fiber component, and also configures itself to be the
   * default EventModel if defaultEventBus is NULL.
   */
-DeviceMessageBus::DeviceMessageBus(SystemClock& timer)
-: clock(timer)
+DeviceMessageBus::DeviceMessageBus()
 {
     this->listeners = NULL;
     this->evt_queue_head = NULL;
     this->evt_queue_tail = NULL;
     this->queueLength = 0;
-
-    clock.init();
 
     // ANY listeners for scheduler events MUST be immediate, or else they will not be registered.
     listen(DEVICE_ID_SCHEDULER, DEVICE_SCHEDULER_EVT_IDLE, this, &DeviceMessageBus::idle, MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -522,158 +519,6 @@ int DeviceMessageBus::remove(DeviceListener *listener)
         return DEVICE_OK;
     else
         return DEVICE_INVALID_PARAMETER;
-}
-
-
-
-/**
-  *
-  */
-int DeviceMessageBus::everyUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags)
-{
-    if (handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, handler, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventEveryUs(period, eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-
-    return DEVICE_NOT_SUPPORTED;
-}
-
-/**
-  *
-  */
-int DeviceMessageBus::everyUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags)
-{
-    if (handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, handler, arg, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventEveryUs(period, eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-
-    return DEVICE_NOT_SUPPORTED;
-}
-
-/**
-  *
-  */
-template <typename T>
-int DeviceMessageBus::everyUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags)
-{
-    if (object == NULL || handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, object, handler, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventEveryUs(period,eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-    return DEVICE_NOT_SUPPORTED;
-}
-
-/**
-  *
-  */
-int DeviceMessageBus::afterUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags)
-{
-    if (handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, handler, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventAfter(period, eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-
-    return DEVICE_NOT_SUPPORTED;
-}
-
-/**
-  *
-  */
-int DeviceMessageBus::afterUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags)
-{
-    if (handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, handler, arg, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventAfterUs(period, eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-
-    return DEVICE_NOT_SUPPORTED;
-}
-
-/**
-  *
-  */
-template <typename T>
-int DeviceMessageBus::afterUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags)
-{
-    if (object == NULL || handler == NULL)
-        return DEVICE_INVALID_PARAMETER;
-
-    eventHandle++;
-
-    DeviceListener *newListener = new DeviceListener(clock.getId(), eventHandle, object, handler, flags);
-
-    if(add(newListener) == DEVICE_OK)
-    {
-        clock.eventAfterUs(period, eventHandle);
-        return DEVICE_OK;
-    }
-
-    eventHandle--;
-
-    delete newListener;
-    return DEVICE_NOT_SUPPORTED;
 }
 
 /**

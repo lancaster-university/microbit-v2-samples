@@ -67,7 +67,7 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       * Adds itself as a fiber component, and also configures itself to be the
       * default EventModel if defaultEventBus is NULL.
       */
-    DeviceMessageBus(SystemClock& timer);
+    DeviceMessageBus();
 
     /**
       * Queues the given event to be sent to all registered recipients.
@@ -139,43 +139,8 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       */
     virtual int remove(DeviceListener *newListener);
 
-    /**
-      *
-      */
-    virtual int everyUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
-    /**
-      *
-      */
-    virtual int everyUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
-    /**
-      *
-      */
-    template <typename T>
-    int everyUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
-    /**
-      *
-      */
-    virtual int afterUs(uint64_t period, void (*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
-    /**
-      *
-      */
-    virtual int afterUs(uint64_t period, void (*handler)(DeviceEvent, void*), void* arg, uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
-    /**
-      *
-      */
-    template <typename T>
-    int afterUs(uint64_t period, T*object, void (T::*handler)(DeviceEvent), uint16_t flags = EVENT_LISTENER_DEFAULT_FLAGS);
-
 
     private:
-
-    SystemClock&    clock;
-    uint16_t        eventHandle;
 
     DeviceListener            *listeners;           // Chain of active listeners.
     DeviceEventQueueItem      *evt_queue_head;    // Head of queued events to be processed.
