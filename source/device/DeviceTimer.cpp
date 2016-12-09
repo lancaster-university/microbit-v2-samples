@@ -8,17 +8,12 @@ static uint32_t overflow_period_us = 0;
 
 static ClockEvent event_list;
 
-//DigitalOut led(LED);
-
 void DeviceTimer::eventReady()
 {
     if(list_empty(&event_list.list))
         return;
 
-    ClockEvent* tmp = NULL;
-    struct list_head *iter, *q = NULL;
-
-    tmp = list_entry(event_list.list.next, ClockEvent, list);
+    ClockEvent* tmp = list_entry(event_list.list.next, ClockEvent, list);
 
     // fire our event and process the next event
     DeviceEvent(this->id, tmp->value);
@@ -44,10 +39,7 @@ void DeviceTimer::processEvents()
     if(list_empty(&event_list.list))
         return;
 
-    ClockEvent* tmp = NULL;
-    struct list_head *iter, *q = NULL;
-
-    tmp = list_entry(event_list.list.next, ClockEvent, list);
+    ClockEvent* tmp = list_entry(event_list.list.next, ClockEvent, list);
 
     uint64_t usRemaining = tmp->timestamp - getTimeUs();
 

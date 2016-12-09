@@ -540,7 +540,7 @@ int DeviceMessageBus::everyUs(uint64_t period, void (*handler)(DeviceEvent), uin
 
     if(add(newListener) == DEVICE_OK)
     {
-        clock.eventEvery(period, eventHandle);
+        clock.eventEveryUs(period, eventHandle);
         return DEVICE_OK;
     }
 
@@ -565,7 +565,7 @@ int DeviceMessageBus::everyUs(uint64_t period, void (*handler)(DeviceEvent, void
 
     if(add(newListener) == DEVICE_OK)
     {
-        clock.eventEvery(period, eventHandle);
+        clock.eventEveryUs(period, eventHandle);
         return DEVICE_OK;
     }
 
