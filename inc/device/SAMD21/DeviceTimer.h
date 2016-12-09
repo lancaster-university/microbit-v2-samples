@@ -9,8 +9,6 @@ class DeviceTimer : public SystemClock
     Timeout timeout;
     Timeout overflowTimeout;
 
-    void eventReady();
-
     void processEvents();
 
     void timerOverflow();

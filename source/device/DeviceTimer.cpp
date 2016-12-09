@@ -8,43 +8,43 @@ static uint32_t overflow_period_us = 0;
 
 static ClockEvent event_list;
 
-void DeviceTimer::eventReady()
-{
-    if(list_empty(&event_list.list))
-        return;
-
-    ClockEvent* tmp = list_entry(event_list.list.next, ClockEvent, list);
-
-    // fire our event and process the next event
-    DeviceEvent(this->id, tmp->value);
-
-    // remove from the event list
-    list_del(event_list.list.next);
-
-    // if this event is non-repeating, delete
-    if(tmp->period == 0)
-        delete tmp;
-    else
-    {
-        // update our count, and readd to our event list
-        tmp->timestamp = getTimeUs() + tmp->period;
-        tmp->addToList(&event_list.list);
-    }
-
-    processEvents();
-}
-
 void DeviceTimer::processEvents()
 {
     if(list_empty(&event_list.list))
         return;
 
-    ClockEvent* tmp = list_entry(event_list.list.next, ClockEvent, list);
+    ClockEvent* tmp = NULL;
+
+    struct list_head* iter, *q;
+
+    list_for_each_safe(iter, q, &event_list.list)
+    {
+       tmp = list_entry(iter, ClockEvent, list);
+
+       // fire our event and process the next event
+       DeviceEvent(this->id, tmp->value);
+
+       // remove from the event list
+       list_del(iter);
+
+       // if this event is non-repeating, delete
+       if(tmp->period == 0)
+          delete tmp;
+       else
+       {
+          // update our count, and readd to our event list
+          tmp->timestamp = getTimeUs() + tmp->period;
+          tmp->addToList(&event_list.list);
+       }
+
+       if(tmp->timestamp > getTimeUs())
+          break;
+    }
 
     uint64_t usRemaining = tmp->timestamp - getTimeUs();
 
     if(usRemaining < overflow_period_us)
-        timeout.attach_us(this, &DeviceTimer::eventReady, usRemaining);
+        timeout.attach_us(this, &DeviceTimer::processEvents, usRemaining);
 }
 
 void DeviceTimer::timerOverflow()
@@ -150,7 +150,7 @@ int DeviceTimer::configureEvent(uint64_t period, uint16_t value, bool repeating)
         return DEVICE_NO_RESOURCES;
 
     if(event_list.list.next == &clk->list && period < overflow_period_us)
-        timeout.attach_us(this, &DeviceTimer::eventReady, period);
+        timeout.attach_us(this, &DeviceTimer::processEvents, period);
 
     return DEVICE_OK;
 }
