@@ -80,7 +80,7 @@ void codal_vdmesg(const char *format, va_list ap)
     {
         if (*end++ == '%')
         {
-            logwriten(format, end - format);
+            logwriten(format, end - format - 1);
             uint32_t val = va_arg(ap, uint32_t);
             switch (*end++)
             {
