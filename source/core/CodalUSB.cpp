@@ -13,6 +13,7 @@ static uint8_t usb_initialised = 0;
 // usb_20.pdf
 static uint8_t usb_status = 0;
 // static uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
+static uint8_t usb_configured = 0;
 
 extern const DeviceDescriptor device_descriptor;
 extern const char *string_descriptors[];
@@ -106,7 +107,9 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
 
         // send the string descriptor the host asked for.
         return send(&desc, desc.len);
-    } else {
+    }
+    else
+    {
         return interfaceRequest(setup, true);
     }
 
@@ -154,7 +157,7 @@ int CodalUSB::configureEndpoints()
 
 int CodalUSB::add(CodalUSBInterface &interface)
 {
-    usb_assert(ctrlIn == NULL);
+    usb_assert(!usb_configured);
 
     uint8_t epsConsumed = interface.getEndpointCount();
 
@@ -221,8 +224,11 @@ int CodalUSB::ctrlRequest()
 
     USBSetup setup;
     int len = ctrlOut->read(&setup, sizeof(setup));
+    DMESG("setup len %d", len);
     usb_assert(len == sizeof(setup));
     usb_clear_setup();
+
+    DMESG("SETUP Req=%x type=%x", setup.bRequest, setup.bmRequestType);
 
     int status = DEVICE_OK;
 
@@ -299,6 +305,8 @@ int CodalUSB::interruptHandler()
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
 
+    ctrlRequest();
+
     list_for_each_safe(iter, q, &usb_list)
     {
         tmp = list_entry(iter, InterfaceList, list);
@@ -308,20 +316,23 @@ int CodalUSB::interruptHandler()
     return DEVICE_NOT_SUPPORTED;
 }
 
+void CodalUSB::initCtrlEndpoints()
+{
+    ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
+    ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
+}
+
 int CodalUSB::start()
 {
-    DMESG("USB start, %d %x %X", 1234, 0xf00d, 0xdd);
-    
+    DMESG("USB start");
+
     if (DEVICE_USB_ENDPOINTS == 0)
         return DEVICE_NOT_SUPPORTED;
 
-    if (ctrlIn != NULL)
+    if (usb_configured)
         return DEVICE_OK;
 
     usb_configure(endpointsUsed);
-
-    ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
-    ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
 
     return DEVICE_OK;
 }

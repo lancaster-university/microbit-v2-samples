@@ -131,9 +131,8 @@ typedef struct
     uint8_t interval;
 } EndpointDescriptor;
 
-#define EP_DESC2(tp, interval)                                                                      \
-    {7, 5, 0x80, tp, USB_MAX_PKT_SIZE, interval}, {7, 5, 0x00, tp, USB_MAX_PKT_SIZE, interval}
-
+#define EP_DESC2(tp, interval)                                                                     \
+    {7, 5, 0x80, tp, USB_MAX_PKT_SIZE, interval}, { 7, 5, 0x00, tp, USB_MAX_PKT_SIZE, interval }
 
 typedef struct
 {
@@ -196,13 +195,15 @@ public:
 
     int add(CodalUSBInterface &interface);
 
-    int interruptHandler();
-
     int isInitialised();
 
     CodalUSB *getInstance();
 
     int start();
+
+    // Called from USB.cpp
+    int interruptHandler();
+    void initCtrlEndpoints();
 };
 #endif
 

@@ -11,9 +11,68 @@ static uint8_t usb_num_endpoints;
 #define NVM_USB_PAD_TRIM_POS 55
 #define NVM_USB_PAD_TRIM_SIZE 3
 
+#undef ENABLE
+#undef DISABLE
+
+static void gclk_sync(void) {
+    while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY)
+        ;
+}
+
+static void dfll_sync(void) {
+    while ((SYSCTRL->PCLKSR.reg & SYSCTRL_PCLKSR_DFLLRDY) == 0)
+        ;
+}
+
+#define CPU_FREQUENCY 48000000
+static void mysystem_init(void) {
+    NVMCTRL->CTRLB.bit.RWS = 1;
+
+    SYSCTRL->XOSC32K.reg =
+        SYSCTRL_XOSC32K_STARTUP(6) | SYSCTRL_XOSC32K_XTALEN | SYSCTRL_XOSC32K_EN32K;
+    SYSCTRL->XOSC32K.bit.ENABLE = 1;
+    while ((SYSCTRL->PCLKSR.reg & SYSCTRL_PCLKSR_XOSC32KRDY) == 0)
+        ;
+
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1);
+    gclk_sync();
+
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(1) | GCLK_GENCTRL_SRC_XOSC32K | GCLK_GENCTRL_GENEN;
+    gclk_sync();
+
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID(0) | GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_CLKEN;
+    gclk_sync();
+
+    SYSCTRL->DFLLCTRL.bit.ONDEMAND = 0;
+    dfll_sync();
+
+    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(31) | SYSCTRL_DFLLMUL_FSTEP(511) |
+                           SYSCTRL_DFLLMUL_MUL((CPU_FREQUENCY / (32 * 1024)));
+    dfll_sync();
+
+    SYSCTRL->DFLLCTRL.reg |=
+        SYSCTRL_DFLLCTRL_MODE | SYSCTRL_DFLLCTRL_WAITLOCK | SYSCTRL_DFLLCTRL_QLDIS;
+    dfll_sync();
+
+    SYSCTRL->DFLLCTRL.reg |= SYSCTRL_DFLLCTRL_ENABLE;
+
+    while ((SYSCTRL->PCLKSR.reg & SYSCTRL_PCLKSR_DFLLLCKC) == 0 ||
+           (SYSCTRL->PCLKSR.reg & SYSCTRL_PCLKSR_DFLLLCKF) == 0)
+        ;
+    dfll_sync();
+
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(0);
+    gclk_sync();
+
+    GCLK->GENCTRL.reg =
+        GCLK_GENCTRL_ID(0) | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_IDC | GCLK_GENCTRL_GENEN;
+    gclk_sync();
+}
+
+
 void usb_configure(uint8_t numEndpoints)
 {
-    uint32_t pad_transn, pad_transp, pad_trim;
+    mysystem_init();
 
     usb_assert(usb_num_endpoints == 0);
     usb_assert(numEndpoints > 0);
@@ -21,6 +80,8 @@ void usb_configure(uint8_t numEndpoints)
     usb_num_endpoints = numEndpoints;
     usb_endpoints = new UsbDeviceDescriptor[usb_num_endpoints];
     memset(usb_endpoints, 0, usb_num_endpoints * sizeof(UsbDeviceDescriptor));
+
+    uint32_t pad_transn, pad_transp, pad_trim;
 
     /* Enable USB clock */
     PM->APBBMASK.reg |= PM_APBBMASK_USB;
@@ -91,13 +152,29 @@ void usb_configure(uint8_t numEndpoints)
     /* Attach to the USB host */
     USB->DEVICE.CTRLB.reg &= ~USB_DEVICE_CTRLB_DETACH;
 
-    // USB->DEVICE.INTENSET.reg = USB_DEVICE_INTENSET_EORST;
+    memset(usb_endpoints, 0, usb_num_endpoints * sizeof(UsbDeviceDescriptor));
+
+    USB->DEVICE.INTENSET.reg = USB_DEVICE_INTENSET_EORST;
 
     system_interrupt_enable(SYSTEM_INTERRUPT_MODULE_USB);
+
+    USB->HOST.CTRLA.bit.ENABLE = true;
 }
 
 extern "C" void USB_Handler(void)
 {
+    if (USB->DEVICE.INTFLAG.reg & USB_DEVICE_INTFLAG_EORST)
+    {
+        DMESG("USB EORST");
+        /* Clear the flag */
+        USB->DEVICE.INTFLAG.reg = USB_DEVICE_INTFLAG_EORST;
+        /* Set Device address as 0 */
+        USB->DEVICE.DADD.reg = USB_DEVICE_DADD_ADDEN | 0;
+
+        CodalUSB::usbInstance->initCtrlEndpoints();
+        return;
+    }
+
     CodalUSB::usbInstance->interruptHandler();
 }
 
@@ -144,8 +221,9 @@ UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
     usb_endpoints[ep].DeviceDescBank[1].PCKSIZE.bit.SIZE = 3;
     dep->EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSCLR_BK1RDY;
 
-    dep->EPINTENSET.reg =
-        USB_DEVICE_EPINTENSET_TRCPT1 | USB_DEVICE_EPINTENSET_TRFAIL1 | USB_DEVICE_EPINTENSET_STALL1;
+    // dep->EPINTENSET.reg =
+    //    USB_DEVICE_EPINTENSET_TRCPT1 | USB_DEVICE_EPINTENSET_TRFAIL1 |
+    //    USB_DEVICE_EPINTENSET_STALL1;
 }
 
 UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
@@ -163,8 +241,9 @@ UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
     usb_endpoints[ep].DeviceDescBank[0].ADDR.reg = (uint32_t)buf;
     dep->EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_BK0RDY;
 
-    dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_TRFAIL0 |
-                          USB_DEVICE_EPINTENSET_STALL0 | USB_DEVICE_EPINTENSET_RXSTP;
+    // dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_TRFAIL0 |
+    //                      USB_DEVICE_EPINTENSET_STALL0 | USB_DEVICE_EPINTENSET_RXSTP;
+    dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_RXSTP;
 
     startRead();
 }
@@ -188,6 +267,8 @@ int UsbEndpointOut::read(void *dst, int maxlen)
     if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_TRCPT0)
     {
         packetSize = usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT;
+
+        DMESG("USBRead(%d) => %d bytes", ep, packetSize);
 
         // Note that we shall discard any excessive data
         if (packetSize > maxlen)
@@ -242,13 +323,3 @@ int UsbEndpointIn::write(const void *src, int len)
 
     return len;
 }
-
-#if 0
-extern const DeviceDescriptor device_descriptor = {18, 1,  0x0002, 0,      0,
-                                                   0,  64, 0x0B6A, 0x5346, 0x0001,
-                                                   1, // product ID
-                                                   2, // manufacturer ID
-                                                   3, // serial number
-                                                   1};
-
-#endif
