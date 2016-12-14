@@ -310,6 +310,8 @@ int CodalUSB::interruptHandler()
 
 int CodalUSB::start()
 {
+    DMESG("USB start, %d %x %X", 1234, 0xf00d, 0xdd);
+    
     if (DEVICE_USB_ENDPOINTS == 0)
         return DEVICE_NOT_SUPPORTED;
 

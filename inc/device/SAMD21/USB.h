@@ -6,7 +6,12 @@
 #include "CodalDevice.h"
 #define usb_assert(cond)                                                                           \
     if (!(cond))                                                                                   \
-        device.panic(50);
+    {                                                                                              \
+        DMESG("USB assertion failed: line %d", __LINE__);                                          \
+        device.panic(50);                                                                          \
+    }
+
+#include "CodalDmesg.h"
 
 #include "samd21.h"
 
@@ -16,6 +21,7 @@
 class UsbEndpointIn
 {
     uint8_t buf[USB_MAX_PKT_SIZE];
+
 public:
     uint8_t ep;
     uint8_t flags;
@@ -33,6 +39,7 @@ class UsbEndpointOut
 {
     uint8_t buf[USB_MAX_PKT_SIZE];
     void startRead();
+
 public:
     uint8_t ep;
     int stall();
