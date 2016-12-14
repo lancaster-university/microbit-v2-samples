@@ -12,6 +12,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"
     "core/DeviceSystemTimer.cpp"
+    "core/CodalUSB.cpp"
 
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
@@ -21,6 +22,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/RefCounted.cpp"
 
     "device/DeviceTimer.cpp"
+    "device/USB.cpp"
 
     "drivers/DynamicPwm.cpp"
     "drivers/DeviceButton.cpp"

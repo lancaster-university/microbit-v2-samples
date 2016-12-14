@@ -70,6 +70,13 @@
 #define FEATURE_SELFPOWERED_ENABLED     (1 << 0)
 #define FEATURE_REMOTE_WAKEUP_ENABLED   (1 << 1)
 
+enum usb_ep_type {
+	USB_EP_TYPE_CONTROL = 0x00,
+	USB_EP_TYPE_ISOCHRONOUS = 0x01,
+	USB_EP_TYPE_BULK = 0x02,
+	USB_EP_TYPE_INTERRUPT = 0x03,
+};
+
 //    Device
 typedef struct {
     uint8_t  len;                // 18
@@ -143,10 +150,7 @@ typedef struct {
     uint8_t data[26];
 } StringDescriptor;
 
-typedef struct{
-    uint8_t type;
-    uint8_t size;
-} USBEndpoint;
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 class CodalUSBInterface
 {
@@ -155,39 +159,33 @@ class CodalUSBInterface
     CodalUSBInterface() {}
 
     virtual int classRequest(USBSetup& setup) { return DEVICE_NOT_SUPPORTED; }
-    virtual int endpointRequest(uint8_t endpoint, uint8_t endpointOffset) { return DEVICE_NOT_SUPPORTED; }
-
-    virtual USBEndpoint* getEndpoints() { return NULL; }
+    virtual int endpointRequest(uint8_t endpointIdx) { return DEVICE_NOT_SUPPORTED; }
 
     virtual uint8_t getEndpointCount() { return 0; }
 
-    virtual uint8_t* getDescriptor() { return NULL; }
+    virtual void initEndpoints(uint8_t firstEndpointIdx) { }
 
-    virtual uint8_t getDescriptorSize() { return 0; }
+    virtual uint16_t getDescriptorSize() { return 0; }
+
+    virtual void getDescriptor(uint8_t *dst) { }
 };
 
 class CodalUSB
 {
     uint8_t endpointsUsed;
 
-    void configure();
-
-    int sendConfig(int maxLen);
+    int configureEndpoints();
+    int sendConfig();
 
     public:
     static CodalUSB *usbInstance;
 
+    UsbEndpointIn *ctrlIn;
+    UsbEndpointOut *ctrlOut;
+
     CodalUSB();
 
     int add(CodalUSBInterface& interface);
-
-    bool send(uint8_t data);
-
-    int send(uint8_t* data, int len);
-
-    uint8_t read();
-
-    int read(uint8_t* buf, int len);
 
     int sendDescriptors(USBSetup& setup);
 
@@ -195,7 +193,6 @@ class CodalUSB
     
     int endpointRequest(uint8_t endpoint);
 
-    int configureEndpoints();
 
     int isInitialised();
 
