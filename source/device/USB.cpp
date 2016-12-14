@@ -14,18 +14,21 @@ static uint8_t usb_num_endpoints;
 #undef ENABLE
 #undef DISABLE
 
-static void gclk_sync(void) {
+static void gclk_sync(void)
+{
     while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY)
         ;
 }
 
-static void dfll_sync(void) {
+static void dfll_sync(void)
+{
     while ((SYSCTRL->PCLKSR.reg & SYSCTRL_PCLKSR_DFLLRDY) == 0)
         ;
 }
 
 #define CPU_FREQUENCY 48000000
-static void mysystem_init(void) {
+static void mysystem_init(void)
+{
     NVMCTRL->CTRLB.bit.RWS = 1;
 
     SYSCTRL->XOSC32K.reg =
@@ -68,7 +71,6 @@ static void mysystem_init(void) {
         GCLK_GENCTRL_ID(0) | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_IDC | GCLK_GENCTRL_GENEN;
     gclk_sync();
 }
-
 
 void usb_configure(uint8_t numEndpoints)
 {
@@ -264,7 +266,8 @@ int UsbEndpointOut::read(void *dst, int maxlen)
     int packetSize = 0;
 
     /* Check for Transfer Complete 0 flag */
-    if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_TRCPT0)
+    if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg &
+        (USB_DEVICE_EPINTFLAG_TRCPT0 | USB_DEVICE_EPINTFLAG_RXSTP))
     {
         packetSize = usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT;
 

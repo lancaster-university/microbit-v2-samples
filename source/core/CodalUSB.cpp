@@ -224,11 +224,11 @@ int CodalUSB::ctrlRequest()
 
     USBSetup setup;
     int len = ctrlOut->read(&setup, sizeof(setup));
-    DMESG("setup len %d", len);
     usb_assert(len == sizeof(setup));
     usb_clear_setup();
 
-    DMESG("SETUP Req=%x type=%x", setup.bRequest, setup.bmRequestType);
+    DMESG("SETUP Req=%x type=%x wValue=%x:%x", setup.bRequest, setup.bmRequestType, setup.wValueH,
+          setup.wValueL);
 
     int status = DEVICE_OK;
 
