@@ -351,7 +351,7 @@ DEALINGS IN THE SOFTWARE.
 #endif
 
 #ifndef DEVICE_USB
-#define DEVICE_USB                            0
+#define DEVICE_USB                            1
 #endif
 
 //
