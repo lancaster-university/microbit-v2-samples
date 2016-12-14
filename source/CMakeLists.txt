@@ -8,6 +8,7 @@ enable_language(ASM)
 set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
     "core/CodalCompat.cpp"
+    "core/CodalDmesg.cpp"
     "core/DeviceFiber.cpp"
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"
