@@ -92,6 +92,13 @@ void usb_configure(uint8_t numEndpoints)
     USB->DEVICE.CTRLB.reg &= ~USB_DEVICE_CTRLB_DETACH;
 
     // USB->DEVICE.INTENSET.reg = USB_DEVICE_INTENSET_EORST;
+
+    system_interrupt_enable(SYSTEM_INTERRUPT_MODULE_USB);
+}
+
+extern "C" void USB_Handler(void)
+{
+    CodalUSB::usbInstance->interruptHandler();
 }
 
 bool usb_recieved_setup()
@@ -102,6 +109,11 @@ bool usb_recieved_setup()
 void usb_clear_setup()
 {
     USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_RXSTP;
+}
+
+void usb_set_address(uint16_t wValue)
+{
+    USB->DEVICE.DADD.reg = USB_DEVICE_DADD_ADDEN | wValue;
 }
 
 int UsbEndpointIn::stall()
@@ -130,6 +142,9 @@ UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
     /* Set maximum packet size as 64 bytes */
     usb_endpoints[ep].DeviceDescBank[1].PCKSIZE.bit.SIZE = 3;
     dep->EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSCLR_BK1RDY;
+
+    dep->EPINTENSET.reg =
+        USB_DEVICE_EPINTENSET_TRCPT1 | USB_DEVICE_EPINTENSET_TRFAIL1 | USB_DEVICE_EPINTENSET_STALL1;
 }
 
 UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
@@ -146,6 +161,9 @@ UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
     usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.SIZE = 3;
     usb_endpoints[ep].DeviceDescBank[0].ADDR.reg = (uint32_t)buf;
     dep->EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_BK0RDY;
+
+    dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_TRFAIL0 |
+                          USB_DEVICE_EPINTENSET_STALL0 | USB_DEVICE_EPINTENSET_RXSTP;
 
     startRead();
 }

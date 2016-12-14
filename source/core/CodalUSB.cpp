@@ -9,12 +9,10 @@
 
 CodalUSB *CodalUSB::usbInstance = NULL;
 
-#if 0
-static volatile uint8_t usb_initialised = 0;
+static uint8_t usb_initialised = 0;
 // usb_20.pdf
-static volatile uint8_t usb_status = 0;
-static volatile uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
-#endif
+static uint8_t usb_status = 0;
+//static uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
 
 extern const DeviceDescriptor device_descriptor;
 extern const StringDescriptor string_descriptors[];
@@ -72,8 +70,6 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
 {
     uint8_t type = setup.wValueH;
 
-    ctrlIn->wLength = setup.wLength;
-
     if (type == USB_CONFIGURATION_DESCRIPTOR_TYPE)
         return sendConfig();
 
@@ -118,9 +114,6 @@ int CodalUSB::configureEndpoints()
 
     uint8_t iEpCount = 0;
 
-    ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
-    ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
-
     list_for_each_safe(iter, q, &usb_list)
     {
         tmp = list_entry(iter, InterfaceList, list);
@@ -137,7 +130,7 @@ int CodalUSB::configureEndpoints()
 
 int CodalUSB::add(CodalUSBInterface &interface)
 {
-    usb_assert(!isInitialised());
+    usb_assert(ctrlIn == NULL);
 
     uint8_t epsConsumed = interface.getEndpointCount();
 
@@ -162,7 +155,7 @@ int CodalUSB::add(CodalUSBInterface &interface)
 
 int CodalUSB::isInitialised()
 {
-    return ctrlIn != NULL;
+    return usb_initialised > 0;
 }
 
 int CodalUSB::classRequest(USBSetup &setup)
@@ -173,16 +166,98 @@ int CodalUSB::classRequest(USBSetup &setup)
     list_for_each_safe(iter, q, &usb_list)
     {
         tmp = list_entry(iter, InterfaceList, list);
-        tmp->interface->classRequest(setup);
-
-        // if( == DEVICE_OK)
-        //    return DEVICE_OK;
+        int res = tmp->interface->classRequest(*ctrlIn, setup);
+        if (res == DEVICE_OK)
+            return DEVICE_OK;
     }
 
-    return DEVICE_OK;
+    return DEVICE_NOT_SUPPORTED;
 }
 
-int CodalUSB::endpointRequest()
+#define sendzlp() send(&usb_status, 0)
+#define stall ctrlIn->stall
+
+int CodalUSB::ctrlRequest()
+{
+    if (!usb_recieved_setup())
+        return 0;
+
+    USBSetup setup;
+    int len = ctrlOut->read(&setup, sizeof(setup));
+    usb_assert(len == sizeof(setup));
+    usb_clear_setup();
+
+    int status = DEVICE_OK;
+
+    // Standard Requests
+    uint16_t wValue = (setup.wValueH << 8) | setup.wValueL;
+    uint8_t request_type = setup.bmRequestType;
+    uint16_t wStatus = 0;
+
+    ctrlIn->wLength = setup.wLength;
+
+    if ((request_type & TYPE) == REQUEST_TYPE_STANDARD)
+    {
+        switch (setup.bRequest)
+        {
+        case GET_STATUS:
+            if (request_type == (REQUEST_DEVICETOHOST | REQUEST_STANDARD | REQUEST_DEVICE))
+            {
+                wStatus = usb_status;
+            }
+            send(&wStatus, sizeof(wStatus));
+            break;
+
+        case CLEAR_FEATURE:
+            if ((request_type == (REQUEST_HOSTTODEVICE | REQUEST_STANDARD | REQUEST_DEVICE)) &&
+                (wValue == DEVICE_REMOTE_WAKEUP))
+                usb_status &= ~FEATURE_REMOTE_WAKEUP_ENABLED;
+            sendzlp();
+            break;
+        case SET_FEATURE:
+            if ((request_type == (REQUEST_HOSTTODEVICE | REQUEST_STANDARD | REQUEST_DEVICE)) &&
+                (wValue == DEVICE_REMOTE_WAKEUP))
+                usb_status |= FEATURE_REMOTE_WAKEUP_ENABLED;
+            sendzlp();
+            break;
+        case SET_ADDRESS:
+            sendzlp();
+            usb_set_address(wValue);
+            break;
+        case GET_DESCRIPTOR:
+            status = sendDescriptors(setup);
+            break;
+        case SET_DESCRIPTOR:
+            stall();
+            break;
+        case GET_CONFIGURATION:
+            wStatus = 1;
+            send(&wStatus, 1);
+            break;
+
+        case SET_CONFIGURATION:
+            if (REQUEST_DEVICE == (request_type & REQUEST_RECIPIENT))
+            {
+                configureEndpoints();
+                usb_initialised = setup.wValueL;
+            }
+            else
+                status = DEVICE_NOT_SUPPORTED;
+            break;
+        }
+    }
+    else
+    {
+        status = classRequest(setup);
+    }
+
+    if (status < 0)
+        stall();
+    
+    return 0;
+}
+
+int CodalUSB::interruptHandler()
 {
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
@@ -201,11 +276,13 @@ int CodalUSB::start()
     if (DEVICE_USB_ENDPOINTS == 0)
         return DEVICE_NOT_SUPPORTED;
 
-    if (isInitialised())
+    if (ctrlIn != NULL)
         return DEVICE_OK;
 
     usb_configure(endpointsUsed);
-    configureEndpoints();
+
+    ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
+    ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
 
     return DEVICE_OK;
 }

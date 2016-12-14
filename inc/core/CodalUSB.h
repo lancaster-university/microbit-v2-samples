@@ -158,7 +158,7 @@ class CodalUSBInterface
 
     CodalUSBInterface() {}
 
-    virtual int classRequest(USBSetup& setup) { return DEVICE_NOT_SUPPORTED; }
+    virtual int classRequest(UsbEndpointIn &ctrl, USBSetup& setup) { return DEVICE_NOT_SUPPORTED; }
     virtual int endpointRequest() { return DEVICE_NOT_SUPPORTED; }
 
     virtual uint8_t getEndpointCount() { return 0; }
@@ -192,7 +192,7 @@ class CodalUSB
 
     int classRequest(USBSetup& setup);
     
-    int endpointRequest();
+    int interruptHandler();
 
     int isInitialised();
 
