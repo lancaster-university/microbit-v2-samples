@@ -47,8 +47,8 @@ int CodalUSB::sendConfig()
 
     uint8_t *buf = new uint8_t[clen];
     memcpy(buf, &static_config, sizeof(ConfigDescriptor));
-    ((ConfigDescriptor*)buf)->clen = clen;
-    ((ConfigDescriptor*)buf)->numInterfaces = numInterfaces;
+    ((ConfigDescriptor *)buf)->clen = clen;
+    ((ConfigDescriptor *)buf)->numInterfaces = numInterfaces;
     clen = sizeof(ConfigDescriptor);
 
     // send our descriptors
@@ -59,7 +59,7 @@ int CodalUSB::sendConfig()
         clen += tmp->interface->getDescriptorSize();
     }
 
-    usb_assert(clen == ((ConfigDescriptor*)buf)->clen);
+    usb_assert(clen == ((ConfigDescriptor *)buf)->clen);
 
     send(buf, clen);
 
@@ -87,8 +87,7 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
             return DEVICE_NOT_SUPPORTED;
 
         // send the string descriptor the host asked for.
-        return send(&string_descriptors[setup.wValueL],
-                             sizeof(string_descriptors[setup.wValueL]));
+        return send(&string_descriptors[setup.wValueL], sizeof(string_descriptors[setup.wValueL]));
     }
 
     return DEVICE_OK;
@@ -183,31 +182,15 @@ int CodalUSB::classRequest(USBSetup &setup)
     return DEVICE_OK;
 }
 
-int CodalUSB::endpointRequest(uint8_t endpoint)
+int CodalUSB::endpointRequest()
 {
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
 
-    uint8_t endpointCount = 1;
-    uint8_t iEpCount = 0;
-    uint8_t i = 0;
-
     list_for_each_safe(iter, q, &usb_list)
     {
         tmp = list_entry(iter, InterfaceList, list);
-
-        iEpCount = tmp->interface->getEndpointCount();
-
-        for (i = 0; i < iEpCount; i++)
-        {
-            if (endpointCount == endpoint)
-            {
-                tmp->interface->endpointRequest(endpoint);
-                return DEVICE_OK;
-            }
-
-            endpointCount++;
-        }
+        tmp->interface->endpointRequest();
     }
 
     return DEVICE_NOT_SUPPORTED;

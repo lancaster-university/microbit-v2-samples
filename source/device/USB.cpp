@@ -4,14 +4,12 @@
 static UsbDeviceDescriptor *usb_endpoints;
 static uint8_t usb_num_endpoints;
 
-#define NVM_USB_PAD_TRANSN_POS  45
+#define NVM_USB_PAD_TRANSN_POS 45
 #define NVM_USB_PAD_TRANSN_SIZE 5
-#define NVM_USB_PAD_TRANSP_POS  50
+#define NVM_USB_PAD_TRANSP_POS 50
 #define NVM_USB_PAD_TRANSP_SIZE 5
-#define NVM_USB_PAD_TRIM_POS  55
+#define NVM_USB_PAD_TRIM_POS 55
 #define NVM_USB_PAD_TRIM_SIZE 3
-
-
 
 void usb_configure(uint8_t numEndpoints)
 {
@@ -116,6 +114,78 @@ int UsbEndpointOut::stall()
 {
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_STALLRQ0;
     return 0;
+}
+
+UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
+{
+    usb_assert(size == 64);
+    usb_assert(type <= USB_EP_TYPE_INTERRUPT);
+    ep = idx;
+
+    UsbDeviceEndpoint *dep = &USB->DEVICE.DeviceEndpoint[ep];
+
+    // Atmel type 0 is disabled, so types are shifted by 1
+    dep->EPCFG.reg =
+        USB_DEVICE_EPCFG_EPTYPE1(type + 1) | (dep->EPCFG.reg & USB_DEVICE_EPCFG_EPTYPE0_Msk);
+    /* Set maximum packet size as 64 bytes */
+    usb_endpoints[ep].DeviceDescBank[1].PCKSIZE.bit.SIZE = 3;
+    dep->EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSCLR_BK1RDY;
+}
+
+UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
+{
+    usb_assert(size == 64);
+    usb_assert(type <= USB_EP_TYPE_INTERRUPT);
+    ep = idx;
+
+    UsbDeviceEndpoint *dep = &USB->DEVICE.DeviceEndpoint[ep];
+
+    dep->EPCFG.reg =
+        USB_DEVICE_EPCFG_EPTYPE0(type + 1) | (dep->EPCFG.reg & USB_DEVICE_EPCFG_EPTYPE1_Msk);
+    /* Set maximum packet size as 64 bytes */
+    usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.SIZE = 3;
+    usb_endpoints[ep].DeviceDescBank[0].ADDR.reg = (uint32_t)buf;
+    dep->EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_BK0RDY;
+
+    startRead();
+}
+
+void UsbEndpointOut::startRead()
+{
+    UsbDeviceDescriptor *epdesc = (UsbDeviceDescriptor *)usb_endpoints + ep;
+
+    /* Set the buffer address for ep data */
+    epdesc->DeviceDescBank[0].ADDR.reg = (uint32_t)buf;
+    /* Set the byte count as zero */
+    epdesc->DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT = 0;
+    /* Set the byte count as zero */
+    epdesc->DeviceDescBank[0].PCKSIZE.bit.MULTI_PACKET_SIZE = 0;
+    /* Start the reception by clearing the bank 0 ready bit */
+    USB->DEVICE.DeviceEndpoint[ep].EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSSET_BK0RDY;
+}
+
+int UsbEndpointOut::read(void *dst, int maxlen)
+{
+    int packetSize = 0;
+
+    /* Check for Transfer Complete 0 flag */
+    if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_TRCPT0)
+    {
+        packetSize = usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT;
+
+        // Note that we shall discard any excessive data
+        if (packetSize > maxlen)
+            packetSize = maxlen;
+
+        memcpy(dst, buf, packetSize);
+
+        /* Clear the Transfer Complete 0 flag */
+        USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_TRCPT0;
+
+        startRead();
+    }
+
+    return packetSize;
 }
 
 #if 0

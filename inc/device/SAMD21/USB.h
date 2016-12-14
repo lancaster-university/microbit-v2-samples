@@ -16,8 +16,6 @@
 class UsbEndpointIn
 {
     uint8_t buf[USB_MAX_PKT_SIZE];
-    uint8_t flags;
-
 public:
     uint8_t ep;
     uint16_t wLength;
@@ -31,14 +29,14 @@ public:
 class UsbEndpointOut
 {
     uint8_t buf[USB_MAX_PKT_SIZE];
-    uint8_t flags;
-
+    void startRead();
 public:
     uint8_t ep;
     int stall();
     int reset();
-    int read(const void *buf, int maxlength); // up to packet size
-    int readBlocking(const void *buf, int length);
+
+    int read(void *buf, int maxlength); // up to packet size
+    // int readBlocking(const void *buf, int length);
 
     UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size = USB_MAX_PKT_SIZE);
 };
