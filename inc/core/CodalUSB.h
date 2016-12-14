@@ -27,10 +27,6 @@
 #define DIRECTION_OUT           0
 #define DIRECTION_IN            1
 
-#define TYPE                    (3 << 5)
-#define REQUEST_TYPE_STANDARD   0
-#define REQUEST_TYPE_CLASS      1
-#define REQUEST_TYPE_VENDOR     2
 
 #define STRING_DESCRIPTOR_COUNT     4
 
@@ -54,12 +50,11 @@
 #define REQUEST_VENDOR          0x40
 #define REQUEST_TYPE            0x60
 
-#define REQUEST_DESTINATION     0x0F
+#define REQUEST_DESTINATION     0x1F
 #define REQUEST_DEVICE          0x00
 #define REQUEST_INTERFACE       0x01
 #define REQUEST_ENDPOINT        0x02
 #define REQUEST_OTHER           0x03
-#define REQUEST_RECIPIENT       0x03
 
 #define REQUEST_GET_STATUS      0x00
 #define REQUEST_CLEAR_FEATURE   0x01
@@ -157,9 +152,13 @@ class CodalUSBInterface
 {
     public:
 
+    uint8_t interfaceIdx;
+
     CodalUSBInterface() {}
 
     virtual int classRequest(UsbEndpointIn &ctrl, USBSetup& setup) { return DEVICE_NOT_SUPPORTED; }
+    // standard request to interface
+    virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup) { return DEVICE_NOT_SUPPORTED; }
     virtual int endpointRequest() { return DEVICE_NOT_SUPPORTED; }
 
     virtual uint8_t getEndpointCount() { return 0; }
@@ -178,7 +177,9 @@ class CodalUSB
     int configureEndpoints();
     int sendConfig();
     int ctrlRequest();
-
+    int sendDescriptors(USBSetup& setup);
+    int interfaceRequest(USBSetup& setup, bool isClass);
+    
     public:
     static CodalUSB *usbInstance;
 
@@ -189,10 +190,6 @@ class CodalUSB
 
     int add(CodalUSBInterface& interface);
 
-    int sendDescriptors(USBSetup& setup);
-
-    int classRequest(USBSetup& setup);
-    
     int interruptHandler();
 
     int isInitialised();

@@ -67,7 +67,7 @@ int CodalUSB::sendConfig()
 }
 
 // languageID - United States
-const uint8_t string0[] = {4, 3, 9, 4};
+static const uint8_t string0[] = {4, 3, 9, 4};
 
 int CodalUSB::sendDescriptors(USBSetup &setup)
 {
@@ -95,9 +95,10 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
             return DEVICE_NOT_SUPPORTED;
 
         desc.type = 3;
-        desc.len = strlen(str) * 2 + 2;
+        uint32_t len = strlen(str) * 2 + 2;
+        desc.len = len;
 
-        usb_assert(desc.len <= sizeof(desc));
+        usb_assert(len <= sizeof(desc));
 
         int i = 0;
         while (*str)
@@ -105,9 +106,11 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
 
         // send the string descriptor the host asked for.
         return send(&desc, desc.len);
+    } else {
+        return interfaceRequest(setup, true);
     }
 
-    return DEVICE_OK;
+    return DEVICE_NOT_SUPPORTED;
 }
 
 CodalUSB::CodalUSB()
@@ -161,7 +164,13 @@ int CodalUSB::add(CodalUSBInterface &interface)
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
 
-    list_for_each_safe(iter, q, &usb_list) tmp = list_entry(iter, InterfaceList, list);
+    interface.interfaceIdx = 0;
+
+    list_for_each_safe(iter, q, &usb_list)
+    {
+        interface.interfaceIdx++;
+        tmp = list_entry(iter, InterfaceList, list);
+    }
 
     tmp = new InterfaceList;
 
@@ -179,17 +188,24 @@ int CodalUSB::isInitialised()
     return usb_initialised > 0;
 }
 
-int CodalUSB::classRequest(USBSetup &setup)
+int CodalUSB::interfaceRequest(USBSetup &setup, bool isClass)
 {
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
 
-    list_for_each_safe(iter, q, &usb_list)
+    if ((setup.bmRequestType & REQUEST_DESTINATION) == REQUEST_INTERFACE)
     {
-        tmp = list_entry(iter, InterfaceList, list);
-        int res = tmp->interface->classRequest(*ctrlIn, setup);
-        if (res == DEVICE_OK)
-            return DEVICE_OK;
+        list_for_each_safe(iter, q, &usb_list)
+        {
+            tmp = list_entry(iter, InterfaceList, list);
+            if (tmp->interface->interfaceIdx == (setup.wIndex & 0xff))
+            {
+                int res = isClass ? tmp->interface->classRequest(*ctrlIn, setup)
+                                  : tmp->interface->stdRequest(*ctrlIn, setup);
+                if (res == DEVICE_OK)
+                    return DEVICE_OK;
+            }
+        }
     }
 
     return DEVICE_NOT_SUPPORTED;
@@ -217,7 +233,7 @@ int CodalUSB::ctrlRequest()
 
     ctrlIn->wLength = setup.wLength;
 
-    if ((request_type & TYPE) == REQUEST_TYPE_STANDARD)
+    if ((request_type & REQUEST_TYPE) == REQUEST_STANDARD)
     {
         switch (setup.bRequest)
         {
@@ -257,7 +273,7 @@ int CodalUSB::ctrlRequest()
             break;
 
         case SET_CONFIGURATION:
-            if (REQUEST_DEVICE == (request_type & REQUEST_RECIPIENT))
+            if (REQUEST_DEVICE == (request_type & REQUEST_DESTINATION))
             {
                 configureEndpoints();
                 usb_initialised = setup.wValueL;
@@ -269,7 +285,7 @@ int CodalUSB::ctrlRequest()
     }
     else
     {
-        status = classRequest(setup);
+        status = interfaceRequest(setup, true);
     }
 
     if (status < 0)
