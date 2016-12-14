@@ -147,7 +147,8 @@ typedef struct
 typedef struct {
     uint8_t len;
     uint8_t type;
-    uint8_t data[26];
+    // some reasonable size; it gets stack allocated
+    uint16_t data[64];
 } StringDescriptor;
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"

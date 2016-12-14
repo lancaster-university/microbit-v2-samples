@@ -133,6 +133,7 @@ UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
     usb_assert(size == 64);
     usb_assert(type <= USB_EP_TYPE_INTERRUPT);
     ep = idx;
+    flags = 0;
 
     UsbDeviceEndpoint *dep = &USB->DEVICE.DeviceEndpoint[ep];
 
@@ -172,11 +173,8 @@ void UsbEndpointOut::startRead()
 {
     UsbDeviceDescriptor *epdesc = (UsbDeviceDescriptor *)usb_endpoints + ep;
 
-    /* Set the buffer address for ep data */
     epdesc->DeviceDescBank[0].ADDR.reg = (uint32_t)buf;
-    /* Set the byte count as zero */
     epdesc->DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT = 0;
-    /* Set the byte count as zero */
     epdesc->DeviceDescBank[0].PCKSIZE.bit.MULTI_PACKET_SIZE = 0;
     /* Start the reception by clearing the bank 0 ready bit */
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSSET_BK0RDY;
@@ -204,6 +202,45 @@ int UsbEndpointOut::read(void *dst, int maxlen)
     }
 
     return packetSize;
+}
+
+int UsbEndpointIn::write(const void *src, int len)
+{
+    uint32_t data_address;
+
+    UsbDeviceDescriptor *epdesc = (UsbDeviceDescriptor *)usb_endpoints + ep;
+
+    /* Check for requirement for multi-packet or auto zlp */
+    if (len >= (1 << (epdesc->DeviceDescBank[1].PCKSIZE.bit.SIZE + 3)))
+    {
+        /* Update the EP data address */
+        data_address = (uint32_t)src;
+        // data must be in RAM!
+        usb_assert(data_address >= HMCRAMC0_ADDR);
+
+        epdesc->DeviceDescBank[1].PCKSIZE.bit.AUTO_ZLP = !(flags & USB_EP_FLAG_NO_AUTO_ZLP);
+    }
+    else
+    {
+        /* Copy to local buffer */
+        memcpy(buf, src, len);
+        data_address = (uint32_t)buf;
+    }
+
+    epdesc->DeviceDescBank[1].ADDR.reg = data_address;
+    epdesc->DeviceDescBank[1].PCKSIZE.bit.BYTE_COUNT = len;
+    epdesc->DeviceDescBank[1].PCKSIZE.bit.MULTI_PACKET_SIZE = 0;
+    /* Clear the transfer complete flag  */
+    USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_TRCPT1;
+    /* Set the bank as ready */
+    USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_BK1RDY;
+
+    /* Wait for transfer to complete */
+    while (!(USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_TRCPT1))
+    {
+    }
+
+    return len;
 }
 
 #if 0

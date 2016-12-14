@@ -12,10 +12,10 @@ CodalUSB *CodalUSB::usbInstance = NULL;
 static uint8_t usb_initialised = 0;
 // usb_20.pdf
 static uint8_t usb_status = 0;
-//static uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
+// static uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
 
 extern const DeviceDescriptor device_descriptor;
-extern const StringDescriptor string_descriptors[];
+extern const char *string_descriptors[];
 
 LIST_HEAD(usb_list);
 
@@ -66,6 +66,9 @@ int CodalUSB::sendConfig()
     return DEVICE_OK;
 }
 
+// languageID - United States
+const uint8_t string0[] = {4, 3, 9, 4};
+
 int CodalUSB::sendDescriptors(USBSetup &setup)
 {
     uint8_t type = setup.wValueH;
@@ -82,8 +85,26 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
         if (setup.wValueL > STRING_DESCRIPTOR_COUNT - 1)
             return DEVICE_NOT_SUPPORTED;
 
+        if (setup.wValueL == 0)
+            return send(string0, sizeof(string0));
+
+        StringDescriptor desc;
+
+        const char *str = string_descriptors[setup.wValueL];
+        if (!str)
+            return DEVICE_NOT_SUPPORTED;
+
+        desc.type = 3;
+        desc.len = strlen(str) * 2 + 2;
+
+        usb_assert(desc.len <= sizeof(desc));
+
+        int i = 0;
+        while (*str)
+            desc.data[i++] = *str++;
+
         // send the string descriptor the host asked for.
-        return send(&string_descriptors[setup.wValueL], sizeof(string_descriptors[setup.wValueL]));
+        return send(&desc, desc.len);
     }
 
     return DEVICE_OK;
@@ -253,7 +274,7 @@ int CodalUSB::ctrlRequest()
 
     if (status < 0)
         stall();
-    
+
     return 0;
 }
 

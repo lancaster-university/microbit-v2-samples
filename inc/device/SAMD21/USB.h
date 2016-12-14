@@ -18,6 +18,7 @@ class UsbEndpointIn
     uint8_t buf[USB_MAX_PKT_SIZE];
 public:
     uint8_t ep;
+    uint8_t flags;
     uint16_t wLength;
     int stall();
     int reset();
@@ -25,6 +26,8 @@ public:
 
     UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size = USB_MAX_PKT_SIZE);
 };
+
+#define USB_EP_FLAG_NO_AUTO_ZLP 0x01
 
 class UsbEndpointOut
 {
