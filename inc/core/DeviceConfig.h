@@ -327,6 +327,11 @@ DEALINGS IN THE SOFTWARE.
 // Debug options
 //
 
+// Internal log buffer that can be inspected from GDB.
+#ifndef DEVICE_DMESG
+#define DEVICE_DMESG                          1
+#endif
+
 // Enable this to route debug messages through the USB serial interface.
 // n.b. This also disables the user serial port 'uBit.serial'.
 // Set '1' to enable.
