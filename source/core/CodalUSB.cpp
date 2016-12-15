@@ -136,29 +136,6 @@ CodalUSB *CodalUSB::getInstance()
     return usbInstance;
 }
 
-int CodalUSB::configureEndpoints()
-{
-    uint8_t endpointCount = 1;
-
-    InterfaceList *tmp = NULL;
-    struct list_head *iter, *q = NULL;
-
-    uint8_t iEpCount = 0;
-
-    list_for_each_safe(iter, q, &usb_list)
-    {
-        tmp = list_entry(iter, InterfaceList, list);
-        iEpCount = tmp->interface->getEndpointCount();
-        tmp->interface->initEndpoints(endpointCount);
-
-        endpointCount += iEpCount;
-    }
-
-    usb_assert(endpointsUsed == endpointCount);
-
-    return DEVICE_OK;
-}
-
 int CodalUSB::add(CodalUSBInterface &interface)
 {
     usb_assert(!usb_configured);
@@ -309,11 +286,28 @@ void CodalUSB::interruptHandler()
     }
 }
 
-void CodalUSB::initCtrlEndpoints()
+void CodalUSB::initEndpoints()
 {
+    uint8_t endpointCount = 1;
+
+    InterfaceList *tmp = NULL;
+    struct list_head *iter, *q = NULL;
+
+    uint8_t iEpCount = 0;
+
     ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
     ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
-    configureEndpoints();
+
+    list_for_each_safe(iter, q, &usb_list)
+    {
+        tmp = list_entry(iter, InterfaceList, list);
+        iEpCount = tmp->interface->getEndpointCount();
+        tmp->interface->initEndpoints(endpointCount);
+
+        endpointCount += iEpCount;
+    }
+
+    usb_assert(endpointsUsed == endpointCount);
 }
 
 int CodalUSB::start()
@@ -325,6 +319,8 @@ int CodalUSB::start()
 
     if (usb_configured)
         return DEVICE_OK;
+    
+    usb_configured = 1;
 
     usb_configure(endpointsUsed);
 

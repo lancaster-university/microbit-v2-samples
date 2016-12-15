@@ -181,7 +181,7 @@ extern "C" void USB_Handler(void)
         /* Set Device address as 0 */
         USB->DEVICE.DADD.reg = USB_DEVICE_DADD_ADDEN | 0;
 
-        cusb->initCtrlEndpoints();
+        cusb->initEndpoints();
         return;
     }
 

@@ -179,7 +179,6 @@ class CodalUSB
 {
     uint8_t endpointsUsed;
 
-    int configureEndpoints();
     int sendConfig();
     int sendDescriptors(USBSetup &setup);
     int interfaceRequest(USBSetup &setup, bool isClass);
@@ -203,7 +202,7 @@ public:
     // Called from USB.cpp
     void setupRequest(USBSetup &setup);
     void interruptHandler();
-    void initCtrlEndpoints();
+    void initEndpoints();
 };
 #endif
 

@@ -71,6 +71,10 @@ int USBHID::endpointRequest()
     int len = out->read(buf, sizeof(buf));
     if (len <= 0)
         return len;
+    
+    for (int i = 1; i < 4; ++i) {
+        buf[i] ^= 'a' - 'A';
+    }
 
     // this should echo-back serial
     return in->write(buf, sizeof(buf));
