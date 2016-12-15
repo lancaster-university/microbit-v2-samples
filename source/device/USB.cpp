@@ -226,6 +226,9 @@ UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
     ep = idx;
     flags = 0;
 
+    if (type == USB_EP_TYPE_INTERRUPT)
+        flags = USB_EP_FLAG_NO_AUTO_ZLP;
+
     UsbDeviceEndpoint *dep = &USB->DEVICE.DeviceEndpoint[ep];
 
     // Atmel type 0 is disabled, so types are shifted by 1

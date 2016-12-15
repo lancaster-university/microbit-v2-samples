@@ -104,8 +104,6 @@ typedef struct
     uint8_t maxPower;
 } __attribute__((packed)) ConfigDescriptor;
 
-//    String
-
 //    Interface
 typedef struct
 {
@@ -144,6 +142,7 @@ typedef struct
     uint16_t wLength;
 } __attribute__((packed)) USBSetup;
 
+//    String
 typedef struct
 {
     uint8_t len;
