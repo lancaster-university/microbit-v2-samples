@@ -53,6 +53,8 @@ DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfigura
     this->eventConfiguration = eventConfiguration;
     this->downStartTime = 0;
     this->sigma = 0;
+
+    this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
 }
 
 /**

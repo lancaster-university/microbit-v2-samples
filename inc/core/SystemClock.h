@@ -101,7 +101,7 @@ public:
       *
       * @param timestamp the new time for this SystemClock instance in microseconds
       */
-    virtual int setTimeUs(uint64_t timestamp);
+    virtual int setTimeUs(uint64_t timestamp){ (void)timestamp; return DEVICE_NOT_SUPPORTED;};
 
     /**
       * Retrieves the current time tracked by this SystemClock instance
