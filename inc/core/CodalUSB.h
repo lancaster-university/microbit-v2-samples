@@ -27,8 +27,6 @@
 #define DIRECTION_OUT 0
 #define DIRECTION_IN 1
 
-#define STRING_DESCRIPTOR_COUNT 4
-
 #define USB_CONFIG_POWERED_MASK 0x40
 #define USB_CONFIG_BUS_POWERED 0x80
 #define USB_CONFIG_SELF_POWERED 0xC0
@@ -128,24 +126,23 @@ typedef struct
     uint8_t alternate;
 } InterfaceDescriptorInfo;
 
-typedef struct 
+typedef struct
 {
     uint8_t attr;
     uint8_t interval;
 } EndpointDescriptorInfo;
 
-typedef struct 
+typedef struct
 {
     const void *supplementalDescriptor;
     uint16_t supplementalDescriptorSize;
     // For interrupt endpoints, this will be 1, even if iface.numEndpoints is 2.
     // This is because a single USB endpoint address will be used for both.
-    uint8_t allocateEndpoints; 
+    uint8_t allocateEndpoints;
     InterfaceDescriptorInfo iface;
     EndpointDescriptorInfo epIn;
     EndpointDescriptorInfo epOut;
 } InterfaceInfo;
-
 
 //    Endpoint
 typedef struct
@@ -189,7 +186,8 @@ public:
     UsbEndpointIn *in;
     UsbEndpointOut *out;
 
-    CodalUSBInterface() {
+    CodalUSBInterface()
+    {
         in = 0;
         out = 0;
         interfaceIdx = 0;
@@ -213,6 +211,11 @@ class CodalUSB
 
 public:
     static CodalUSB *usbInstance;
+
+    // initialized by constructor, can be overriden before start()
+    uint8_t numStringDescriptors;
+    const char **stringDescriptors;
+    const DeviceDescriptor *deviceDescriptor;
 
     UsbEndpointIn *ctrlIn;
     UsbEndpointOut *ctrlOut;

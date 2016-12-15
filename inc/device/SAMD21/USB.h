@@ -18,6 +18,9 @@
 #define DEVICE_USB_ENDPOINTS USB_EPT_NUM
 #define USB_MAX_PKT_SIZE 64
 
+#define USB_DEFAULT_PID 0x2402 // Generic ASF HID device
+#define USB_DEFAULT_VID 0x03EB // Atmel
+
 class UsbEndpointIn
 {
     uint8_t buf[USB_MAX_PKT_SIZE];

@@ -15,9 +15,6 @@ static uint8_t usb_status = 0;
 // static uint8_t usb_suspended = 0; // copy of UDINT to check SUSPI and WAKEUPI bits
 static uint8_t usb_configured = 0;
 
-extern const DeviceDescriptor device_descriptor;
-extern const char *string_descriptors[];
-
 LIST_HEAD(usb_list);
 
 struct InterfaceList
@@ -27,6 +24,40 @@ struct InterfaceList
 };
 
 static const ConfigDescriptor static_config = {9, 2, 0, 0, 1, 0, USB_CONFIG_BUS_POWERED, 250};
+
+static const DeviceDescriptor default_device_desc = {
+    0x12,            // bLength
+    0x01,            // bDescriptorType
+    0x0210,          // bcdUSBL
+    0xEF,            // bDeviceClass:    Misc
+    0x02,            // bDeviceSubclass:
+    0x01,            // bDeviceProtocol:
+    0x40,            // bMaxPacketSize0
+    USB_DEFAULT_VID, //
+    USB_DEFAULT_PID, //
+    0x4202,          // bcdDevice - leave unchanged for the HF2 to work
+    0x01,            // iManufacturer
+    0x02,            // iProduct
+    0x03,            // SerialNumber
+    0x01             // bNumConfigs
+};
+
+static const char *default_strings[] = {
+    "CoDAL Devices",
+    "Generic CoDAL device",
+    "4242",
+};
+
+CodalUSB::CodalUSB()
+{
+    usbInstance = this;
+    endpointsUsed = 1; // CTRL endpoint
+    ctrlIn = NULL;
+    ctrlOut = NULL;
+    numStringDescriptors = sizeof(default_strings) / sizeof(default_strings[0]);
+    stringDescriptors = default_strings;
+    deviceDescriptor = &default_device_desc;
+}
 
 void CodalUSBInterface::fillInterfaceInfo(InterfaceDescriptor *descp)
 {
@@ -142,12 +173,12 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
         return sendConfig();
 
     if (type == USB_DEVICE_DESCRIPTOR_TYPE)
-        return send(&device_descriptor, sizeof(DeviceDescriptor));
+        return send(deviceDescriptor, sizeof(DeviceDescriptor));
 
     else if (type == USB_STRING_DESCRIPTOR_TYPE)
     {
         // check if we exceed our bounds.
-        if (setup.wValueL > STRING_DESCRIPTOR_COUNT - 1)
+        if (setup.wValueL > numStringDescriptors)
             return DEVICE_NOT_SUPPORTED;
 
         if (setup.wValueL == 0)
@@ -155,7 +186,7 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
 
         StringDescriptor desc;
 
-        const char *str = string_descriptors[setup.wValueL];
+        const char *str = stringDescriptors[setup.wValueL - 1];
         if (!str)
             return DEVICE_NOT_SUPPORTED;
 
@@ -178,14 +209,6 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
     }
 
     return DEVICE_NOT_SUPPORTED;
-}
-
-CodalUSB::CodalUSB()
-{
-    usbInstance = this;
-    endpointsUsed = 1; // CTRL endpoint
-    ctrlIn = NULL;
-    ctrlOut = NULL;
 }
 
 CodalUSB *CodalUSB::getInstance()
