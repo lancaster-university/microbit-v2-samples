@@ -114,7 +114,7 @@ int CodalUSB::sendDescriptors(USBSetup &setup)
     }
     else
     {
-        return interfaceRequest(setup, true);
+        return interfaceRequest(setup, false);
     }
 
     return DEVICE_NOT_SUPPORTED;
@@ -223,8 +223,8 @@ int CodalUSB::interfaceRequest(USBSetup &setup, bool isClass)
 
 void CodalUSB::setupRequest(USBSetup &setup)
 {
-    DMESG("SETUP Req=%x type=%x wValue=%x:%x len=%d", setup.bRequest, setup.bmRequestType,
-          setup.wValueH, setup.wValueL, setup.wLength);
+    DMESG("SETUP Req=%x type=%x val=%x:%x idx=%x len=%d", setup.bRequest, setup.bmRequestType,
+          setup.wValueH, setup.wValueL, setup.wIndex, setup.wLength);
 
     int status = DEVICE_OK;
 
@@ -277,7 +277,6 @@ void CodalUSB::setupRequest(USBSetup &setup)
         case SET_CONFIGURATION:
             if (REQUEST_DEVICE == (request_type & REQUEST_DESTINATION))
             {
-                configureEndpoints();
                 usb_initialised = setup.wValueL;
                 sendzlp();
             }
@@ -314,6 +313,7 @@ void CodalUSB::initCtrlEndpoints()
 {
     ctrlIn = new UsbEndpointIn(0, USB_EP_TYPE_CONTROL);
     ctrlOut = new UsbEndpointOut(0, USB_EP_TYPE_CONTROL);
+    configureEndpoints();
 }
 
 int CodalUSB::start()

@@ -209,14 +209,14 @@ int UsbEndpointIn::stall()
     DMESG("stall IN %d", ep);
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_STALLRQ1;
     wLength = 0;
-    return 0;
+    return DEVICE_OK;
 }
 
 int UsbEndpointOut::stall()
 {
     DMESG("stall OUT %d", ep);
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_STALLRQ0;
-    return 0;
+    return DEVICE_OK;
 }
 
 UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
@@ -350,5 +350,5 @@ int UsbEndpointIn::write(const void *src, int len)
     {
     }
 
-    return len;
+    return DEVICE_OK;
 }
