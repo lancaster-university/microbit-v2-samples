@@ -1,5 +1,7 @@
 #include "USBHID.h"
 
+#if CONFIG_ENABLED(DEVICE_USB)
+
 static const char hidDescriptor[] = {
     0x06, 0x00, 0xFF, // usage page vendor #0
     0x09, 0x01,       // usage 1
@@ -114,3 +116,5 @@ int USBHID::classRequest(UsbEndpointIn &ctrl, USBSetup &setup)
 
     return DEVICE_NOT_SUPPORTED;
 }
+
+#endif
