@@ -1,7 +1,5 @@
 #include "CodalUSB.h"
 
-#define USB_HID_ENDPOINTS       2
-
 typedef struct {
     uint8_t len;
     uint8_t type; // 0x21
@@ -12,27 +10,13 @@ typedef struct {
     uint16_t sizeOfReport;
 } __attribute__((packed)) HIDReportDescriptor;
 
-typedef struct
-{
-    InterfaceDescriptor iface;
-    HIDReportDescriptor rdesc;
-    EndpointDescriptor  in;
-    EndpointDescriptor  out;
-} __attribute__((packed)) HIDDescriptor;
-
 class USBHID : public CodalUSBInterface
 {
     public:
     USBHID();
 
-    UsbEndpointIn *in;
-    UsbEndpointOut *out;
-
     virtual int classRequest(UsbEndpointIn &ctrl, USBSetup& setup);
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
     virtual int endpointRequest();
-    virtual uint8_t getEndpointCount();
-    virtual void initEndpoints(uint8_t firstEndpointIdx);
-    virtual uint16_t getDescriptorSize();
-    virtual void getDescriptor(uint8_t *dst);
+    virtual const InterfaceInfo *getInterfaceInfo();
 };

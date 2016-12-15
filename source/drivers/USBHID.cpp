@@ -19,28 +19,30 @@ static const char hidDescriptor[] = {
     0xC0,             // end
 };
 
-static const HIDDescriptor static_hid_descriptor = {
+static const HIDReportDescriptor reportDesc = {
+    9,
+    0x21,                  // HID
+    0x100,                 // hidbcd 1.00
+    0x00,                  // country code
+    0x01,                  // num desc
+    0x22,                  // report desc type
+    sizeof(hidDescriptor), // size of 0x22
+};
+
+static const InterfaceInfo ifaceInfo = {
+    &reportDesc,
+    sizeof(reportDesc),
+    1,
     {
-        9,                 /// descriptor size in bytes
-        4,                 /// descriptor type - interface
-        0,                 /// interface number
-        0,                 /// alternate setting number
-        USB_HID_ENDPOINTS, /// number of endpoints
-        0x03,              /// class code - HID
-        0,                 /// subclass code
-        0,                 /// protocol code
-        0,                 /// interface string index
+        2,    // numEndpoints
+        0x03, /// class code - HID
+        0x00, // subclass
+        0x00, // protocol
+        0x00, //
+        0x00, //
     },
-    {
-        9,
-        0x21,                  // HID
-        0x100,                 // hidbcd 1.00
-        0x00,                  // country code
-        0x01,                  // num desc
-        0x22,                  // report desc type
-        sizeof(hidDescriptor), // size of 0x22
-    },
-    EP_DESC2(USB_EP_TYPE_INTERRUPT, 1),
+    {USB_EP_TYPE_INTERRUPT, 1},
+    {USB_EP_TYPE_INTERRUPT, 1},
 };
 
 USBHID::USBHID() : CodalUSBInterface()
@@ -53,8 +55,8 @@ int USBHID::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
     {
         if (setup.wValueH == 0x21)
         {
-            InterfaceDescriptor tmp = static_hid_descriptor.iface;
-            tmp.number = interfaceIdx;
+            InterfaceDescriptor tmp;
+            fillInterfaceInfo(&tmp);
             return ctrl.write(&tmp, sizeof(tmp));
         }
         else if (setup.wValueH == 0x22)
@@ -71,8 +73,9 @@ int USBHID::endpointRequest()
     int len = out->read(buf, sizeof(buf));
     if (len <= 0)
         return len;
-    
-    for (int i = 1; i < 4; ++i) {
+
+    for (int i = 1; i < 4; ++i)
+    {
         buf[i] ^= 'a' - 'A';
     }
 
@@ -80,31 +83,9 @@ int USBHID::endpointRequest()
     return in->write(buf, sizeof(buf));
 }
 
-uint8_t USBHID::getEndpointCount()
+const InterfaceInfo *USBHID::getInterfaceInfo()
 {
-    // in/out use the same interrupt endpoint
-    return 1;
-}
-
-void USBHID::initEndpoints(uint8_t firstEndpointIdx)
-{
-    in = new UsbEndpointIn(firstEndpointIdx, USB_EP_TYPE_INTERRUPT);
-    out = new UsbEndpointOut(firstEndpointIdx, USB_EP_TYPE_INTERRUPT);
-}
-
-uint16_t USBHID::getDescriptorSize()
-{
-    return sizeof(static_hid_descriptor);
-}
-
-void USBHID::getDescriptor(uint8_t *dst)
-{
-    // dst might be not aligned, use a local
-    HIDDescriptor tmp = static_hid_descriptor;
-    tmp.iface.number = interfaceIdx;
-    tmp.in.addr = 0x80 | in->ep;
-    tmp.out.addr = out->ep;
-    memcpy(dst, &tmp, sizeof(tmp));
+    return &ifaceInfo;
 }
 
 #define HID_REQUEST_GET_REPORT 0x01

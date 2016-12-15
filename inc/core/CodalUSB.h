@@ -118,6 +118,35 @@ typedef struct
     uint8_t iInterface;
 } __attribute__((packed)) InterfaceDescriptor;
 
+typedef struct
+{
+    uint8_t numEndpoints;
+    uint8_t interfaceClass;
+    uint8_t interfaceSubClass;
+    uint8_t protocol;
+    uint8_t iInterfaceString;
+    uint8_t alternate;
+} InterfaceDescriptorInfo;
+
+typedef struct 
+{
+    uint8_t attr;
+    uint8_t interval;
+} EndpointDescriptorInfo;
+
+typedef struct 
+{
+    const void *supplementalDescriptor;
+    uint16_t supplementalDescriptorSize;
+    // For interrupt endpoints, this will be 1, even if iface.numEndpoints is 2.
+    // This is because a single USB endpoint address will be used for both.
+    uint8_t allocateEndpoints; 
+    InterfaceDescriptorInfo iface;
+    EndpointDescriptorInfo epIn;
+    EndpointDescriptorInfo epOut;
+} InterfaceInfo;
+
+
 //    Endpoint
 typedef struct
 {
@@ -157,21 +186,21 @@ class CodalUSBInterface
 {
 public:
     uint8_t interfaceIdx;
+    UsbEndpointIn *in;
+    UsbEndpointOut *out;
 
-    CodalUSBInterface() {}
+    CodalUSBInterface() {
+        in = 0;
+        out = 0;
+        interfaceIdx = 0;
+    }
 
     virtual int classRequest(UsbEndpointIn &ctrl, USBSetup &setup) { return DEVICE_NOT_SUPPORTED; }
-    // standard request to interface
+    // standard request to interface (eg GET_DESCRIPTOR)
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) { return DEVICE_NOT_SUPPORTED; }
     virtual int endpointRequest() { return DEVICE_NOT_SUPPORTED; }
-
-    virtual uint8_t getEndpointCount() { return 0; }
-
-    virtual void initEndpoints(uint8_t firstEndpointIdx) {}
-
-    virtual uint16_t getDescriptorSize() { return 0; }
-
-    virtual void getDescriptor(uint8_t *dst) {}
+    virtual const InterfaceInfo *getInterfaceInfo() { return NULL; }
+    void fillInterfaceInfo(InterfaceDescriptor *desc);
 };
 
 class CodalUSB
