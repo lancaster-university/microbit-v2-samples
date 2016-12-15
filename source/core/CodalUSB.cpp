@@ -65,8 +65,6 @@ int CodalUSB::sendConfig()
         numInterfaces++;
     }
 
-    clen++; // 0-terminator
-
     uint8_t *buf = new uint8_t[clen];
     memcpy(buf, &static_config, sizeof(ConfigDescriptor));
     ((ConfigDescriptor *)buf)->clen = clen;
@@ -123,8 +121,6 @@ int CodalUSB::sendConfig()
             clen += info->supplementalDescriptorSize;
         }
     }
-
-    buf[clen++] = 0;
 
     usb_assert(clen == ((ConfigDescriptor *)buf)->clen);
 
