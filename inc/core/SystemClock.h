@@ -57,8 +57,6 @@ struct ClockEvent
 
         this->period = repeating ? period : 0;
 
-
-
         addToList(head);
     };
 };

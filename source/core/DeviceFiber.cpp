@@ -210,8 +210,6 @@ void scheduler_init(EventModel &_messageBus)
         // Register to receive events in the NOTIFY channel - this is used to implement wait-notify semantics
         messageBus->listen(DEVICE_ID_NOTIFY, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
         messageBus->listen(DEVICE_ID_NOTIFY_ONE, DEVICE_EVT_ANY, scheduler_event, MESSAGE_BUS_LISTENER_IMMEDIATE);
-
-        messageBus->every(SCHEDULER_TICK_PERIOD_MS, scheduler_tick, MESSAGE_BUS_LISTENER_IMMEDIATE);
     }
 
     fiber_flags |= DEVICE_SCHEDULER_RUNNING;

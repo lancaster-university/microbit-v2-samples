@@ -53,9 +53,6 @@ DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfigura
     this->eventConfiguration = eventConfiguration;
     this->downStartTime = 0;
     this->sigma = 0;
-
-    if(EventModel::defaultEventBus != NULL)
-        EventModel::defaultEventBus->every(SCHEDULER_TICK_PERIOD_MS, this, &DeviceButton::systemTick, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
 /**
