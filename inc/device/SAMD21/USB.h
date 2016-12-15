@@ -52,8 +52,6 @@ public:
 };
 
 void usb_configure(uint8_t numEndpoints);
-bool usb_recieved_setup();
-void usb_clear_setup();
 void usb_set_address(uint16_t wValue);
 
 #endif

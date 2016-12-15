@@ -156,6 +156,7 @@ void usb_configure(uint8_t numEndpoints)
 
     memset(usb_endpoints, 0, usb_num_endpoints * sizeof(UsbDeviceDescriptor));
 
+    USB->DEVICE.INTENCLR.reg = USB_DEVICE_INTFLAG_MASK;
     USB->DEVICE.INTENSET.reg = USB_DEVICE_INTENSET_EORST;
 
     system_interrupt_enable(SYSTEM_INTERRUPT_MODULE_USB);
@@ -165,6 +166,11 @@ void usb_configure(uint8_t numEndpoints)
 
 extern "C" void USB_Handler(void)
 {
+    CodalUSB *cusb = CodalUSB::usbInstance;
+
+    DMESG("USB devint=%x ep0int=%x ep1int=%x", USB->DEVICE.INTFLAG.reg,
+          USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg, USB->DEVICE.DeviceEndpoint[1].EPINTFLAG.reg);
+
     if (USB->DEVICE.INTFLAG.reg & USB_DEVICE_INTFLAG_EORST)
     {
         DMESG("USB EORST");
@@ -173,21 +179,22 @@ extern "C" void USB_Handler(void)
         /* Set Device address as 0 */
         USB->DEVICE.DADD.reg = USB_DEVICE_DADD_ADDEN | 0;
 
-        CodalUSB::usbInstance->initCtrlEndpoints();
+        cusb->initCtrlEndpoints();
         return;
     }
 
-    CodalUSB::usbInstance->interruptHandler();
-}
+    if (USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_RXSTP)
+    {
+        // clear the flag
+        USBSetup setup;
+        int len = cusb->ctrlOut->read(&setup, sizeof(setup));
+        usb_assert(len == sizeof(setup));
+        USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_RXSTP;
+        cusb->setupRequest(setup);
+        return;
+    }
 
-bool usb_recieved_setup()
-{
-    return USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg & USB_DEVICE_EPINTFLAG_RXSTP;
-}
-
-void usb_clear_setup()
-{
-    USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_RXSTP;
+    cusb->interruptHandler();
 }
 
 void usb_set_address(uint16_t wValue)
@@ -223,6 +230,8 @@ UsbEndpointIn::UsbEndpointIn(uint8_t idx, uint8_t type, uint8_t size)
     usb_endpoints[ep].DeviceDescBank[1].PCKSIZE.bit.SIZE = 3;
     dep->EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSCLR_BK1RDY;
 
+    dep->EPINTENCLR.reg = USB_DEVICE_EPINTFLAG_MASK;
+
     // dep->EPINTENSET.reg =
     //    USB_DEVICE_EPINTENSET_TRCPT1 | USB_DEVICE_EPINTENSET_TRFAIL1 |
     //    USB_DEVICE_EPINTENSET_STALL1;
@@ -245,7 +254,11 @@ UsbEndpointOut::UsbEndpointOut(uint8_t idx, uint8_t type, uint8_t size)
 
     // dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_TRFAIL0 |
     //                      USB_DEVICE_EPINTENSET_STALL0 | USB_DEVICE_EPINTENSET_RXSTP;
-    dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0 | USB_DEVICE_EPINTENSET_RXSTP;
+    dep->EPINTENCLR.reg = USB_DEVICE_EPINTFLAG_MASK;
+    if (idx == 0)
+        dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_RXSTP;
+    else
+        dep->EPINTENSET.reg = USB_DEVICE_EPINTENSET_TRCPT0;
 
     startRead();
 }
@@ -265,13 +278,14 @@ int UsbEndpointOut::read(void *dst, int maxlen)
 {
     int packetSize = 0;
 
+    uint32_t flag = ep == 0 ? USB_DEVICE_EPINTFLAG_RXSTP : USB_DEVICE_EPINTFLAG_TRCPT0;
+
     /* Check for Transfer Complete 0 flag */
-    if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg &
-        (USB_DEVICE_EPINTFLAG_TRCPT0 | USB_DEVICE_EPINTFLAG_RXSTP))
+    if (USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg & flag)
     {
         packetSize = usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT;
 
-        DMESG("USBRead(%d) => %d bytes", ep, packetSize);
+        // DMESG("USBRead(%d) => %d bytes", ep, packetSize);
 
         // Note that we shall discard any excessive data
         if (packetSize > maxlen)
@@ -280,7 +294,7 @@ int UsbEndpointOut::read(void *dst, int maxlen)
         memcpy(dst, buf, packetSize);
 
         /* Clear the Transfer Complete 0 flag */
-        USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg = USB_DEVICE_EPINTFLAG_TRCPT0;
+        USB->DEVICE.DeviceEndpoint[ep].EPINTFLAG.reg = flag;
 
         startRead();
     }
@@ -293,6 +307,13 @@ int UsbEndpointIn::write(const void *src, int len)
     uint32_t data_address;
 
     UsbDeviceDescriptor *epdesc = (UsbDeviceDescriptor *)usb_endpoints + ep;
+
+    if (wLength)
+    {
+        if (len > wLength)
+            len = wLength;
+        wLength = 0;
+    }
 
     /* Check for requirement for multi-packet or auto zlp */
     if (len >= (1 << (epdesc->DeviceDescBank[1].PCKSIZE.bit.SIZE + 3)))

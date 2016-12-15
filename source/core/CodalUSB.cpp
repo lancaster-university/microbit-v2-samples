@@ -217,16 +217,8 @@ int CodalUSB::interfaceRequest(USBSetup &setup, bool isClass)
 #define sendzlp() send(&usb_status, 0)
 #define stall ctrlIn->stall
 
-int CodalUSB::ctrlRequest()
+void CodalUSB::setupRequest(USBSetup &setup)
 {
-    if (!usb_recieved_setup())
-        return 0;
-
-    USBSetup setup;
-    int len = ctrlOut->read(&setup, sizeof(setup));
-    usb_assert(len == sizeof(setup));
-    usb_clear_setup();
-
     DMESG("SETUP Req=%x type=%x wValue=%x:%x", setup.bRequest, setup.bmRequestType, setup.wValueH,
           setup.wValueL);
 
@@ -296,24 +288,18 @@ int CodalUSB::ctrlRequest()
 
     if (status < 0)
         stall();
-
-    return 0;
 }
 
-int CodalUSB::interruptHandler()
+void CodalUSB::interruptHandler()
 {
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
-
-    ctrlRequest();
 
     list_for_each_safe(iter, q, &usb_list)
     {
         tmp = list_entry(iter, InterfaceList, list);
         tmp->interface->endpointRequest();
     }
-
-    return DEVICE_NOT_SUPPORTED;
 }
 
 void CodalUSB::initCtrlEndpoints()
