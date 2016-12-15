@@ -89,7 +89,7 @@ typedef struct
     uint8_t iProduct;
     uint8_t iSerialNumber;
     uint8_t bNumConfigurations;
-} DeviceDescriptor;
+} __attribute__((packed)) DeviceDescriptor;
 
 //    Config
 typedef struct
@@ -102,7 +102,7 @@ typedef struct
     uint8_t iconfig;
     uint8_t attributes;
     uint8_t maxPower;
-} ConfigDescriptor;
+} __attribute__((packed)) ConfigDescriptor;
 
 //    String
 
@@ -118,7 +118,7 @@ typedef struct
     uint8_t interfaceSubClass;
     uint8_t protocol;
     uint8_t iInterface;
-} InterfaceDescriptor;
+} __attribute__((packed)) InterfaceDescriptor;
 
 //    Endpoint
 typedef struct
@@ -129,7 +129,7 @@ typedef struct
     uint8_t attr;
     uint16_t packetSize;
     uint8_t interval;
-} EndpointDescriptor;
+} __attribute__((packed)) EndpointDescriptor;
 
 #define EP_DESC2(tp, interval)                                                                     \
     {7, 5, 0x80, tp, USB_MAX_PKT_SIZE, interval}, { 7, 5, 0x00, tp, USB_MAX_PKT_SIZE, interval }
@@ -142,7 +142,7 @@ typedef struct
     uint8_t wValueH;
     uint16_t wIndex;
     uint16_t wLength;
-} USBSetup;
+} __attribute__((packed)) USBSetup;
 
 typedef struct
 {
@@ -150,7 +150,7 @@ typedef struct
     uint8_t type;
     // some reasonable size; it gets stack allocated
     uint16_t data[64];
-} StringDescriptor;
+} __attribute__((packed)) StringDescriptor;
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

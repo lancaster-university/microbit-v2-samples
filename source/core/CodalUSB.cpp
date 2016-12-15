@@ -44,6 +44,8 @@ int CodalUSB::sendConfig()
         numInterfaces++;
     }
 
+    clen++; // 0-terminator
+
     uint8_t *buf = new uint8_t[clen];
     memcpy(buf, &static_config, sizeof(ConfigDescriptor));
     ((ConfigDescriptor *)buf)->clen = clen;
@@ -57,6 +59,8 @@ int CodalUSB::sendConfig()
         tmp->interface->getDescriptor(buf + clen);
         clen += tmp->interface->getDescriptorSize();
     }
+
+    buf[clen++] = 0;
 
     usb_assert(clen == ((ConfigDescriptor *)buf)->clen);
 
@@ -219,8 +223,8 @@ int CodalUSB::interfaceRequest(USBSetup &setup, bool isClass)
 
 void CodalUSB::setupRequest(USBSetup &setup)
 {
-    DMESG("SETUP Req=%x type=%x wValue=%x:%x", setup.bRequest, setup.bmRequestType, setup.wValueH,
-          setup.wValueL);
+    DMESG("SETUP Req=%x type=%x wValue=%x:%x len=%d", setup.bRequest, setup.bmRequestType,
+          setup.wValueH, setup.wValueL, setup.wLength);
 
     int status = DEVICE_OK;
 
@@ -289,7 +293,7 @@ void CodalUSB::setupRequest(USBSetup &setup)
 
     if (status < 0)
         stall();
-    
+
     // sending response clears this - make sure we did
     usb_assert(ctrlIn->wLength == 0);
 }

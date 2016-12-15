@@ -10,7 +10,7 @@ typedef struct {
     uint8_t numDesc;
     uint8_t reportDescType; // 0x22
     uint16_t sizeOfReport;
-} HIDReportDescriptor;
+} __attribute__((packed)) HIDReportDescriptor;
 
 typedef struct
 {
@@ -18,7 +18,7 @@ typedef struct
     HIDReportDescriptor rdesc;
     EndpointDescriptor  in;
     EndpointDescriptor  out;
-} HIDDescriptor;
+} __attribute__((packed)) HIDDescriptor;
 
 class USBHID : public CodalUSBInterface
 {
