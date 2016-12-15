@@ -168,8 +168,10 @@ extern "C" void USB_Handler(void)
 {
     CodalUSB *cusb = CodalUSB::usbInstance;
 
+#if 0
     DMESG("USB devint=%x ep0int=%x ep1int=%x", USB->DEVICE.INTFLAG.reg,
           USB->DEVICE.DeviceEndpoint[0].EPINTFLAG.reg, USB->DEVICE.DeviceEndpoint[1].EPINTFLAG.reg);
+#endif
 
     if (USB->DEVICE.INTFLAG.reg & USB_DEVICE_INTFLAG_EORST)
     {
@@ -204,12 +206,15 @@ void usb_set_address(uint16_t wValue)
 
 int UsbEndpointIn::stall()
 {
+    DMESG("stall IN %d", ep);
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_STALLRQ1;
+    wLength = 0;
     return 0;
 }
 
 int UsbEndpointOut::stall()
 {
+    DMESG("stall OUT %d", ep);
     USB->DEVICE.DeviceEndpoint[ep].EPSTATUSSET.reg = USB_DEVICE_EPSTATUSSET_STALLRQ0;
     return 0;
 }

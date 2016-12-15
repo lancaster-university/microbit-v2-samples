@@ -275,6 +275,7 @@ void CodalUSB::setupRequest(USBSetup &setup)
             {
                 configureEndpoints();
                 usb_initialised = setup.wValueL;
+                sendzlp();
             }
             else
                 status = DEVICE_NOT_SUPPORTED;
@@ -288,6 +289,9 @@ void CodalUSB::setupRequest(USBSetup &setup)
 
     if (status < 0)
         stall();
+    
+    // sending response clears this - make sure we did
+    usb_assert(ctrlIn->wLength == 0);
 }
 
 void CodalUSB::interruptHandler()
