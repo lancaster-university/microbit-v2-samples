@@ -199,16 +199,16 @@ ManagedString::ManagedString(const ManagedString &s1, const ManagedString &s2)
 
 /**
   * Constructor.
-  * Create a ManagedString from a PacketBuffer. All bytes in the
-  * PacketBuffer are added to the ManagedString.
+  * Create a ManagedString from a ManagedBuffer. All bytes in the
+  * ManagedBuffer are added to the ManagedString.
   *
-  * @param buffer The PacktBuffer from which to create the ManagedString.
+  * @param buffer The ManagedBuffer from which to create the ManagedString.
   *
   * @code
   * ManagedString s = radio.datagram.recv();
   * @endcode
   */
-ManagedString::ManagedString(PacketBuffer buffer)
+ManagedString::ManagedString(ManagedBuffer buffer)
 {
     // Allocate a new buffer ( just in case the data is not NULL terminated).
     ptr = (StringData*) malloc(4+buffer.length()+1);
