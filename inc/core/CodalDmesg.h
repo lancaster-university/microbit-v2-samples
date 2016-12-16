@@ -2,6 +2,7 @@
 #define CODAL_DMESG_H
 
 #include "DeviceConfig.h"
+#include <cstdarg>
 
 #if CONFIG_ENABLED(DEVICE_DMESG)
 
@@ -13,7 +14,7 @@ struct CodalLogStore
 extern CodalLogStore codalLogStore;
 
 void codal_dmesg(const char *format, ...);
-void codal_vdmesg(const char *format, va_list ap);
+void codal_vdmesg(const char *format, std::va_list ap);
 
 #define DMESG codal_dmesg
 

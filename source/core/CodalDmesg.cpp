@@ -1,10 +1,12 @@
 #include "CodalDmesg.h"
 
 #if CONFIG_ENABLED(DEVICE_DMESG)
-#include <stdarg.h>
+#include <cstdarg>
 #include "CodalCompat.h"
 
 CodalLogStore codalLogStore;
+
+using namespace std;
 
 static void logwrite(const char *msg);
 
