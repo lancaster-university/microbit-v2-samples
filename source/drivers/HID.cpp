@@ -1,4 +1,4 @@
-#include "USBHID.h"
+#include "HID.h"
 
 #if CONFIG_ENABLED(DEVICE_USB)
 
