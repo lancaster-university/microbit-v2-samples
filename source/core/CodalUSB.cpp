@@ -418,4 +418,11 @@ int CodalUSB::start()
 
     return DEVICE_OK;
 }
+
+void usb_panic(int lineNumber)
+{
+    DMESG("USB assertion failed: line %d", lineNumber);
+    device.panic(DEVICE_USB_ERROR);
+}
+
 #endif
