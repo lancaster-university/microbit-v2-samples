@@ -235,6 +235,13 @@ public:
     void interruptHandler();
     void initEndpoints();
 };
+
+void usb_panic(int lineNumber);
+
+#define usb_assert(cond)                                                                           \
+    if (!(cond))                                                                                   \
+    usb_panic(__LINE__)
+
 #endif
 
 #endif

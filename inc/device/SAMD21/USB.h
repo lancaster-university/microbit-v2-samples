@@ -4,15 +4,7 @@
 #if CONFIG_ENABLED(DEVICE_USB)
 
 #include "CodalDevice.h"
-#define usb_assert(cond)                                                                           \
-    if (!(cond))                                                                                   \
-    {                                                                                              \
-        DMESG("USB assertion failed: line %d", __LINE__);                                          \
-        device.panic(50);                                                                          \
-    }
-
 #include "CodalDmesg.h"
-
 #include "samd21.h"
 
 #define DEVICE_USB_ENDPOINTS USB_EPT_NUM
