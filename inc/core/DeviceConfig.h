@@ -327,9 +327,11 @@ DEALINGS IN THE SOFTWARE.
 // Debug options
 //
 
-// Internal log buffer that can be inspected from GDB.
-#ifndef DEVICE_DMESG
-#define DEVICE_DMESG                          1
+// When non-zero internal debug messages (DMESG() macro) go to a in-memory buffer of this size (in bytes).
+// It can be inspected from GDB (with 'print codalLogStore'), or accessed by the application.
+// Typical size range between 512 and 4096. Set to 0 to disable.
+#ifndef DEVICE_DMESG_BUFFER_SIZE
+#define DEVICE_DMESG_BUFFER_SIZE              1024
 #endif
 
 // Enable this to route debug messages through the USB serial interface.
