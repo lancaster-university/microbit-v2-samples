@@ -19,7 +19,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/Matrix4.cpp"
     "types/DeviceEvent.cpp"
 
-    "types/PacketBuffer.cpp"
+    "types/ManagedBuffer.cpp"
     "types/RefCounted.cpp"
 
     "device/DeviceTimer.cpp"
