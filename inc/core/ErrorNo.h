@@ -82,5 +82,8 @@ enum PanicCode{
 
     // Dereference of a NULL pointer through the ManagedType class,
     DEVICE_NULL_DEREFERENCE = 40,
+
+    // Non-recoverable error in USB driver
+    DEVICE_USB_ERROR = 50,
 };
 #endif

@@ -8,10 +8,12 @@ enable_language(ASM)
 set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
     "core/CodalCompat.cpp"
+    "core/CodalDmesg.cpp"
     "core/DeviceFiber.cpp"
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"
     "core/DeviceSystemTimer.cpp"
+    "core/CodalUSB.cpp"
 
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
@@ -21,6 +23,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/RefCounted.cpp"
 
     "device/DeviceTimer.cpp"
+    "device/USB.cpp"
 
     "drivers/DynamicPwm.cpp"
     "drivers/DeviceButton.cpp"
@@ -28,6 +31,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "drivers/TimedInterruptIn.cpp"
     "drivers/DeviceSerial.cpp"
     "drivers/DeviceMessageBus.cpp"
+    "drivers/HID.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)
