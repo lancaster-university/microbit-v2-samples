@@ -34,7 +34,7 @@ void DeviceTimer::processEvents()
        {
           // update our count, and readd to our event list
           tmp->timestamp = getTimeUs() + tmp->period;
-          tmp->addToList(&event_list.list);
+          ClockEvent::addToList(tmp, &event_list.list);
        }
 
        if(tmp->timestamp > getTimeUs())
@@ -142,9 +142,9 @@ uint64_t DeviceTimer::getTimeUs()
     return current_time_us + timer.read_us();
 }
 
-int DeviceTimer::configureEvent(uint64_t period, uint16_t value, bool repeating)
+int DeviceTimer::configureEvent(uint64_t period, uint16_t id, uint16_t value, bool repeating)
 {
-    ClockEvent* clk = new ClockEvent(getTimeUs() + period, period, value, &event_list.list, repeating);
+    ClockEvent* clk = new ClockEvent(getTimeUs() + period, period, id, value, &event_list.list, repeating);
 
     if(!clk)
         return DEVICE_NO_RESOURCES;
@@ -163,9 +163,9 @@ int DeviceTimer::configureEvent(uint64_t period, uint16_t value, bool repeating)
   *
   * @param value the value to place into the Events' value field.
   */
-int DeviceTimer::eventAfter(uint64_t interval, uint16_t value)
+int DeviceTimer::eventAfter(uint64_t interval, uint16_t id, uint16_t value)
 {
-    return eventAfterUs(interval * 1000, value);
+    return eventAfterUs(interval * 1000, id, value);
 }
 
 /**
@@ -176,9 +176,9 @@ int DeviceTimer::eventAfter(uint64_t interval, uint16_t value)
   *
   * @param value the value to place into the Events' value field.
   */
-int DeviceTimer::eventAfterUs(uint64_t interval, uint16_t value)
+int DeviceTimer::eventAfterUs(uint64_t interval, uint16_t id, uint16_t value)
 {
-    return configureEvent(interval, value, false);
+    return configureEvent(interval, id, value, false);
 }
 
 /**
@@ -189,9 +189,9 @@ int DeviceTimer::eventAfterUs(uint64_t interval, uint16_t value)
   *
   * @param value the value to place into the Events' value field.
   */
-int DeviceTimer::eventEvery(uint64_t period, uint16_t value)
+int DeviceTimer::eventEvery(uint64_t period, uint16_t id, uint16_t value)
 {
-    return eventEveryUs(period * 1000, value);
+    return eventEveryUs(period * 1000, id, value);
 }
 
 /**
@@ -202,7 +202,22 @@ int DeviceTimer::eventEvery(uint64_t period, uint16_t value)
   *
   * @param value the value to place into the Events' value field.
   */
-int DeviceTimer::eventEveryUs(uint64_t period, uint16_t value)
+int DeviceTimer::eventEveryUs(uint64_t period, uint16_t id, uint16_t value)
 {
-    return configureEvent(period, value, true);
+    return configureEvent(period, id, value, true);
+}
+
+/**
+  * Cancels any events matching the given id and value.
+  *
+  * @param id the ID that was given upon a previous call to eventEvery / eventAfter
+  *
+  * @param value the value that was given upon a previous call to eventEvery / eventAfter
+  */
+int DeviceTimer::cancel(uint16_t id, uint16_t value)
+{
+    __disable_irq();
+    ClockEvent::removeFromList(id, value, &event_list.list);
+    __enable_irq();
+    return DEVICE_OK;
 }

@@ -11,34 +11,55 @@
 
 struct ClockEvent
 {
+    uint16_t id;
     uint16_t value;
     uint64_t period;
     uint64_t timestamp;
     struct list_head list;
 
-    void addToList(list_head* head)
+    static void removeFromList(uint16_t id, uint16_t value, list_head* head)
     {
-        if(list_empty(head))
-        {
-            list_add(&this->list, head);
-            return;
-        }
-
         ClockEvent* tmp = NULL;
         struct list_head *iter, *q = NULL;
 
         list_for_each_safe(iter, q, head)
         {
-            if(iter == head)
-                continue;
-
             tmp = list_entry(iter, ClockEvent, list);
 
-            if(tmp->timestamp < this->timestamp && iter->next != head)
-                continue;
+            if(tmp->id == id && tmp->value == value)
+            {
+                list_del(iter);
+                delete tmp;
+            }
+        }
+    }
 
-            list_add(&this->list, iter);
-            return;
+    static void addToList(ClockEvent* evt, list_head* head)
+    {
+        if(list_empty(head))
+            list_add(&evt->list, head);
+        else
+        {
+            ClockEvent* tmp = NULL;
+            struct list_head *iter, *q = NULL;
+
+            // check for duplicates, and remove if there is one.
+            removeFromList(evt->id, evt->value, head);
+
+            // add the new ClockEvent.
+            list_for_each_safe(iter, q, head)
+            {
+                if(iter == head)
+                    continue;
+
+                tmp = list_entry(iter, ClockEvent, list);
+
+                if(tmp->timestamp < evt->timestamp && iter->next != head)
+                    continue;
+
+                list_add(&evt->list, iter);
+                return;
+            }
         }
     }
 
@@ -47,17 +68,21 @@ struct ClockEvent
         INIT_LIST_HEAD(&list);
         this->timestamp = 0;
         this->value = 0;
+        this->id = 0;
         this->period = 0;
     }
 
-    ClockEvent(uint64_t timestamp, uint64_t period, uint16_t value, list_head* head, bool repeating = false)
+    ClockEvent(uint64_t timestamp, uint64_t period, uint16_t id, uint16_t value, list_head* head, bool repeating = false)
     {
         this->timestamp = timestamp;
+        this->id = id;
         this->value = value;
 
         this->period = repeating ? period : 0;
 
-        addToList(head);
+        __disable_irq();
+        addToList(this, head);
+        __enable_irq();
     };
 };
 
@@ -125,9 +150,17 @@ public:
       *
       * @param period the period to wait until an event is triggered, in milliseconds.
       *
+      * @param id the ID to be used in event generation.
+      *
       * @param value the value to place into the Events' value field.
       */
-    virtual int eventAfter(uint64_t period, uint16_t value) { (void)period; (void)value; return DEVICE_NOT_SUPPORTED; };
+    virtual int eventAfter(uint64_t period, uint16_t id, uint16_t value)
+    {
+        (void) period;
+        (void) id;
+        (void) value;
+        return DEVICE_NOT_SUPPORTED;
+    };
 
     /**
       * Configures this SystemClock instance to fire an event after period
@@ -135,9 +168,17 @@ public:
       *
       * @param period the period to wait until an event is triggered, in microseconds.
       *
+      * @param id the ID to be used in event generation.
+      *
       * @param value the value to place into the Events' value field.
       */
-    virtual int eventAfterUs(uint64_t period, uint16_t value) {(void)period; (void)value; return DEVICE_NOT_SUPPORTED; };
+    virtual int eventAfterUs(uint64_t period, uint16_t id, uint16_t value)
+    {
+        (void) period;
+        (void) id;
+        (void) value;
+        return DEVICE_NOT_SUPPORTED;
+    };
 
     /**
       * Configures this SystemClock instance to fire an event every period
@@ -145,9 +186,17 @@ public:
       *
       * @param period the period to wait until an event is triggered, in milliseconds.
       *
+      * @param id the ID to be used in event generation.
+      *
       * @param value the value to place into the Events' value field.
       */
-    virtual int eventEvery(uint64_t period, uint16_t value) { (void)period; (void)value; return DEVICE_NOT_SUPPORTED; };
+    virtual int eventEvery(uint64_t period, uint16_t id, uint16_t value)
+    {
+        (void) period;
+        (void) id;
+        (void) value;
+        return DEVICE_NOT_SUPPORTED;
+    };
 
     /**
       * Configures this SystemClock instance to fire an event every period
@@ -155,9 +204,31 @@ public:
       *
       * @param period the period to wait until an event is triggered, in microseconds.
       *
+      * @param id the ID to be used in event generation.
+      *
       * @param value the value to place into the Events' value field.
       */
-    virtual int eventEveryUs(uint64_t period, uint16_t value) { (void)period; (void)value; return DEVICE_NOT_SUPPORTED; };
+    virtual int eventEveryUs(uint64_t period, uint16_t id, uint16_t value)
+    {
+        (void) period;
+        (void) id;
+        (void) value;
+        return DEVICE_NOT_SUPPORTED;
+    };
+
+    /**
+      * Cancels any events matching the given id and value.
+      *
+      * @param id the ID that was given upon a previous call to eventEvery / eventAfter
+      *
+      * @param value the value that was given upon a previous call to eventEvery / eventAfter
+      */
+    virtual int cancel(uint16_t id, uint16_t value)
+    {
+        (void) id;
+        (void) value;
+        return DEVICE_NOT_SUPPORTED;
+    };
 
     /**
       * Start this SystemClock instance.

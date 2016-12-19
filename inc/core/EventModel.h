@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "DeviceListener.h"
 #include "ErrorNo.h"
-#include "DeviceSystemTimer.h"
 
 /**
   * Class definition for the codal device EventModel.

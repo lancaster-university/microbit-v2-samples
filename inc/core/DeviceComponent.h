@@ -43,8 +43,9 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_ID_MULTIBUTTON_ATTACH  11
 #define DEVICE_ID_SERIAL              12
 #define DEVICE_ID_GESTURE             13
-#define DEVICE_ID_TIMER_1             14
+#define DEVICE_ID_SYSTEM_TIMER        14
 #define DEVICE_ID_SCHEDULER           15
+#define DEVICE_ID_COMPONENT           16
 
 #define DEVICE_ID_IO_P0               100                       // IDs 100-227 are reserved for I/O Pin IDs.
 
@@ -53,10 +54,14 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_ID_NOTIFY                          1023          // Notfication channel, for general purpose synchronisation
 
 // Universal flags used as part of the status field
-#define DEVICE_COMPONENT_RUNNING                0x10000000
+#define DEVICE_COMPONENT_RUNNING                0x1000
 
-#define DEVICE_COMPONENT_STATUS_SYSTEM_TICK     0x20000000
-#define DEVICE_COMPONENT_STATUS_IDLE_TICK       0x40000000
+#define DEVICE_COMPONENT_STATUS_SYSTEM_TICK     0x2000
+#define DEVICE_COMPONENT_STATUS_IDLE_TICK       0x4000
+
+#define DEVICE_COMPONENT_LISTENER_CONFIGURED    0x01
+
+#define DEVICE_COMPONENT_EVT_TICK               1
 
 /**
   * Class definition for DeviceComponent.
@@ -64,25 +69,36 @@ DEALINGS IN THE SOFTWARE.
   * All components should inherit from this class.
   *
   * If a component requires regular updates, then that component can be added to the
-  * to the systemTick and/or idleTick queues. This provides a simple, extensible mechanism
+  * to the periodicCallback and/or idleCallback queues. This provides a simple, extensible mechanism
   * for code that requires periodic/occasional background processing but does not warrant
   * the complexity of maintaining its own thread.
   *
   * Two levels of support are available.
   *
-  * systemTick() provides a periodic callback during the
+  * periodicCallback() provides a periodic callback during the
   * codal device's system timer interrupt. This provides a guaranteed periodic callback, but in interrupt context
   * and is suitable for code with lightweight processing requirements, but strict time constraints.
   *
-  * idleTick() provides a periodic callback whenever the scheduler is idle. This provides occasional, callbacks
+  * idleCallback() provides a periodic callback whenever the scheduler is idle. This provides occasional, callbacks
   * in the main thread context, but with no guarantees of frequency. This is suitable for non-urgent background tasks.
   *
-  * Components wishing to use these facilities should override the systemTick and/or idleTick functions defined here, and
+  * Components wishing to use these facilities should override the periodicCallback and/or idleCallback functions defined here, and
   * register their components using system_timer_add_component() fiber_add_idle_component() respectively.
   *
   */
 class DeviceComponent
 {
+    static uint8_t configuration;
+
+    /**
+      * Adds the current DeviceComponent instance to our array of components.
+      */
+    void addComponent();
+
+    /**
+      * Removes the current DeviceComponent instance from our array of components.
+      */
+    void removeComponent();
 
     public:
 
@@ -117,57 +133,22 @@ class DeviceComponent
     virtual int init() { return DEVICE_NOT_SUPPORTED; }
 
     /**
+      * Implement this function to receive a callback every SCHEDULER_TICK_PERIOD_MS.
+      */
+    virtual void periodicCallback() {}
+
+    /**
+      * Implement this function to receive a callback when the device is idling.
+      */
+    virtual void idleCallback() {}
+
+    /**
       * If you have added your component to the idle or system tick component arrays,
       * you must remember to remove your component from them if your component is destructed.
       */
     virtual ~DeviceComponent()
     {
         removeComponent();
-    }
-
-    private:
-    void addComponent()
-    {
-        uint8_t i = 0;
-
-        // iterate through our list to ensure no duplicate entries.
-        while(i < DEVICE_COMPONENT_COUNT)
-        {
-            if(components[i] == this)
-                return;
-
-            i++;
-        }
-
-        i = 0;
-
-        // iterate through our list until an empty space is found.
-        while(i < DEVICE_COMPONENT_COUNT)
-        {
-            if(components[i] == NULL)
-            {
-                components[i] = this;
-                return;
-            }
-
-            i++;
-        }
-    }
-
-    void removeComponent()
-    {
-        uint8_t i = 0;
-
-        while(i < DEVICE_COMPONENT_COUNT)
-        {
-            if(components[i] == this)
-            {
-                components[i] = NULL;
-                return;
-            }
-
-            i++;
-        }
     }
 };
 

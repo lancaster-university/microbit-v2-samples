@@ -83,7 +83,7 @@ void DeviceButton::setEventConfiguration(DeviceButtonEventConfiguration config)
   *
   * Check for state change for this button, and fires various events on a state change.
   */
-void DeviceButton::systemTick(DeviceEvent)
+void DeviceButton::periodicCallback()
 {
     //
     // If the pin is pulled low (touched), increment our culumative counter.

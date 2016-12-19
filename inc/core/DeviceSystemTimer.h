@@ -64,7 +64,7 @@ uint16_t system_timer_get_id();
   *
   * @return DEVICE_OK or DEVICE_NOT_SUPPORTED if no timer has been registered.
   */
-int system_timer_event_every_us(uint64_t period, uint16_t value);
+int system_timer_event_every_us(uint64_t period, uint16_t id, uint16_t value);
 
 /**
   * Configure an event to occur after period us.
@@ -75,6 +75,6 @@ int system_timer_event_every_us(uint64_t period, uint16_t value);
   *
   * @return DEVICE_OK or DEVICE_NOT_SUPPORTED if no timer has been registered.
   */
-int system_timer_event_after_us(uint64_t period, uint16_t value);
+int system_timer_event_after_us(uint64_t period, uint16_t id, uint16_t value);
 
 #endif

@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "DeviceListener.h"
 #include "EventModel.h"
-#include "SystemClock.h"
 
 /**
   * Class definition for the DeviceMessageBus.
