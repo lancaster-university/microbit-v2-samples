@@ -51,17 +51,22 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "DeviceHeapAllocator.h"
 #include "CodalDevice.h"
+#include "CodalCompat.h"
 #include "ErrorNo.h"
+#include <malloc.h>
 
+#if CONFIG_ENABLED(DEVICE_HEAP_ALLOCATOR)
+
+// A list of all active heap regions, and their dimensions in memory.
 struct HeapDefinition
 {
     uint32_t *heap_start;		// Physical address of the start of this heap.
     uint32_t *heap_end;		    // Physical address of the end of this heap.
 };
 
-// A list of all active heap regions, and their dimensions in memory.
 HeapDefinition heap[DEVICE_MAXIMUM_HEAPS] = { };
 uint8_t heap_count = 0;
+
 
 #if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
 // Diplays a usage summary about a given heap...
@@ -181,55 +186,6 @@ int device_create_heap(uint32_t start, uint32_t end)
 }
 
 /**
-  * Create and initialise a heap region within the current the heap region specified
-  * by the linker script.
-  *
-  * If the requested amount is not available, then the amount requested will be reduced
-  * automatically to fit the space available.
-  *
-  * @param ratio The proportion of the underlying heap to allocate.
-  *
-  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
-  */
-int device_create_nested_heap(float ratio)
-{
-    uint32_t length;
-    void *p;
-
-    if (ratio <= 0.0 || ratio > 1.0)
-        return DEVICE_INVALID_PARAMETER;
-
-    // Snapshot something at the top of the main heap.
-    p = native_malloc(sizeof(uint32_t));
-
-    // Estimate the size left in our heap, taking care to ensure it lands on a word boundary.
-    length = (uint32_t) (((float)(DEVICE_HEAP_END - (uint32_t)p)) * ratio);
-    length &= 0xFFFFFFFC;
-
-    // Release our reference pointer.
-    native_free(p);
-    p = NULL;
-
-    // Allocate memory for our heap.
-    // We iteratively reduce the size of memory are allocate until it fits within available space.
-    while (p == NULL)
-    {
-        p = native_malloc(length);
-        if (p == NULL)
-        {
-            length -= 32;
-            if (length <= 0)
-                return DEVICE_NO_RESOURCES;
-        }
-    }
-
-    uint32_t start = (uint32_t) p;
-    device_create_heap(start, start + length);
-
-    return DEVICE_OK;
-}
-
-/**
   * Attempt to allocate a given amount of memory from a given heap area.
   *
   * @param size The amount of memory, in bytes, to allocate.
@@ -327,9 +283,16 @@ void *device_malloc(size_t size, HeapDefinition &heap)
   *
   * @return A pointer to the allocated memory, or NULL if insufficient memory is available.
   */
-void *device_malloc(size_t size)
+void* malloc (size_t size)
 {
+    static uint8_t initialised = 0;
     void *p;
+
+    if (!initialised)
+    {
+        device_create_heap(CODAL_HEAP_START, CODAL_HEAP_END);
+        initialised = 1;
+    }
 
     // Assign the memory from the first heap created that has space.
     for (int i=0; i < heap_count; i++)
@@ -344,25 +307,10 @@ void *device_malloc(size_t size)
         }
     }
 
-    // If we reach here, then either we have no memory available, or our heap spaces
-    // haven't been initialised. Either way, we try the native allocator.
-
-    p = native_malloc(size);
-    if (p != NULL)
-    {
-#if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
-        // Keep everything trasparent if we've not been initialised yet
-        if (heap_count > 0)
-            if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: NATIVE ALLOCATED: %d [%p]\n", size, p);
-#endif
-        return p;
-    }
-
     // We're totally out of options (and memory!).
 #if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
     // Keep everything transparent if we've not been initialised yet
-    if (heap_count > 0)
-        if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: OUT OF MEMORY [%d]\n", size);
+    if(SERIAL_DEBUG) SERIAL_DEBUG->printf("device_malloc: OUT OF MEMORY [%d]\n", size);
 #endif
 
 #if CONFIG_ENABLED(DEVICE_PANIC_HEAP_FULL)
@@ -377,7 +325,7 @@ void *device_malloc(size_t size)
   *
   * @param mem The memory area to release.
   */
-void device_free(void *mem)
+void free (void *mem)
 {
 	uint32_t	*memory = (uint32_t *)mem;
 	uint32_t	*cb = memory-1;
@@ -403,6 +351,36 @@ void device_free(void *mem)
     }
 
     // If we reach here, then the memory is not part of any registered heap.
-    // Forward it to the native heap allocator, and let nature take its course...
-    native_free(mem);
+    // Quietly ignore the request, as the standard free() call has no return code...
 }
+
+void* calloc (size_t num, size_t size)
+{
+    void *mem = malloc(num*size);
+    
+    if (mem)
+        memclr(mem, num*size);
+
+    return mem;
+}
+
+void* realloc (void* ptr, size_t size)
+{
+    void *mem = malloc(size);
+   
+    // handle the simplest case - no previous memory allocted.
+    if (ptr != NULL && mem != NULL)
+    {
+
+        // Otherwise we need to copy and free up the old data.
+        uint32_t *cb = ((uint32_t *)ptr) - 1;
+        uint32_t blockSize = *cb & ~DEVICE_HEAP_BLOCK_FREE;
+
+        memcpy(mem, ptr, min(blockSize, size));
+        free(ptr);
+    }
+
+    return mem;
+}
+
+#endif

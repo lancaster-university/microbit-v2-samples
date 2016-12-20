@@ -53,7 +53,6 @@ DEALINGS IN THE SOFTWARE.
 
 #include "mbed.h"
 #include "DeviceConfig.h"
-#include <new>
 
 // The maximum number of heap segments that can be created.
 #define DEVICE_MAXIMUM_HEAPS          2
@@ -78,90 +77,5 @@ DEALINGS IN THE SOFTWARE.
   * simply use the standard heap.
   */
 int device_create_heap(uint32_t start, uint32_t end);
-
-/**
-  * Create and initialise a heap region within the current the heap region specified
-  * by the linker script.
-  *
-  * If the requested amount is not available, then the amount requested will be reduced
-  * automatically to fit the space available.
-  *
-  * @param ratio The proportion of the underlying heap to allocate.
-  *
-  * @return DEVICE_OK on success, or DEVICE_NO_RESOURCES if the heap could not be allocated.
-  */
-int device_create_nested_heap(float ratio);
-
-/**
-  * Attempt to allocate a given amount of memory from any of our configured heap areas.
-  *
-  * @param size The amount of memory, in bytes, to allocate.
-  *
-  * @return A pointer to the allocated memory, or NULL if insufficient memory is available.
-  */
-void *device_malloc(size_t size);
-
-
-/**
-  * Release a given area of memory from the heap.
-  *
-  * @param mem The memory area to release.
-  */
-void device_free(void *mem);
-
-/*
- * Wrapper function to ensure we have an explicit handle on the heap allocator provided
- * by our underlying platform.
- *
- * @param size The amount of memory, in bytes, to allocate.
- *
- * @return A pointer to the memory allocated. NULL if no memory is available.
- */
-inline void *native_malloc(size_t size)
-{
-    return malloc(size);
-}
-
-/*
- * Wrapper function to ensure we have an explicit handle on the heap allocator provided
- * by our underlying platform.
- *
- * @param p Pointer to the memory to be freed.
- */
-inline void native_free(void *p)
-{
-    free(p);
-}
-
-/**
-  * Overrides the 'new' operator globally, and redirects calls to the codal device heap allocator.
-  */
-inline void* operator new(size_t size) throw(std::bad_alloc)
-{
-    return device_malloc(size);
-}
-
-/**
-  * Overrides the 'new' operator globally, and redirects calls to the codal device theap allocator.
-  */
-inline void* operator new[](size_t size) throw(std::bad_alloc)
-{
-    return device_malloc(size);
-}
-
-/**
-  * Overrides the 'delete' operator globally, and redirects calls to the codal device theap allocator.
-  */
-inline void operator delete(void *ptr) throw()
-{
-    device_free(ptr);
-}
-
-
-// Macros to override overrides the 'malloc' and 'delete' functions globally, and redirects calls
-// to the codal device theap allocator.
-
-#define malloc(X) device_malloc( X )
-#define free(X) device_free( X )
 
 #endif

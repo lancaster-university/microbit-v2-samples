@@ -66,16 +66,22 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_STACK_SIZE                     2048
 #endif
 
-// Physical address of the end of mbed heap space.
-#ifndef DEVICE_HEAP_END
-#define DEVICE_HEAP_END                       (CORTEX_M0_STACK_BASE - DEVICE_STACK_SIZE)
+// Physical address of the end of heap space.
+#ifndef CODAL_HEAP_START
+                                              extern uint32_t __end__;
+#define CODAL_HEAP_START                      (uint32_t)(&__end__)
+#endif
+
+// Physical address of the end of heap space.
+#ifndef CODAL_HEAP_END
+#define CODAL_HEAP_END                        (CORTEX_M0_STACK_BASE - DEVICE_STACK_SIZE)
 #endif
 
 // Enables or disables the DeviceHeapllocator. Note that if disabled, no reuse of the SRAM normally
 // reserved for SoftDevice is possible, and out of memory condition will no longer be trapped...
 // i.e. panic() will no longer be triggered on memory full conditions.
 #ifndef DEVICE_HEAP_ALLOCATOR
-#define DEVICE_HEAP_ALLOCATOR                 0
+#define DEVICE_HEAP_ALLOCATOR                 1
 #endif
 
 // Block size used by the allocator in bytes.
@@ -366,10 +372,6 @@ DEALINGS IN THE SOFTWARE.
 //
 #define CONFIG_ENABLED(X) (X == 1)
 #define CONFIG_DISABLED(X) (X != 1)
-
-#if CONFIG_ENABLED(DEVICE_HEAP_ALLOCATOR)
-#include "DeviceHeapAllocator.h"
-#endif
 
 #if CONFIG_ENABLED(DEVICE_DBG)
 extern RawSerial* SERIAL_DEBUG;
