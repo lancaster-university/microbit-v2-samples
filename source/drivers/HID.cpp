@@ -90,13 +90,6 @@ const InterfaceInfo *USBHID::getInterfaceInfo()
     return &ifaceInfo;
 }
 
-#define HID_REQUEST_GET_REPORT 0x01
-#define HID_REQUEST_GET_IDLE 0x02
-#define HID_REQUEST_GET_PROTOCOL 0x03
-#define HID_REQUEST_SET_REPORT 0x09
-#define HID_REQUEST_SET_IDLE 0x0A
-#define HID_REQUEST_SET_PROTOCOL 0x0B
-
 int USBHID::classRequest(UsbEndpointIn &ctrl, USBSetup &setup)
 {
     uint8_t buf[64] = {0};

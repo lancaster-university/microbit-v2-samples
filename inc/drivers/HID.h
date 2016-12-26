@@ -1,4 +1,15 @@
+#ifndef DEVICE_HID_H
+#define DEVICE_HID_H
+
 #include "CodalUSB.h"
+
+#define HID_REQUEST_GET_REPORT 0x01
+#define HID_REQUEST_GET_IDLE 0x02
+#define HID_REQUEST_GET_PROTOCOL 0x03
+#define HID_REQUEST_SET_REPORT 0x09
+#define HID_REQUEST_SET_IDLE 0x0A
+#define HID_REQUEST_SET_PROTOCOL 0x0B
+
 
 typedef struct {
     uint8_t len;
@@ -20,3 +31,5 @@ class USBHID : public CodalUSBInterface
     virtual int endpointRequest();
     virtual const InterfaceInfo *getInterfaceInfo();
 };
+
+#endif
