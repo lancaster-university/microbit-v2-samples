@@ -93,6 +93,7 @@ void codal_vdmesg(const char *format, va_list ap)
             case 'x':
                 logwritenum(val, false, true);
                 break;
+            case 'p':
             case 'X':
                 logwritenum(val, true, true);
                 break;
