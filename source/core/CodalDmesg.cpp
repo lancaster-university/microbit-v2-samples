@@ -1,6 +1,7 @@
 #include "CodalDmesg.h"
 
-#if CONFIG_ENABLED(DEVICE_DMESG)
+#if DEVICE_DMESG_BUFFER_SIZE > 0
+
 #include <cstdarg>
 #include "CodalCompat.h"
 
