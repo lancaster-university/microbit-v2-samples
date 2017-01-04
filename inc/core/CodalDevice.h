@@ -82,17 +82,7 @@ class CodalDevice
      * Default: Disables all interrupts and user processing and periodically outputs the status code over the default USB serial port.
      * @param statusCode the appropriate status code, must be in the range 0-999.
      */
-    virtual void panic(int statusCode)
-    {
-        __disable_irq(); 
-
-        Serial pc(USBTX, USBRX); 
-        while(1) 
-        {
-            pc.printf("*** CODAL PANIC : [%.3d]\n", statusCode);
-            wait_ms(500);
-        }
-    }
+    virtual void panic(int statusCode);
 
     /**
      * Generate a random number in the given range.
@@ -104,45 +94,7 @@ class CodalDevice
      * @param max the upper range to generate a number for. This number cannot be negative.
      * @return A random, natural number between 0 and the max-1. Or DEVICE_INVALID_VALUE if max is <= 0.
      */
-    int random(int max)
-    {
-        uint32_t m, result;
-
-        if(max <= 0)
-            return DEVICE_INVALID_PARAMETER;
-
-        // Our maximum return value is actually one less than passed
-        max--;
-
-        do {
-            m = (uint32_t)max;
-            result = 0;
-            do {
-                // Cycle the LFSR (Linear Feedback Shift Register).
-                // We use an optimal sequence with a period of 2^32-1, as defined by Bruce Schneier here (a true legend in the field!),
-                // For those interested, it's documented in his paper:
-                // "Pseudo-Random Sequence Generator for 32-Bit CPUs: A fast, machine-independent generator for 32-bit Microprocessors"
-                // https://www.schneier.com/paper-pseudorandom-sequence.html
-                uint32_t rnd = random_value;
-
-                rnd = ((((rnd >> 31)
-                                ^ (rnd >> 6)
-                                ^ (rnd >> 4)
-                                ^ (rnd >> 2)
-                                ^ (rnd >> 1)
-                                ^ rnd)
-                            & 0x0000001)
-                        << 31 )
-                    | (rnd >> 1);
-
-                random_value = rnd;
-
-                result = ((result << 1) | (rnd & 0x00000001));
-            } while(m >>= 1);
-        } while (result > (uint32_t)max);
-
-        return result;
-    }
+    int random(int max);
 
     /**
      * Seed the random number generator (RNG).
