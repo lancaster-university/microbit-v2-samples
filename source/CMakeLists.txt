@@ -10,6 +10,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/CodalCompat.cpp"
     "core/CodalDmesg.cpp"
     "core/CodalDevice.cpp"
+    "core/DeviceComponent.cpp"
     "core/DeviceFiber.cpp"
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"

@@ -54,8 +54,7 @@ DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfigura
     this->downStartTime = 0;
     this->sigma = 0;
 
-    if(EventModel::defaultEventBus != NULL)
-        EventModel::defaultEventBus->every(SCHEDULER_TICK_PERIOD_MS, this, &DeviceButton::systemTick, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
 }
 
 /**
@@ -84,7 +83,7 @@ void DeviceButton::setEventConfiguration(DeviceButtonEventConfiguration config)
   *
   * Check for state change for this button, and fires various events on a state change.
   */
-void DeviceButton::systemTick(DeviceEvent)
+void DeviceButton::periodicCallback()
 {
     //
     // If the pin is pulled low (touched), increment our culumative counter.
@@ -117,7 +116,7 @@ void DeviceButton::systemTick(DeviceEvent)
     // Check to see if we have on->off state change.
     if(sigma < DEVICE_BUTTON_SIGMA_THRESH_LO && (status & DEVICE_BUTTON_STATE))
     {
-        status = 0;
+        status &= ~DEVICE_BUTTON_STATE;
         DeviceEvent evt(id,DEVICE_BUTTON_EVT_UP);
 
        if (eventConfiguration == DEVICE_BUTTON_ALL_EVENTS)
@@ -161,5 +160,4 @@ int DeviceButton::isPressed()
   */
 DeviceButton::~DeviceButton()
 {
-    //TODO: add ignore eventEvery!!
 }

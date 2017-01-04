@@ -115,8 +115,8 @@ DEALINGS IN THE SOFTWARE.
 
 // Scheduling quantum (milliseconds)
 // Also used to drive the codal device runtime system ticker.
-#ifndef SCHEDULER_TICK_PERIOD_MS
-#define SCHEDULER_TICK_PERIOD_MS                   6
+#ifndef SCHEDULER_TICK_PERIOD_US
+#define SCHEDULER_TICK_PERIOD_US                   6000
 #endif
 
 //
@@ -309,8 +309,9 @@ DEALINGS IN THE SOFTWARE.
 //
 // I/O Options
 //
-
-
+#ifndef DEVICE_COMPONENT_COUNT
+#define DEVICE_COMPONENT_COUNT               30
+#endif
 //
 // Define the default mode in which the digital input pins are configured.
 // valid options are PullDown, PullUp and PullNone.
@@ -332,6 +333,9 @@ DEALINGS IN THE SOFTWARE.
 //
 // Debug options
 //
+#ifndef DEVICE_DMESG
+#define DEVICE_DMESG                          0
+#endif
 
 // When non-zero internal debug messages (DMESG() macro) go to a in-memory buffer of this size (in bytes).
 // It can be inspected from GDB (with 'print codalLogStore'), or accessed by the application.
@@ -344,7 +348,7 @@ DEALINGS IN THE SOFTWARE.
 // n.b. This also disables the user serial port 'uBit.serial'.
 // Set '1' to enable.
 #ifndef DEVICE_DBG
-#define DEVICE_DBG                            0
+#define DEVICE_DBG                            1
 #endif
 
 // Enable this to receive diagnostic messages from the heap allocator via the USB serial interface.

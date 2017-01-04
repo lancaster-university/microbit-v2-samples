@@ -13,7 +13,7 @@ class DeviceTimer : public SystemClock
 
     void timerOverflow();
 
-    int configureEvent(uint64_t period, uint16_t value, bool repeating);
+    int configureEvent(uint64_t period, uint16_t id, uint16_t value, bool repeating);
 
 public:
 
@@ -22,7 +22,7 @@ public:
       *
       * @param id The id to use for the message bus when transmitting events.
       */
-    DeviceTimer(uint16_t id = DEVICE_ID_TIMER_1);
+    DeviceTimer(uint16_t id = DEVICE_ID_SYSTEM_TIMER);
 
     /**
       * Returns the id for this timer instance
@@ -74,7 +74,7 @@ public:
       *
       * @param value the value to place into the Events' value field.
       */
-    int eventAfter(uint64_t interval, uint16_t value);
+    int eventAfter(uint64_t interval, uint16_t id, uint16_t value);
 
     /**
       * Configures this Timer1 instance to fire an event after period
@@ -84,7 +84,7 @@ public:
       *
       * @param value the value to place into the Events' value field.
       */
-    int eventAfterUs(uint64_t interval, uint16_t value);
+    int eventAfterUs(uint64_t interval, uint16_t id, uint16_t value);
 
     /**
       * Configures this Timer1 instance to fire an event every period
@@ -94,7 +94,7 @@ public:
       *
       * @param value the value to place into the Events' value field.
       */
-    int eventEvery(uint64_t period, uint16_t value);
+    int eventEvery(uint64_t period, uint16_t id, uint16_t value);
 
     /**
       * Configures this Timer1 instance to fire an event every period
@@ -104,5 +104,14 @@ public:
       *
       * @param value the value to place into the Events' value field.
       */
-    int eventEveryUs(uint64_t period, uint16_t value);
+    int eventEveryUs(uint64_t period, uint16_t id, uint16_t value);
+
+    /**
+      * Cancels any events matching the given id and value.
+      *
+      * @param id the ID that was given upon a previous call to eventEvery / eventAfter
+      *
+      * @param value the value that was given upon a previous call to eventEvery / eventAfter
+      */
+    int cancel(uint16_t id, uint16_t value);
 };
