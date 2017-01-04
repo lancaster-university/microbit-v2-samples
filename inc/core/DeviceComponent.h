@@ -59,9 +59,9 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_COMPONENT_STATUS_SYSTEM_TICK     0x2000
 #define DEVICE_COMPONENT_STATUS_IDLE_TICK       0x4000
 
-#define DEVICE_COMPONENT_LISTENER_CONFIGURED    0x01
+#define DEVICE_COMPONENT_LISTENERS_CONFIGURED   0x01
 
-#define DEVICE_COMPONENT_EVT_TICK               1
+#define DEVICE_COMPONENT_EVT_SYSTEM_TICK        1
 
 /**
   * Class definition for DeviceComponent.
@@ -148,6 +148,7 @@ class DeviceComponent
       */
     virtual ~DeviceComponent()
     {
+        status = 0;
         removeComponent();
     }
 };

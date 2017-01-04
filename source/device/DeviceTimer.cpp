@@ -22,7 +22,7 @@ void DeviceTimer::processEvents()
        tmp = list_entry(iter, ClockEvent, list);
 
        // fire our event and process the next event
-       DeviceEvent(this->id, tmp->value);
+       DeviceEvent(tmp->id, tmp->value);
 
        // remove from the event list
        list_del(iter);
@@ -67,6 +67,10 @@ DeviceTimer::DeviceTimer(uint16_t id) : timer(), timeout(), overflowTimeout()
     if(system_timer_get_instance() == NULL)
         system_timer_set_instance(this);
 
+    INIT_LIST_HEAD(&event_list.list);
+
+    overflow_period_us = 60000000;
+
     this->id = id;
 }
 
@@ -87,8 +91,6 @@ int DeviceTimer::init()
         return DEVICE_OK;
 
     timer.start();
-
-    overflow_period_us = 60000000;
 
     overflowTimeout.attach_us(this, &DeviceTimer::timerOverflow, overflow_period_us);
 

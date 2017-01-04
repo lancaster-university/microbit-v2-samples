@@ -43,7 +43,7 @@ struct ClockEvent
             ClockEvent* tmp = NULL;
             struct list_head *iter, *q = NULL;
 
-            // check for duplicates, and remove if there is one.
+            // check for duplicates, and remove if there are any.
             removeFromList(evt->id, evt->value, head);
 
             // add the new ClockEvent.
@@ -65,7 +65,6 @@ struct ClockEvent
 
     ClockEvent()
     {
-        INIT_LIST_HEAD(&list);
         this->timestamp = 0;
         this->value = 0;
         this->id = 0;

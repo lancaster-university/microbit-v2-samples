@@ -116,7 +116,7 @@ void DeviceButton::periodicCallback()
     // Check to see if we have on->off state change.
     if(sigma < DEVICE_BUTTON_SIGMA_THRESH_LO && (status & DEVICE_BUTTON_STATE))
     {
-        status = 0;
+        status &= ~DEVICE_BUTTON_STATE;
         DeviceEvent evt(id,DEVICE_BUTTON_EVT_UP);
 
        if (eventConfiguration == DEVICE_BUTTON_ALL_EVENTS)
@@ -160,5 +160,4 @@ int DeviceButton::isPressed()
   */
 DeviceButton::~DeviceButton()
 {
-    //TODO: add ignore eventEvery!!
 }

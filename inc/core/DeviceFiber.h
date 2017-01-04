@@ -52,7 +52,8 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_FIBER_FLAG_CHILD             0x04
 #define DEVICE_FIBER_FLAG_DO_NOT_PAGE       0x08
 
-#define DEVICE_SCHEDULER_EVT_IDLE           1
+#define DEVICE_SCHEDULER_EVT_TICK           1
+#define DEVICE_SCHEDULER_EVT_IDLE           2
 
 /**
   * Representation of a single Fiber
