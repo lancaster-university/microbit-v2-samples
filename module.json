@@ -13,7 +13,7 @@
   "author": "Joe Finney <j.finney@lancaster.ac.uk (mailto:j.finney@lancaster.ac.uk) >",
   "homepage": "https://github.com/lancaster-university/codal/",
   "dependencies": {
-    "mbed-classic": "lancaster-university/mbed-classic#genuino"
+    "mbed-classic": "lancaster-university/mbed-classic#development"
   },
   "extraIncludes": [
     "inc/core",
