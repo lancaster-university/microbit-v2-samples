@@ -28,7 +28,7 @@ static const ConfigDescriptor static_config = {9, 2, 0, 0, 1, 0, USB_CONFIG_BUS_
 static const DeviceDescriptor default_device_desc = {
     0x12,            // bLength
     0x01,            // bDescriptorType
-    0x0210,          // bcdUSBL
+    0x0200,          // bcdUSBL
     0xEF,            // bDeviceClass:    Misc
     0x02,            // bDeviceSubclass:
     0x01,            // bDeviceProtocol:
