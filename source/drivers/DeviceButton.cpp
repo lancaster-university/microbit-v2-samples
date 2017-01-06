@@ -46,13 +46,14 @@ DEALINGS IN THE SOFTWARE.
   * buttonA(DEVICE_PIN_BUTTON_A, DEVICE_ID_BUTTON_A);
   * @endcode
   */
-DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, PinMode mode) : pin(name, mode)
+DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, DeviceButtonPolarity polarity, PinMode mode) : pin(name, mode)
 {
     this->id = id;
     this->name = name;
     this->eventConfiguration = eventConfiguration;
     this->downStartTime = 0;
     this->sigma = 0;
+    this->polarity = polarity;
 
     this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
 }
@@ -91,7 +92,7 @@ void DeviceButton::periodicCallback()
     // This makes the output debounced for buttons, and desensitizes touch sensors
     // (particularly in environments where there is mains noise!)
     //
-    if(!pin)
+    if(pin == polarity)
     {
         if (sigma < DEVICE_BUTTON_SIGMA_MAX)
             sigma++;
