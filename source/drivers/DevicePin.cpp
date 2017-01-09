@@ -89,8 +89,8 @@ void DevicePin::disconnect()
 
     if (status & IO_STATUS_ANALOG_OUT)
     {
-        if(((DynamicPwm *)pin)->getPinName() == name)
-            ((DynamicPwm *)pin)->release();
+        ((DynamicPwm *)pin)->release();
+        delete ((DynamicPwm *)pin);
     }
 
     if (status & IO_STATUS_TOUCH_IN)
@@ -195,7 +195,7 @@ int DevicePin::obtainAnalogChannel()
     // Move into an analogue input state if necessary, if we are no longer the focus of a DynamicPWM instance, allocate ourselves again!
     if (!(status & IO_STATUS_ANALOG_OUT) || !(((DynamicPwm *)pin)->getPinName() == name)){
         disconnect();
-        pin = (void *)DynamicPwm::allocate(name);
+        pin = new DynamicPwm(name);
         status |= IO_STATUS_ANALOG_OUT;
     }
 
@@ -213,7 +213,7 @@ int DevicePin::obtainAnalogChannel()
 int DevicePin::setAnalogValue(int value)
 {
     //check if this pin has an analogue mode...
-    if(!(PIN_CAPABILITY_ANALOG & capability))
+    if(!(PIN_CAPABILITY_DIGITAL & capability))
         return DEVICE_NOT_SUPPORTED;
 
     //sanitise the level value
@@ -413,13 +413,19 @@ int DevicePin::setServoPulseUs(int pulseWidth)
   *
   * @param period The new period for the analog output in microseconds.
   *
-  * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
-  *         given pin is not configured as an analog output.
+  * @return DEVICE_OK on success.
   */
 int DevicePin::setAnalogPeriodUs(int period)
 {
+    int ret;
+
     if (!(status & IO_STATUS_ANALOG_OUT))
-        return DEVICE_NOT_SUPPORTED;
+    {
+        // Drop this pin into PWM mode, but with a LOW value.
+        ret = setAnalogValue(0);
+        if (ret != DEVICE_OK)
+            return ret;
+    }
 
     return ((DynamicPwm *)pin)->setPeriodUs(period);
 }
