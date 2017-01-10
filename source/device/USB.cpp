@@ -308,6 +308,8 @@ int UsbEndpointOut::read(void *dst, int maxlen)
 {
     int packetSize = 0;
 
+    usb_assert(this != NULL);
+
     uint32_t flag = ep == 0 ? USB_DEVICE_EPINTFLAG_RXSTP : USB_DEVICE_EPINTFLAG_TRCPT0;
 
     /* Check for Transfer Complete 0 flag */
@@ -335,6 +337,9 @@ int UsbEndpointOut::read(void *dst, int maxlen)
 int UsbEndpointIn::write(const void *src, int len)
 {
     uint32_t data_address;
+
+    // this happens when someone tries to write before USB is initialized
+    usb_assert(this != NULL);
 
     UsbDeviceDescriptor *epdesc = (UsbDeviceDescriptor *)usb_endpoints + ep;
 
