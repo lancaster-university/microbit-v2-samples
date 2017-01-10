@@ -296,7 +296,7 @@ int DevicePin::getAnalogValue()
     }
 
     //perform a read!
-    return ((AnalogIn *)pin)->read_u16();
+    return (((AnalogIn *)pin)->read_u16() >> 6);
 }
 
 /**

@@ -36,6 +36,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "drivers/DeviceI2C.cpp"
     "drivers/HID.cpp"
     "drivers/LIS3DH.cpp"
+    "drivers/AnalogSensor.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)
