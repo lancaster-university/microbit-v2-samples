@@ -33,7 +33,9 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "drivers/TimedInterruptIn.cpp"
     "drivers/DeviceSerial.cpp"
     "drivers/DeviceMessageBus.cpp"
+    "drivers/DeviceI2C.cpp"
     "drivers/HID.cpp"
+    "drivers/LIS3DH.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)

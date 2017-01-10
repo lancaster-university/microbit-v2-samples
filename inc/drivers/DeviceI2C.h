@@ -23,45 +23,23 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DEVICE_COORDINATE_SYSTEM_H
-#define DEVICE_COORDINATE_SYSTEM_H
+#ifndef DEVICE_I2C_H
+#define DEVICE_I2C_H
+
+#include "mbed.h"
 #include "DeviceConfig.h"
 
 /**
-  * Co-ordinate systems that can be used.
-  * RAW: Unaltered data. Data will be returned directly from the accelerometer.
-  *
-  * SIMPLE_CARTESIAN: Data will be returned based on an easy to understand alignment, consistent with the cartesian system taught in schools.
-  * When held upright, facing the user:
-  *
-  *                            /
-  *    +--------------------+ z
-  *    |                    |
-  *    |       .....        |
-  *    | *     .....      * |
-  * ^  |       .....        |
-  * |  |                    |
-  * y  +--------------------+  x-->
-  *
-  *
-  * NORTH_EAST_DOWN: Data will be returned based on the industry convention of the North East Down (NED) system.
-  * When held upright, facing the user:
-  *
-  *                            z
-  *    +--------------------+ /
-  *    |                    |
-  *    |       .....        |
-  *    | *     .....      * |
-  * ^  |       .....        |
-  * |  |                    |
-  * x  +--------------------+  y-->
-  *
+  * Class definition for I2C service, derived from ARM mbed.
   */
-enum DeviceCoordinateSystem
+class DeviceI2C : public I2C
 {
-    RAW,
-    SIMPLE_CARTESIAN,
-    NORTH_EAST_DOWN
+    public:
+
+    /**
+      * Constructor.
+      */
+    DeviceI2C(PinName sda, PinName scl);
 };
 
 #endif
