@@ -552,10 +552,10 @@ int LIS3DH::getX(CoordinateSystem system)
     switch (system)
     {
         case SIMPLE_CARTESIAN:
-            return -sample.x;
+            return sample.y;
 
         case NORTH_EAST_DOWN:
-            return sample.y;
+            return -sample.x;
 
         case RAW:
         default:
@@ -579,10 +579,10 @@ int LIS3DH::getY(CoordinateSystem system)
     switch (system)
     {
         case SIMPLE_CARTESIAN:
-            return -sample.y;
+            return sample.x;
 
         case NORTH_EAST_DOWN:
-            return -sample.x;
+            return sample.y;
 
         case RAW:
         default:
@@ -605,10 +605,11 @@ int LIS3DH::getZ(CoordinateSystem system)
 
     switch (system)
     {
-        case NORTH_EAST_DOWN:
-            return -sample.z;
 
         case SIMPLE_CARTESIAN:
+            return -sample.z;
+
+        case NORTH_EAST_DOWN:
         case RAW:
         default:
             return sample.z;
