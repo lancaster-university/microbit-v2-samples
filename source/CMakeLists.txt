@@ -29,6 +29,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
 
     "drivers/DynamicPwm.cpp"
     "drivers/DeviceButton.cpp"
+    "drivers/MultiButton.cpp"
     "drivers/DevicePin.cpp"
     "drivers/TimedInterruptIn.cpp"
     "drivers/DeviceSerial.cpp"
