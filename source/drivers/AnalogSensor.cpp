@@ -43,28 +43,18 @@ DEALINGS IN THE SOFTWARE.
  * Creates a generic AnalogSensor. 
  *
  * @param pin The pin on which to sense
- * @param nominalValue The value (in SI units) of a nominal position.
- * @param nominalReading The raw reading from the sensor at the nominal position.
- * @param beta The Steinhart-Hart Beta constant for the device
- * @param seriesResistor The value (in ohms) of the resistor in series with the sensor.
- * @param zeroOffset Optional zero offset applied to all SI units (e.g. 273.15 for temperature sensing in C vs Kelvin). 
+ * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER 
  */
-AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id, float nominalValue, float nominalReading, float beta, float seriesResistor, float zeroOffset) : _pin(pin)
+AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id) : _pin(pin)
 {
     this->id = id;
-    this->sensitivity = 0.1;
-    this->nominalValue = nominalValue;
-    this->nominalReading = nominalReading;
-    this->beta = beta;
-    this->seriesResistor = seriesResistor;
-    this->zeroOffset = zeroOffset;
+    this->sensitivity = 0.1f;
 
     // Configure for a 2 Hz update frequency by default. 
     if(EventModel::defaultEventBus)
         EventModel::defaultEventBus->listen(id, ANALOG_SENSOR_UPDATE_NEEDED, this, &AnalogSensor::onSampleEvent);
 
     setPeriod(500);
-
 }
 
 /*
@@ -87,15 +77,12 @@ float AnalogSensor::getValue()
 
 /**
  * Updates the internal reading of the sensor. Typically called periodicaly.
- *
- * @return DEVICE_OK on success.
  */
-int AnalogSensor::updateSample()
+void AnalogSensor::updateSample()
 {
-    float sensorReading, value;
+    float value;
 
-    sensorReading = (((1023.0) * seriesResistor) / _pin.getAnalogValue()) - seriesResistor;
-    value = (1.0 / ((log(sensorReading / nominalReading) / beta) + (1.0 / (nominalValue + zeroOffset)))) - zeroOffset;
+    value = _pin.getAnalogValue();
 
     // If this is the first reading performed, take it a a baseline. Otherwise, perform a decay average to smooth out the data.
     if (!(status & ANALOG_SENSOR_INITIALISED))
@@ -105,9 +92,17 @@ int AnalogSensor::updateSample()
     }
     else
     {
-        sensorValue = (sensorValue * (1-sensitivity)) + (value * sensitivity);
+        sensorValue = (sensorValue * (1.0f - sensitivity)) + (value * sensitivity);
     }
 
+    checkThresholding();
+}
+
+/**
+ * Determine if any thresholding events need to be generated, and if so, raise them.
+ */
+void AnalogSensor::checkThresholding()
+{
     if (status & ANALOG_SENSOR_THRESHOLD_ENABLED)
     {
         if (((status & ANALOG_SENSOR_HIGH_THRESHOLD_PASSED)==0) && (sensorValue >= highThreshold))
@@ -124,8 +119,6 @@ int AnalogSensor::updateSample()
             status &= ~ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
         }
     }
-
-    return DEVICE_OK;
 }
 
 /**

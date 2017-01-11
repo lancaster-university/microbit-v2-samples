@@ -48,25 +48,17 @@ DEALINGS IN THE SOFTWARE.
 #define ANALOG_SENSOR_THRESHOLD_ENABLED                 0x08
 
 /**
- * Class definition for a generic analog sensor, that takes the general form of a logarithmic response to a sensed value, in a potential divider.
- * Implements a base class for such a sensor, using the Steinhart-Hart equation to delineate a result.
+ * Class definition for a generic analog sensor, and performs periodic sampling, buffering and low pass filtering of the data.
  */
 class AnalogSensor : public DeviceComponent
 {
+    protected:
+
     DevicePin       &_pin;              // Pin where the sensor is connected.
     uint16_t        samplePeriod;       // The time between samples, in milliseconds.
-
-    float           nominalValue;       // The value (in SI units) of a nominal position.
-    float           nominalReading;     // The reading (in sensed level) at that nominal position.
-    float           beta;               // The Steinhart B parameter.
-    float           seriesResistor;     // the resitance (in ohms) of the associated series resistor.
-
-    float           zeroOffset;         // A user defined "zero" point (negative asymptote).
-
     float           sensitivity;        // A value between 0..1 used with a decay average to smooth the sample data. 
     uint16_t        highThreshold;      // threshold at which a HIGH event is generated
     uint16_t        lowThreshold;       // threshold at which a LOW event is generated
-
     uint16_t        sensorValue;        // Last sampled data.
 
     public:
@@ -78,14 +70,8 @@ class AnalogSensor : public DeviceComponent
       *
       * @param pin The pin on which to sense
       * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER 
-      * @param nominalValue The value (in SI units) of a nominal position.
-      * @param nominalReading The raw reading from the sensor at the nominal position.
-      * @param beta The Steinhart-Hart Beta constant for the device
-      * @param seriesResistor The value (in ohms) of the resistor in series with the sensor.
-      * @param zeroOffset Optional zero offset applied to all SI units (e.g. 273.15 for temperature sensing in C vs Kelvin). 
-      *
      */
-    AnalogSensor(DevicePin &pin, uint16_t id, float nominalValue, float nominalReading, float beta, float seriesResistor, float zeroOffset = 0);
+    AnalogSensor(DevicePin &pin, uint16_t id);
 
     /*
      * Event Handler for periodic sample timer
@@ -97,7 +83,7 @@ class AnalogSensor : public DeviceComponent
      *
      * @return DEVICE_OK on success.
      */
-    int updateSample();
+    virtual void updateSample();
 
     /*
      * Determines the instantaneous value of the sensor, in SI units, and returns it.
@@ -145,6 +131,13 @@ class AnalogSensor : public DeviceComponent
       * Destructor.
       */
     ~AnalogSensor();
+
+    protected:
+    /**
+     * Determine if any thresholding events need to be generated, and if so, raise them.
+     */
+    void checkThresholding();
+
 
 };
 
