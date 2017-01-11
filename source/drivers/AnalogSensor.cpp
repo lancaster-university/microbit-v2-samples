@@ -52,7 +52,7 @@ AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id) : _pin(pin)
 
     // Configure for a 2 Hz update frequency by default. 
     if(EventModel::defaultEventBus)
-        EventModel::defaultEventBus->listen(id, ANALOG_SENSOR_UPDATE_NEEDED, this, &AnalogSensor::onSampleEvent);
+        EventModel::defaultEventBus->listen(id, ANALOG_SENSOR_UPDATE_NEEDED, this, &AnalogSensor::onSampleEvent, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
     setPeriod(500);
 }

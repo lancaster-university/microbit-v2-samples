@@ -21,6 +21,9 @@ void DeviceTimer::processEvents()
     {
        tmp = list_entry(iter, ClockEvent, list);
 
+       if(tmp->timestamp > getTimeUs())
+          break;
+
        // fire our event and process the next event
        DeviceEvent(tmp->id, tmp->value);
 
@@ -33,15 +36,17 @@ void DeviceTimer::processEvents()
        else
        {
           // update our count, and readd to our event list
-          tmp->timestamp = getTimeUs() + tmp->period;
+          tmp->timestamp += tmp->period;
           ClockEvent::addToList(tmp, &event_list.list);
        }
-
-       if(tmp->timestamp > getTimeUs())
-          break;
     }
 
-    uint64_t usRemaining = tmp->timestamp - getTimeUs();
+    // Take the new head of the list (which may have changed)
+    // as this will be the evne that is due next.
+    tmp = list_entry(event_list.list.next, ClockEvent, list);
+  
+    uint64_t now = getTimeUs();
+    uint64_t usRemaining = tmp->timestamp > now ? tmp->timestamp - now : 10;
 
     if(usRemaining < overflow_period_us)
         timeout.attach_us(this, &DeviceTimer::processEvents, usRemaining);

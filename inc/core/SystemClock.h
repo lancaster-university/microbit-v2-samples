@@ -54,11 +54,17 @@ struct ClockEvent
 
                 tmp = list_entry(iter, ClockEvent, list);
 
-                if(tmp->timestamp < evt->timestamp && iter->next != head)
-                    continue;
+                if(tmp->timestamp >= evt->timestamp)
+                {
+                    list_add(&evt->list, iter->prev);
+                    return;
+                }
 
-                list_add(&evt->list, iter);
-                return;
+                if(iter->next == head)
+                {
+                    list_add(&evt->list, iter);
+                    return;
+                }
             }
         }
     }
