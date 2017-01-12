@@ -70,7 +70,7 @@ void AnalogSensor::onSampleEvent(DeviceEvent)
  *
  * @return The current value of the sensor.
  */
-float AnalogSensor::getValue()
+int AnalogSensor::getValue()
 {
     return sensorValue;
 }
@@ -103,21 +103,19 @@ void AnalogSensor::updateSample()
  */
 void AnalogSensor::checkThresholding()
 {
-    if (status & ANALOG_SENSOR_THRESHOLD_ENABLED)
+    if ((status & ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED) && (!(status & ANALOG_SENSOR_HIGH_THRESHOLD_PASSED)) && (sensorValue >= highThreshold))
     {
-        if (((status & ANALOG_SENSOR_HIGH_THRESHOLD_PASSED)==0) && (sensorValue >= highThreshold))
-        {
-            DeviceEvent(id, ANALOG_THRESHOLD_HIGH);
-            status |=  ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
-            status &= ~ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
-        }
+        DeviceEvent(id, ANALOG_THRESHOLD_HIGH);
+        status |=  ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
+        status &= ~ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
+    }
 
-        if (((status & ANALOG_SENSOR_LOW_THRESHOLD_PASSED)==0) && (sensorValue <= lowThreshold))
-        {
-            DeviceEvent(id, ANALOG_THRESHOLD_LOW);
-            status |=  ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
-            status &= ~ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
-        }
+    if ((status & ANALOG_SENSOR_LOW_THRESHOLD_ENABLED) && (!(status & ANALOG_SENSOR_LOW_THRESHOLD_PASSED)) && (sensorValue <= lowThreshold))
+
+    {
+        DeviceEvent(id, ANALOG_THRESHOLD_LOW);
+        status |=  ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
+        status &= ~ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
     }
 }
 
@@ -161,24 +159,83 @@ int AnalogSensor::getPeriod()
 }
 
 /**
- * Set HIGH and LOW thresholds to the given value. Events will be generated when these thresholds are crossed.
+ * Set threshold to the given value. Events will be generated when these thresholds are crossed.
  *
- * @param low the LOW threshold, in SI units.
- * @param high the HIGH threshold, in SI units.
+ * @param value the LOW threshold at which a ANALOG_THRESHOLD_LOW will be generated.
  *
  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
  */
-int AnalogSensor::setThreshold(float low, float high)
+int AnalogSensor::setLowThreshold(uint16_t value)
 {
-    lowThreshold = low;
-    highThreshold = high;
+    // Protect against churn if the same threshold is set repeatedly.
+    if ((status & ANALOG_SENSOR_LOW_THRESHOLD_ENABLED) && lowThreshold == value)
+        return DEVICE_OK;
+
+    // We need to update our threshold 
+    lowThreshold = value;
+
+    // Reset any exisiting threshold state, and enable threshold detection.
+    status &= ~ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
+    status |=  ANALOG_SENSOR_LOW_THRESHOLD_ENABLED;
+
+    // If a HIGH threshold has been set, ensure it's above the LOW threshold.
+    if(status & ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED)
+        setHighThreshold(max(lowThreshold+1, highThreshold));
+
+    return DEVICE_OK;
+}
+
+/**
+ * Set threshold to the given value. Events will be generated when these thresholds are crossed.
+ *
+ * @param value the HIGH threshold at which a ANALOG_THRESHOLD_HIGH will be generated.
+ *
+ * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+ */
+int AnalogSensor::setHighThreshold(uint16_t value)
+{
+    // Protect against churn if the same threshold is set repeatedly.
+    if ((status & ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED) && highThreshold == value)
+        return DEVICE_OK;
+
+    // We need to update our threshold 
+    highThreshold = value;
 
     // Reset any exisiting threshold state, and enable threshold detection.
     status &= ~ANALOG_SENSOR_HIGH_THRESHOLD_PASSED;
-    status &= ~ANALOG_SENSOR_LOW_THRESHOLD_PASSED;
-    status |=  ANALOG_SENSOR_THRESHOLD_ENABLED;
+    status |=  ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED;
+
+    // If a HIGH threshold has been set, ensure it's above the LOW threshold.
+    if(status & ANALOG_SENSOR_LOW_THRESHOLD_ENABLED)
+        setLowThreshold(min(highThreshold - 1, lowThreshold));
 
     return DEVICE_OK;
+}
+
+/**
+ * Determines the currently defined low threshold.
+ *
+ * @return The current low threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+ */
+int AnalogSensor::getLowThreshold()
+{
+    if (!(status & ANALOG_SENSOR_LOW_THRESHOLD_ENABLED))
+        return DEVICE_INVALID_PARAMETER;
+
+    return lowThreshold;
+}
+
+/**
+ * Determines the currently defined high threshold.
+ *
+ * @return The current high threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+ */
+int AnalogSensor::getHighThreshold()
+{
+    if (!(status & ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED))
+        return DEVICE_INVALID_PARAMETER;
+
+    return highThreshold;
 }
 
 /**

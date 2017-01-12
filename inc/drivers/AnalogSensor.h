@@ -45,7 +45,9 @@ DEALINGS IN THE SOFTWARE.
 #define ANALOG_SENSOR_INITIALISED                       0x01
 #define ANALOG_SENSOR_HIGH_THRESHOLD_PASSED             0x02
 #define ANALOG_SENSOR_LOW_THRESHOLD_PASSED              0x04
-#define ANALOG_SENSOR_THRESHOLD_ENABLED                 0x08
+#define ANALOG_SENSOR_LOW_THRESHOLD_ENABLED             0x08
+#define ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED            0x10
+
 
 /**
  * Class definition for a generic analog sensor, and performs periodic sampling, buffering and low pass filtering of the data.
@@ -59,7 +61,7 @@ class AnalogSensor : public DeviceComponent
     float           sensitivity;        // A value between 0..1 used with a decay average to smooth the sample data. 
     uint16_t        highThreshold;      // threshold at which a HIGH event is generated
     uint16_t        lowThreshold;       // threshold at which a LOW event is generated
-    uint16_t        sensorValue;        // Last sampled data.
+    int             sensorValue;        // Last sampled data.
 
     public:
 
@@ -90,7 +92,7 @@ class AnalogSensor : public DeviceComponent
      *
      * @return The current value of the sensor.
      */
-    float getValue();
+    int getValue();
     
     /**
       * Set the automatic sample period of the accelerometer to the specified value (in ms).
@@ -109,14 +111,36 @@ class AnalogSensor : public DeviceComponent
     int getPeriod();
 
     /**
-      * Set HIGH and LOW thresholds to the given value. Events will be generated when these thresholds are crossed.
+      * Set threshold to the given value. Events will be generated when these thresholds are crossed.
       *
-      * @param low the LOW threshold, in SI units.
-      * @param high the HIGH threshold, in SI units.
+      * @param value the LOW threshold at which a ANALOG_THRESHOLD_LOW will be generated.
       *
       * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
       */
-    int setThreshold(float low, float high);
+    int setLowThreshold(uint16_t value);
+
+    /**
+      * Set threshold to the given value. Events will be generated when these thresholds are crossed.
+      *
+      * @param value the HIGH threshold at which a ANALOG_THRESHOLD_HIGH will be generated.
+      *
+      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+      */
+    int setHighThreshold(uint16_t value);
+
+    /**
+      * Determines the currently defined low threshold.
+      *
+      * @return The current low threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+      */
+    int getLowThreshold();
+
+    /**
+      * Determines the currently defined high threshold.
+      *
+      * @return The current high threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+      */
+    int getHighThreshold();
 
     /**
       * Set smoothing value for the data. A decay average is taken of sampled data to smooth it into more accurate information.
