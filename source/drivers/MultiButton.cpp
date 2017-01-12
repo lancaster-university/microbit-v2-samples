@@ -241,7 +241,10 @@ void MultiButton::onButtonEvent(DeviceEvent evt)
         case DEVICE_BUTTON_EVT_DOWN:
             setButtonState(button, 1);
             if(isSubButtonPressed(otherButton))
+            {
                 DeviceEvent e(id, DEVICE_BUTTON_EVT_DOWN);
+                clickCount++;
+            }
 
         break;
 

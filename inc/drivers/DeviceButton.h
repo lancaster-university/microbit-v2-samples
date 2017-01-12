@@ -26,57 +26,20 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_BUTTON_H
 #define DEVICE_BUTTON_H
 
-#include "mbed.h"
+#include "AbstractButton.h"
 #include "DeviceConfig.h"
 #include "DeviceComponent.h"
 #include "DeviceEvent.h"
-
-#define DEVICE_PIN_BUTTON_A                   P0_17
-#define DEVICE_PIN_BUTTON_B                   P0_26
-#define DEVICE_PIN_BUTTON_RESET               P0_19
-
-#define DEVICE_BUTTON_EVT_DOWN                1
-#define DEVICE_BUTTON_EVT_UP                  2
-#define DEVICE_BUTTON_EVT_CLICK               3
-#define DEVICE_BUTTON_EVT_LONG_CLICK          4
-#define DEVICE_BUTTON_EVT_HOLD                5
-#define DEVICE_BUTTON_EVT_DOUBLE_CLICK        6
-
-#define DEVICE_BUTTON_LONG_CLICK_TIME         1000
-#define DEVICE_BUTTON_HOLD_TIME               1500
-
-#define DEVICE_BUTTON_STATE                   1
-#define DEVICE_BUTTON_STATE_HOLD_TRIGGERED    2
-#define DEVICE_BUTTON_STATE_CLICK             4
-#define DEVICE_BUTTON_STATE_LONG_CLICK        8
-
-#define DEVICE_BUTTON_SIGMA_MIN               0
-#define DEVICE_BUTTON_SIGMA_MAX               12
-#define DEVICE_BUTTON_SIGMA_THRESH_HI         8
-#define DEVICE_BUTTON_SIGMA_THRESH_LO         2
-#define DEVICE_BUTTON_DOUBLE_CLICK_THRESH     50
-
-enum DeviceButtonEventConfiguration
-{
-    DEVICE_BUTTON_SIMPLE_EVENTS,
-    DEVICE_BUTTON_ALL_EVENTS
-};
-
-enum DeviceButtonPolarity
-{
-    ACTIVE_LOW = 0,
-    ACTIVE_HIGH = 1
-};
+#include "DevicePin.h"
 
 /**
   * Class definition for Device Button.
   *
   * Represents a single, generic button on the device.
   */
-class DeviceButton : public DeviceComponent
+class DeviceButton : public AbstractButton
 {
-    PinName name;                                           // mbed pin name for this button.
-    DigitalIn pin;                                          // The mbed object looking after this pin at any point in time (may change!).
+    DevicePin &_pin;                                        // The pin this button is connected to.
 
     unsigned long downStartTime;                            // used to store the current system clock when a button down event occurs
     uint8_t sigma;                                          // integration of samples over time. We use this for debouncing, and noise tolerance for touch sensing
@@ -90,7 +53,7 @@ class DeviceButton : public DeviceComponent
       *
       * Create a software representation of a button.
       *
-      * @param name the physical pin on the processor that should be used as input.
+      * @param pin the physical pin on the device connected to this button.
       *
       * @param id the ID of the new DeviceButton object.
       *
@@ -103,7 +66,7 @@ class DeviceButton : public DeviceComponent
       * buttonA(DEVICE_PIN_BUTTON_A, DEVICE_ID_BUTTON_A);
       * @endcode
       */
-    DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfiguration eventConfiguration = DEVICE_BUTTON_ALL_EVENTS, DeviceButtonPolarity polarity = ACTIVE_LOW, PinMode mode = PullNone);
+    DeviceButton(DevicePin &pin, uint16_t id, DeviceButtonEventConfiguration eventConfiguration = DEVICE_BUTTON_ALL_EVENTS, DeviceButtonPolarity polarity = ACTIVE_LOW, PinMode mode = PullNone);
 
     /**
       * Tests if this Button is currently pressed.
@@ -115,7 +78,7 @@ class DeviceButton : public DeviceComponent
       *
       * @return 1 if this button is pressed, 0 otherwise.
       */
-    int isPressed();
+    virtual int isPressed();
 
     /**
       * Changes the event configuration used by this button to the given DeviceButtonEventConfiguration.

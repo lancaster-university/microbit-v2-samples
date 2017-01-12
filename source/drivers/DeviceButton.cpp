@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
   *
   * Create a software representation of a button.
   *
-  * @param name the physical pin on the processor that should be used as input.
+  * @param pin the physical pin on the device connected to this button.
   *
   * @param id the ID of the new DeviceButton object.
   *
@@ -42,18 +42,16 @@ DEALINGS IN THE SOFTWARE.
   *
   * @param mode the configuration of internal pullups/pulldowns, as defined in the mbed PinMode class. PullNone by default.
   *
-  * @code
-  * buttonA(DEVICE_PIN_BUTTON_A, DEVICE_ID_BUTTON_A);
-  * @endcode
   */
-DeviceButton::DeviceButton(PinName name, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, DeviceButtonPolarity polarity, PinMode mode) : pin(name, mode)
+DeviceButton::DeviceButton(DevicePin &pin, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, DeviceButtonPolarity polarity, PinMode mode) : _pin(pin)
 {
     this->id = id;
-    this->name = name;
     this->eventConfiguration = eventConfiguration;
     this->downStartTime = 0;
     this->sigma = 0;
     this->polarity = polarity;
+
+    pin.setPull(mode);
 
     this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
 }
@@ -92,7 +90,7 @@ void DeviceButton::periodicCallback()
     // This makes the output debounced for buttons, and desensitizes touch sensors
     // (particularly in environments where there is mains noise!)
     //
-    if(pin == polarity)
+    if(_pin.getDigitalValue() == polarity)
     {
         if (sigma < DEVICE_BUTTON_SIGMA_MAX)
             sigma++;
@@ -109,6 +107,7 @@ void DeviceButton::periodicCallback()
         // Record we have a state change, and raise an event.
         status |= DEVICE_BUTTON_STATE;
         DeviceEvent evt(id,DEVICE_BUTTON_EVT_DOWN);
+        clickCount++;
 
         //Record the time the button was pressed.
         downStartTime = system_timer_current_time();

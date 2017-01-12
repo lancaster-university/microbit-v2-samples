@@ -44,7 +44,7 @@ DEALINGS IN THE SOFTWARE.
   * Represents a virtual button, capable of reacting to simultaneous presses of two
   * other buttons.
   */
-class MultiButton : public DeviceComponent
+class MultiButton : public AbstractButton
 {
     uint16_t    button1;        // ID of the first button we're monitoring
     uint16_t    button2;        // ID of the second button we're monitoring
@@ -143,7 +143,7 @@ class MultiButton : public DeviceComponent
       *     display.scroll("Pressed!");
       * @endcode
       */
-    int isPressed();
+    virtual int isPressed();
 
     /**
       * Changes the event configuration of this button to the given DeviceButtonEventConfiguration.

@@ -28,6 +28,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "device/USB.cpp"
 
     "drivers/DynamicPwm.cpp"
+    "drivers/AbstractButton.cpp"
     "drivers/DeviceButton.cpp"
     "drivers/MultiButton.cpp"
     "drivers/DevicePin.cpp"

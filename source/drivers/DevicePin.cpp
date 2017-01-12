@@ -369,7 +369,7 @@ int DevicePin::isTouched()
     // Move into a touch input state if necessary.
     if (!(status & IO_STATUS_TOUCH_IN)){
         disconnect();
-        pin = new DeviceButton(name, id);
+        pin = new DeviceButton(*this, id);
         status |= IO_STATUS_TOUCH_IN;
     }
 
