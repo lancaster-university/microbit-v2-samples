@@ -1,6 +1,8 @@
 #include "CodalUSB.h"
 #include "USB.h"
 
+#if CONFIG_ENABLED(DEVICE_USB)
+
 static UsbDeviceDescriptor *usb_endpoints;
 static uint8_t usb_num_endpoints;
 
@@ -382,3 +384,5 @@ int UsbEndpointIn::write(const void *src, int len)
 
     return DEVICE_OK;
 }
+
+#endif

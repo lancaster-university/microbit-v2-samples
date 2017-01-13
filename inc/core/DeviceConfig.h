@@ -317,7 +317,7 @@ DEALINGS IN THE SOFTWARE.
 // valid options are PullDown, PullUp and PullNone.
 //
 #ifndef DEVICE_DEFAULT_PULLMODE
-#define DEVICE_DEFAULT_PULLMODE                PullDown
+#define DEVICE_DEFAULT_PULLMODE                PullNone
 #endif
 
 //

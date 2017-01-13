@@ -3,6 +3,8 @@
 
 #include "CodalUSB.h"
 
+#if CONFIG_ENABLED(DEVICE_USB)
+
 #define HID_REQUEST_GET_REPORT 0x01
 #define HID_REQUEST_GET_IDLE 0x02
 #define HID_REQUEST_GET_PROTOCOL 0x03
@@ -31,5 +33,7 @@ class USBHID : public CodalUSBInterface
     virtual int endpointRequest();
     virtual const InterfaceInfo *getInterfaceInfo();
 };
+
+#endif
 
 #endif
