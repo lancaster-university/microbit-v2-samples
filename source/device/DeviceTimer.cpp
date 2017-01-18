@@ -10,6 +10,8 @@ static ClockEvent event_list;
 
 void DeviceTimer::processEvents()
 {
+    START:
+
     if(list_empty(&event_list.list))
         return;
 
@@ -46,7 +48,12 @@ void DeviceTimer::processEvents()
     tmp = list_entry(event_list.list.next, ClockEvent, list);
   
     uint64_t now = getTimeUs();
-    uint64_t usRemaining = tmp->timestamp > now ? tmp->timestamp - now : 10;
+    //uint64_t usRemaining = tmp->timestamp > now ? tmp->timestamp - now : 10;
+
+    uint64_t usRemaining = tmp->timestamp - now; 
+
+    if (tmp->timestamp < now || usRemaining < 100)
+        goto START;
 
     if(usRemaining < overflow_period_us)
         timeout.attach_us(this, &DeviceTimer::processEvents, usRemaining);

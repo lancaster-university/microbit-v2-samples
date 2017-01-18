@@ -39,14 +39,13 @@ DEALINGS IN THE SOFTWARE.
   */
 class DeviceButton : public AbstractButton
 {
-    DevicePin &_pin;                                        // The pin this button is connected to.
-
     unsigned long downStartTime;                            // used to store the current system clock when a button down event occurs
     uint8_t sigma;                                          // integration of samples over time. We use this for debouncing, and noise tolerance for touch sensing
     DeviceButtonEventConfiguration eventConfiguration;      // Do we want to generate high level event (clicks), or defer this to another service.
     DeviceButtonPolarity polarity;                          // Determines if the button is active HIGH or LOW.
 
     public:
+    DevicePin &_pin;                                        // The pin this button is connected to.
 
     /**
       * Constructor.
@@ -99,16 +98,24 @@ class DeviceButton : public AbstractButton
     void setEventConfiguration(DeviceButtonEventConfiguration config);
 
     /**
-      * periodic callback from Device system timer.
-      *
-      * Check for state change for this button, and fires various events on a state change.
-      */
+     * periodic callback from Device system timer.
+     *
+     * Check for state change for this button, and fires various events on a state change.
+     */
     void periodicCallback();
 
     /**
       * Destructor for DeviceButton, where we deregister this instance from the array of fiber components.
       */
     ~DeviceButton();
+
+    protected:
+    /**
+     * Determines if this button is instantenously active (i.e. pressed).
+     * Internal method, use before debouncing.
+     */
+    virtual int buttonActive();
+    
 };
 
 #endif

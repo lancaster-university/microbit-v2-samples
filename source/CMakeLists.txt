@@ -31,6 +31,8 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "drivers/AbstractButton.cpp"
     "drivers/DeviceButton.cpp"
     "drivers/MultiButton.cpp"
+    "drivers/TouchButton.cpp"
+    "drivers/TouchSensor.cpp"
     "drivers/DevicePin.cpp"
     "drivers/TimedInterruptIn.cpp"
     "drivers/DeviceSerial.cpp"

@@ -47,6 +47,7 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_ID_SCHEDULER           15
 #define DEVICE_ID_COMPONENT           16
 #define DEVICE_ID_LIGHT_SENSOR        17
+#define DEVICE_ID_TOUCH_SENSOR        18
 
 #define DEVICE_ID_IO_P0               100                       // IDs 100-227 are reserved for I/O Pin IDs.
 

@@ -78,6 +78,15 @@ void DeviceButton::setEventConfiguration(DeviceButtonEventConfiguration config)
 }
 
 /**
+ * Determines if this button is instantenously active (i.e. pressed).
+ * Internal method, use before debouncing.
+ */
+int DeviceButton::buttonActive()
+{
+    return _pin.getDigitalValue() == polarity;
+}
+
+/**
   * periodic callback from Device system timer.
   *
   * Check for state change for this button, and fires various events on a state change.
@@ -90,7 +99,7 @@ void DeviceButton::periodicCallback()
     // This makes the output debounced for buttons, and desensitizes touch sensors
     // (particularly in environments where there is mains noise!)
     //
-    if(_pin.getDigitalValue() == polarity)
+    if(buttonActive())
     {
         if (sigma < DEVICE_BUTTON_SIGMA_MAX)
             sigma++;
