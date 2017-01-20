@@ -55,6 +55,7 @@ AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id) : _pin(pin)
         EventModel::defaultEventBus->listen(id, ANALOG_SENSOR_UPDATE_NEEDED, this, &AnalogSensor::onSampleEvent, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
     setPeriod(500);
+    updateSample();
 }
 
 /*

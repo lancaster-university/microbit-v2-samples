@@ -46,6 +46,8 @@ class CodalDevice
       */
     CodalDevice()
     {
+        if (random_value == 0)
+            random_value = 0xC0DA1;
     }
 
     /**
@@ -99,12 +101,13 @@ class CodalDevice
     /**
      * Seed the random number generator (RNG).
      *
-     * default: 0xCAFECAFE
-     * @return an unsigned 32 bit seed to seed codal's lightweight Galois LFSR.
+     * @param seed an unsigned 32 bit value used to seed codal's lightweight Galois LFSR.
+     * @return DEVICE_OK on success
      */
-    virtual uint32_t seedRandom()
+    virtual int seedRandom(uint32_t seed)
     {
-        return 0xCAFECAFE;
+        random_value = seed;
+        return DEVICE_OK;
     }
 };
 
