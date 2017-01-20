@@ -36,15 +36,7 @@ static void mysystem_init(void)
 {
     NVMCTRL->CTRLB.bit.RWS = 1;
 
-    /* Configure OSC8M as source for GCLK_GEN 2 */
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(2); // Read GENERATOR_ID - GCLK_GEN_2
-    gclk_sync();
-
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(2) | GCLK_GENCTRL_SRC_OSC8M_Val | GCLK_GENCTRL_GENEN;
-    gclk_sync();
-
     // Turn on DFLL with USB correction and sync to internal 8 mhz oscillator
-
     SYSCTRL->DFLLCTRL.bit.ONDEMAND = 0;
     dfll_sync();
 
@@ -78,23 +70,23 @@ static void mysystem_init(void)
     SYSCTRL->DFLLVAL.reg = dfllval_conf.reg;
     SYSCTRL->DFLLCTRL.reg = dfllctrl_conf.reg;
 
-    GCLK_CLKCTRL_Type clkctrl = {0};
-    uint16_t temp;
-    GCLK->CLKCTRL.bit.ID = 2; // GCLK_ID - DFLL48M Reference
-    temp = GCLK->CLKCTRL.reg;
-    clkctrl.bit.CLKEN = 1;
-    clkctrl.bit.WRTLOCK = 0;
-    clkctrl.bit.GEN = GCLK_CLKCTRL_GEN_GCLK0_Val;
-    GCLK->CLKCTRL.reg = (clkctrl.reg | temp);
+    GCLK->CLKCTRL.bit.ID = 0; // GCLK_ID - DFLL48M Reference
+    gclk_sync();
+
+    GCLK->CLKCTRL.bit.CLKEN = 1;
+    GCLK->CLKCTRL.bit.WRTLOCK = 0;
+    GCLK->CLKCTRL.bit.GEN = 0;
 
     // Configure DFLL48M as source for GCLK_GEN 0
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(0);
+    GCLK->GENDIV.bit.ID = 0; 
     gclk_sync();
+    GCLK->GENDIV.reg = 0;
 
-    GCLK->GENCTRL.reg =
-        GCLK_GENCTRL_ID(0) | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_IDC | GCLK_GENCTRL_GENEN;
+    GCLK->GENCTRL.bit.ID = 0; 
     gclk_sync();
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(0) | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_IDC | GCLK_GENCTRL_GENEN;
 }
+
 
 void usb_configure(uint8_t numEndpoints)
 {

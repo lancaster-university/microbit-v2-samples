@@ -43,9 +43,7 @@ static const DeviceDescriptor default_device_desc = {
 };
 
 static const char *default_strings[] = {
-    "CoDAL Devices",
-    "Generic CoDAL device",
-    "4242",
+    "CoDAL Devices", "Generic CoDAL device", "4242",
 };
 
 CodalUSB::CodalUSB()
@@ -115,6 +113,12 @@ int CodalUSB::sendConfig()
         tmp->interface->fillInterfaceInfo(&desc);
         ADD_DESC(desc);
 
+        if (info->supplementalDescriptorSize)
+        {
+            memcpy(buf + clen, info->supplementalDescriptor, info->supplementalDescriptorSize);
+            clen += info->supplementalDescriptorSize;
+        }
+
         EndpointDescriptor epdescIn = {
             sizeof(EndpointDescriptor),
             5, // type
@@ -144,12 +148,6 @@ int CodalUSB::sendConfig()
         else
         {
             usb_assert(0);
-        }
-
-        if (info->supplementalDescriptorSize)
-        {
-            memcpy(buf + clen, info->supplementalDescriptor, info->supplementalDescriptorSize);
-            clen += info->supplementalDescriptorSize;
         }
     }
 
@@ -260,18 +258,25 @@ int CodalUSB::interfaceRequest(USBSetup &setup, bool isClass)
     InterfaceList *tmp = NULL;
     struct list_head *iter, *q = NULL;
 
+    int ifaceIdx = -1;
+    int epIdx = -1;
+
     if ((setup.bmRequestType & REQUEST_DESTINATION) == REQUEST_INTERFACE)
+        ifaceIdx = setup.wIndex & 0xff;
+    else if ((setup.bmRequestType & REQUEST_DESTINATION) == REQUEST_ENDPOINT)
+        epIdx = setup.wIndex & 0xff;
+
+    list_for_each_safe(iter, q, &usb_list)
     {
-        list_for_each_safe(iter, q, &usb_list)
+        tmp = list_entry(iter, InterfaceList, list);
+        CodalUSBInterface *iface = tmp->interface;
+        if (iface->interfaceIdx == ifaceIdx ||
+            ((iface->in && iface->in->ep == epIdx) || (iface->out && iface->out->ep == epIdx)))
         {
-            tmp = list_entry(iter, InterfaceList, list);
-            if (tmp->interface->interfaceIdx == (setup.wIndex & 0xff))
-            {
-                int res = isClass ? tmp->interface->classRequest(*ctrlIn, setup)
-                                  : tmp->interface->stdRequest(*ctrlIn, setup);
-                if (res == DEVICE_OK)
-                    return DEVICE_OK;
-            }
+            int res = isClass ? tmp->interface->classRequest(*ctrlIn, setup)
+                              : tmp->interface->stdRequest(*ctrlIn, setup);
+            if (res == DEVICE_OK)
+                return DEVICE_OK;
         }
     }
 
