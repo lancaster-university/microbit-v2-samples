@@ -113,6 +113,12 @@ int CodalUSB::sendConfig()
         tmp->interface->fillInterfaceInfo(&desc);
         ADD_DESC(desc);
 
+        if (info->supplementalDescriptorSize)
+        {
+            memcpy(buf + clen, info->supplementalDescriptor, info->supplementalDescriptorSize);
+            clen += info->supplementalDescriptorSize;
+        }
+
         EndpointDescriptor epdescIn = {
             sizeof(EndpointDescriptor),
             5, // type
@@ -142,12 +148,6 @@ int CodalUSB::sendConfig()
         else
         {
             usb_assert(0);
-        }
-
-        if (info->supplementalDescriptorSize)
-        {
-            memcpy(buf + clen, info->supplementalDescriptor, info->supplementalDescriptorSize);
-            clen += info->supplementalDescriptorSize;
         }
     }
 
