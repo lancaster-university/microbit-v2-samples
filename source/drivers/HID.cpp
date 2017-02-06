@@ -92,14 +92,14 @@ const InterfaceInfo *USBHID::getInterfaceInfo()
 
 int USBHID::classRequest(UsbEndpointIn &ctrl, USBSetup &setup)
 {
-    uint8_t buf[64] = {0};
+    uint8_t buf[8] = {0};
 
     switch (setup.bRequest)
     {
     case HID_REQUEST_GET_PROTOCOL:
     case HID_REQUEST_GET_IDLE:
     case HID_REQUEST_GET_REPORT:
-        return ctrl.write(buf, 64);
+        return ctrl.write(buf, sizeof(buf));
 
     case HID_REQUEST_SET_IDLE:
     case HID_REQUEST_SET_REPORT:
