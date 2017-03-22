@@ -333,9 +333,6 @@ DEALINGS IN THE SOFTWARE.
 //
 // Debug options
 //
-#ifndef DEVICE_DMESG
-#define DEVICE_DMESG                          0
-#endif
 
 // When non-zero internal debug messages (DMESG() macro) go to a in-memory buffer of this size (in bytes).
 // It can be inspected from GDB (with 'print codalLogStore'), or accessed by the application.
