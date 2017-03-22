@@ -41,8 +41,9 @@ DEALINGS IN THE SOFTWARE.
 /**
   * The null image. We actally create a small one byte buffer here, just to keep NULL pointers out of the equation.
   */
-static const uint16_t empty[] __attribute__ ((aligned (4))) = { 0xffff, 1, 1, 0, };
-DeviceImage DeviceImage::EmptyImage((ImageData*)(void*)empty);
+#define EMPTY_DATA ((ImageData*)(void*)emptyData)
+
+DeviceImage DeviceImage::EmptyImage(EMPTY_DATA);
 
 /**
   * Default Constructor.
@@ -283,9 +284,10 @@ void DeviceImage::init(const int16_t x, const int16_t y, const uint8_t *bitmap)
 
     // Create a copy of the array
     ptr = (ImageData*)malloc(sizeof(ImageData) + x * y);
-    ptr->init();
+    REF_COUNTED_INIT(ptr);
     ptr->width = x;
     ptr->height = y;
+    
 
     // create a linear buffer to represent the image. We could use a jagged/2D array here, but experimentation
     // showed this had a negative effect on memory management (heap fragmentation etc).

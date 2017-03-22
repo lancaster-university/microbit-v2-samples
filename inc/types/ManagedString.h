@@ -366,6 +366,8 @@ class ManagedString
       */
     static ManagedString EmptyString;
 
+    static const uint16_t emptyData[];
+
     private:
 
     /**
@@ -378,9 +380,9 @@ class ManagedString
     /**
       * Internal constructor helper.
       *
-      * Creates this ManagedString based on a given null terminated char array.
+      * Creates this ManagedString based on a given data.
       */
-    void initString(const char *str);
+    void initString(const char *str, int len);
 
     /**
       * Private Constructor.
@@ -394,7 +396,6 @@ class ManagedString
       * @param str2 The second string on which to base the new ManagedString.
       */
     ManagedString(const ManagedString &s1, const ManagedString &s2);
-
 };
 
 #endif

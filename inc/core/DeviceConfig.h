@@ -102,6 +102,14 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_HEAP_REUSE_SD                  1
 #endif
 
+// If enabled, RefCounted objects include 2 bytes of space for virtual method table
+// at the beginning.
+// Set '1' to enable.
+#ifndef DEVICE_VTABLE
+#define DEVICE_VTABLE                         1
+#endif
+
+
 // The amount of memory allocated to Soft Device to hold its BLE GATT table.
 // For standard S110 builds, this should be word aligned and in the range 0x300 - 0x700.
 // Any unused memory will be automatically reclaimed as HEAP memory if both DEVICE_HEAP_REUSE_SD and DEVICE_HEAP_ALLOCATOR are enabled.

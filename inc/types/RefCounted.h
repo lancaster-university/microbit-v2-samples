@@ -37,14 +37,17 @@ DEALINGS IN THE SOFTWARE.
 struct RefCounted
 {
 public:
-
     /**
       * The high 15 bits hold the number of outstanding references. The lowest bit is always 1
-      * to make sure it doesn't look like vtable.
+      * to make sure it doesn't look like C++ vtable.
       * Should never be even or one (object should be deleted then).
       * When it's set to 0xffff, it means the object sits in flash and should not be counted.
       */
     uint16_t refCount;
+
+#if CONFIG_ENABLED(DEVICE_VTABLE)
+    uint16_t vtablePtr;
+#endif
 
     /**
       * Increment reference count.
@@ -68,5 +71,19 @@ public:
       */
     bool isReadOnly();
 };
+
+#if CONFIG_ENABLED(DEVICE_VTABLE)
+#define REF_COUNTED_DEF_EMPTY(className, ...)                                                      \
+    const uint16_t className::emptyData[] __attribute__((aligned(4))) = {0xffff, 0, __VA_ARGS__};
+#define REF_COUNTED_INIT(ptr)                                                                      \
+    ptr->init();                                                                             \
+    ptr->vtablePtr = EMPTY_DATA->vtablePtr;                                                        \
+    if (!ptr->vtablePtr)                                                                           \
+    device.panic(DEVICE_HEAP_ERROR)
+#else
+#define REF_COUNTED_DEF_EMPTY(className, ...)                                                      \
+    const uint16_t className::emptyData[] __attribute__((aligned(4))) = {0xffff, __VA_ARGS__};
+#define REF_COUNTED_INIT(ptr) ptr->init()
+#endif
 
 #endif

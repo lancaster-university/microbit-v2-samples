@@ -19,7 +19,7 @@ struct BufferData : RefCounted
 class ManagedBuffer
 {
     BufferData      *ptr;     // Pointer to payload data
-    
+  
     public:
 
     /**
@@ -252,6 +252,8 @@ class ManagedBuffer
     int writeBuffer(int dstOffset, const ManagedBuffer &src, int srcOffset = 0, int length = -1);
 
     bool isReadOnly() const { return ptr->isReadOnly(); }
+
+    static const uint16_t emptyData[];
 };
 
 #endif

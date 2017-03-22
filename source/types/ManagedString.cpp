@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ManagedString.h"
 #include "CodalCompat.h"
 
-static const char empty[] __attribute__ ((aligned (4))) = "\xff\xff\0\0\0";
+#define EMPTY_DATA ((StringData*)(void*)emptyData)
 
 /**
   * Internal constructor helper.
@@ -59,7 +59,7 @@ static const char empty[] __attribute__ ((aligned (4))) = "\xff\xff\0\0\0";
   */
 void ManagedString::initEmpty()
 {
-    ptr = (StringData*)(void*)empty;
+    ptr = EMPTY_DATA;
 }
 
 /**
@@ -67,15 +67,15 @@ void ManagedString::initEmpty()
   *
   * Creates this ManagedString based on a given null terminated char array.
   */
-void ManagedString::initString(const char *str)
+void ManagedString::initString(const char *str, int len)
 {
     // Initialise this ManagedString as a new string, using the data provided.
     // We assume the string is sane, and null terminated.
-    int len = strlen(str);
     ptr = (StringData *) malloc(4+len+1);
-    ptr->init();
+    REF_COUNTED_INIT(ptr);
     ptr->len = len;
-    memcpy(ptr->data, str, len+1);
+    memcpy(ptr->data, str, len);
+    ptr->data[len] = 0;
 }
 
 /**
@@ -123,7 +123,7 @@ ManagedString::ManagedString(const int value)
     char str[12];
 
     itoa(value, str);
-    initString(str);
+    initString(str, strlen(str));
 }
 
 /**
@@ -139,7 +139,7 @@ ManagedString::ManagedString(const int value)
 ManagedString::ManagedString(const char value)
 {
     char str[2] = {value, 0};
-    initString(str);
+    initString(str, 1);
 }
 
 
@@ -166,7 +166,7 @@ ManagedString::ManagedString(const char *str)
         return;
     }
 
-    initString(str);
+    initString(str, strlen(str));
 }
 
 /**
@@ -187,7 +187,7 @@ ManagedString::ManagedString(const ManagedString &s1, const ManagedString &s2)
 
     // Create a new buffer for holding the new string data.
     ptr = (StringData*) malloc(4+len+1);
-    ptr->init();
+    REF_COUNTED_INIT(ptr);
     ptr->len = len;
 
     // Enter the data, and terminate the string.
@@ -210,14 +210,7 @@ ManagedString::ManagedString(const ManagedString &s1, const ManagedString &s2)
   */
 ManagedString::ManagedString(ManagedBuffer buffer)
 {
-    // Allocate a new buffer ( just in case the data is not NULL terminated).
-    ptr = (StringData*) malloc(4+buffer.length()+1);
-    ptr->init();
-
-    // Store the length of the new string
-    ptr->len = buffer.length();
-    memcpy(ptr->data, buffer.getBytes(), buffer.length());
-    ptr->data[buffer.length()] = 0;
+    initString((char*)buffer.getBytes(), buffer.length());
 }
 
 /**
@@ -244,14 +237,7 @@ ManagedString::ManagedString(const char *str, const int16_t length)
         return;
     }
 
-
-    // Allocate a new buffer, and create a NULL terminated string.
-    ptr = (StringData*) malloc(4+length+1);
-    ptr->init();
-    // Store the length of the new string
-    ptr->len = length;
-    memcpy(ptr->data, str, length);
-    ptr->data[length] = 0;
+    initString(str, length);
 }
 
 /**
@@ -427,7 +413,7 @@ ManagedString ManagedString::substring(int16_t start, int16_t length)
 {
     // If the parameters are illegal, just return a reference to the empty string.
     if (start >= this->length())
-        return ManagedString(ManagedString::EmptyString);
+        return ManagedString(EMPTY_DATA);
 
     // Compute a safe copy length;
     length = min(this->length()-start, length);
@@ -488,4 +474,4 @@ char ManagedString::charAt(int16_t index)
 /**
   * Empty string constant literal
   */
-ManagedString ManagedString::EmptyString((StringData*)(void*)empty);
+ManagedString ManagedString::EmptyString(EMPTY_DATA);

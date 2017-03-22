@@ -18,6 +18,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "core/CodalUSB.cpp"
 
     "types/ManagedString.cpp"
+    "types/EmptyInstances.cpp"
     "types/Matrix4.cpp"
     "types/DeviceEvent.cpp"
 
