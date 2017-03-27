@@ -1,0 +1,32 @@
+{
+    "device":"CIRCUIT_PLAYGROUND",
+    "processor":"SAMD21G18A",
+    "manufacturer":"ATMEL",
+    "architecture":"CORTEX_M0_PLUS",
+    "definitions":"-DCONF_CLOCKS_H_INCLUDED -DGCLK_PERIPHERAL_CLOCK=GCLK_GENERATOR_3 -DDEVICE_ANALOGIN -DDEVICE_ANALOGOUT -DDEVICE_I2C -DDEVICE_I2CSLAVE -DDEVICE_I2C_ASYNCH -DDEVICE_INTERRUPTIN -DDEVICE_PORTIN -DDEVICE_PORTINOUT -DDEVICE_PORTOUT -DDEVICE_RTC -DDEVICE_SERIAL -DDEVICE_SERIAL_ASYNCH -DDEVICE_SERIAL_FC -DDEVICE_SLEEP -DDEVICE_SPI -DDEVICE_PWMOUT -DDEVICE_SPISLAVE -DDEVICE_SPI_ASYNCH -DCONF_CLOCKS_H_INCLUDED -DGCLK_PERIPHERAL_CLOCK=GCLK_GENERATOR_3 -D__SAMD21G18A__ -D__CORTEX_M0PLUS -D__MBED__=1  -DTOOLCHAIN_GCC -DTOOLCHAIN_GCC_ARM -DMBED_OPERATORS -DTARGET_ADAFRUIT_CP_G18A -DI2C_MASTER_CALLBACK_MODE=true -DEXTINT_CALLBACK_MODE=true -DUSART_CALLBACK_MODE=true -DTC_ASYNC=true",
+    "cmake_definitions": [
+        {
+            "variable":"MBED_LEGACY_TARGET_DEFINITIONS",
+            "value":"ADAFRUIT_CP_G18A;Atmel;SAM_CortexM0P;SAMD21"
+        },
+        {
+            "variable":"MBED_LEGACY_TOOLCHAIN",
+            "value":"GCC_ARM;"
+        }
+    ],
+    "cpu_opts":"-mcpu=cortex-m0plus -mthumb",
+    "asm_flags":"-fno-exceptions -fno-unwind-tables -x assembler-with-cpp --specs=nosys.specs",
+    "c_flags":"-std=c99 --specs=nosys.specs",
+    "cpp_flags":"-fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
+    "linker_flags":"-Wl,-wrap,main",
+    "pre_build":"",
+    "post_build":"",
+    "libraries":[
+        {
+            "name":"mbed-classic",
+            "url":"https://github.com/lancaster-university/mbed-classic",
+            "branch":"development",
+            "type":"git"
+        }
+    ]
+}

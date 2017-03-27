@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
 
-# THIS HAS TO COME BEFORE THE PROJECT LINE
-#set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
-
 find_program(ARM_NONE_EABI_RANLIB arm-none-eabi-ranlib)
 find_program(ARM_NONE_EABI_AR arm-none-eabi-ar)
 find_program(ARM_NONE_EABI_GCC arm-none-eabi-gcc)
@@ -12,7 +9,6 @@ find_program(ARM_NONE_EABI_OBJCOPY arm-none-eabi-objcopy)
 set(LIB_DEST "libraries")
 
 if(CMAKE_VERSION VERSION_LESS "3.5.0")
-    message("FORCING COMPILER")
     include(CMakeForceCompiler)
     cmake_force_c_compiler("${ARM_NONE_EABI_GCC}" GNU)
     cmake_force_cxx_compiler("${ARM_NONE_EABI_GPP}" GNU)
@@ -22,57 +18,82 @@ else()
     set(CMAKE_C_COMPILER "${ARM_NONE_EABI_GCC}")
     set(CMAKE_CXX_COMPILER "${ARM_NONE_EABI_GPP}")
 endif()
-message("before: |${CMAKE_AR}|${CMAKE_RANLIB}|")
-message("setting to: ${ARM_NONE_EABI_AR} ${ARM_NONE_EABI_RANLIB}")
+
 SET(CMAKE_AR "${ARM_NONE_EABI_AR}" CACHE FILEPATH "Archiver")
 SET(CMAKE_RANLIB "${ARM_NONE_EABI_RANLIB}" CACHE FILEPATH "rlib")
 set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
 
-message("C COMPILER : ${CMAKE_C_COMPILER} C++ COMPILER: ${CMAKE_CXX_COMPILER}")
-
+# required to force settings...
 project(my_project VERSION 0.0.0 LANGUAGES C CXX ASM)
 
-include(cmake/JSONParser.cmake)
-include(cmake/util/util.cmake)
+# include additional cmake
+include(utils/cmake/JSONParser.cmake)
+include(utils/cmake/util.cmake)
+include(utils/cmake/colours.cmake)
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
+# configure output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/build")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
+#read our config file...
 file(READ "${PROJECT_SOURCE_DIR}/codal.json" codal_json)
-file(READ "${PROJECT_SOURCE_DIR}/device.json" device_json)
-
 sbeParseJson(codal codal_json)
 
-foreach(var ${codal})
-    message("${var} = ${${var}}")
-endforeach()
+#foreach(var ${codal})
+#    message("${var} = ${${var}}")
+#endforeach()
+
+if("${codal.target.platform}" STRGREATER "")
+    message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built on ${codal.target.platform}. ${ColourReset}")
+    file(READ "${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/${codal.target.processor}/${codal.target.device}/device.json" device_json)
+else()
+    message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built natively. ${ColourReset}")
+    file(READ "${PROJECT_SOURCE_DIR}/target/${codal.target.manufacturer}/${codal.target.processor}/${codal.target.device}/device.json" device_json)
+endif()
 
 sbeParseJson(device device_json)
 
-foreach(var ${device})
-    message("${var} = ${${var}}")
-endforeach()
+#foreach(var ${device})
+#    message("${var} = ${${var}}")
+#endforeach()
 
-#include platform specific includes
-include_directories("${PROJECT_SOURCE_DIR}/target/${device.processor}")
-include_directories("${PROJECT_SOURCE_DIR}/target/${device.processor}/${device.device}")
+set(TARGET_PROCESSOR_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}")
+message("TARGET_PROCESSOR_DIRECTORY: ${TARGET_PROCESSOR_DIRECTORY}")
+# if built on something...
+if("${device.platform}" STRGREATER "")
+    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.platform}/${device.processor}/${device.device}")
+# otherwise use the native implementation
+else()
+    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}/${device.device}")
+endif()
 
-message("ADDING SOURCE FILEs")
-SOURCE_FILES(SOURCE "${PROJECT_SOURCE_DIR}/target/${device.processor}")
-SOURCE_FILES(SOURCE "${PROJECT_SOURCE_DIR}/target/${device.processor}/${device.device}")
+#include processor specific files
+message("BEFORE: ${INCLUDE_DIRECTORIES}")
+include_directories(${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor})
+message("AFTER: ${INCLUDE_DIRECTORIES}")
+SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
 
+#include software libs
+RECURSIVE_FIND_DIR(INCLUDE_DIRS "${TARGET_SOFTWARE_DIRECTORY}" "*.h")
+
+RECURSIVE_FIND_FILE(SOURCE_FILES "${TARGET_SOFTWARE_DIRECTORY}" "*.c??")
+
+message("INCLUDE_DIRS: ${INCLUDE_DIRS}")
+message("SOURCE_FILES: ${SOURCE_FILES}")
+SOURCE_FILES(SOURCE ${SOURCE_FILES})
+include_directories("${INCLUDE_DIRS}")
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
-    message("Adding defs: ${device.definitions}")
+    #message("Adding defs: ${device.definitions}")
     add_definitions("${device.definitions}")
 endif()
 
 #define any additional symbols specified by codal.
 if("${codal.definitions}" STRGREATER "")
-    message("Adding defs: ${codal.definitions}")
+    #message("Adding defs: ${codal.definitions}")
     add_definitions("${codal.definitions}")
 endif()
 
@@ -112,7 +133,7 @@ endif()
 
 if("${device.extends}" STRGREATER "")
     message("Opening file: ${PROJECT_SOURCE_DIR}/cmake/base/${device.extends}.json")
-    file(READ "${PROJECT_SOURCE_DIR}/cmake/base/${device.extends}" extended)
+    #file(READ "${PROJECT_SOURCE_DIR}/utils/cmake/base/${device.extends}" extended)
 endif()
 
 # Define any cmake variables the user has requested
@@ -123,24 +144,30 @@ if("${device.cmake_definitions}" STRGREATER "")
     endforeach()
 endif()
 
+set(LIB_FOLDERS "")
 # "import" and build any specified libraries
 if("${device.libraries}" STRGREATER "")
-    message("Installing dependencies...")
+    message("${Magenta}Installing dependencies...${ColourReset}")
     set(DEVICE_LIBS ${device.libraries})
     foreach(i ${DEVICE_LIBS})
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}})
+        SET(BRANCH "NONE")
+        if("${device.libraries_${i}.branch}" STRGREATER "")
+            SET(BRANCH "${device.libraries_${i}.branch}")
+        endif()
+        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
+        list(APPEND LIB_FOLDERS "${PROJECT_SOURCE_DIR}/${LIB_DEST}/${device.libraries_${i}.name}")
     endforeach()
 
     SUB_DIRS(CODAL_LIB_SOURCE "${LIB_DEST}")
     foreach(dir ${CODAL_LIB_SOURCE})
-        message("Adding library: ${dir}")
+        message("${Magenta}Adding library: ${dir}${ColourReset}")
         add_subdirectory("${dir}")
-        include_directories("${dir}")
+        #include_directories("${dir}")
     endforeach()
 endif()
 
 # Find headers within Codal and include them
-HEADER_DIRECTORIES(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}")
+RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
 include_directories("${INCLUDES}")
 
 # add our source files using the CMake in ./source
@@ -158,9 +185,15 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT        "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
-add_executable(codal_${device.device} "${PROJECT_SOURCE_DIR}/${codal.executables}/main.cpp")
+add_executable(codal_${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
+
 target_link_libraries(codal_${device.device} codal)
 
-execute_process(
-    COMMAND arm-none-eabi-objcopy -O ihex codal_${device.device} codal_${device.device}.hex
+add_custom_command(
+    OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
+    COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
+    DEPENDS codal_${device.device}
+    COMMENT "converting to hex file."
 )
+
+add_custom_target(codal_${device.device}_hex ALL DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex")

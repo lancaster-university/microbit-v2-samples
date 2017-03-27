@@ -1,0 +1,72 @@
+MACRO(RECURSIVE_FIND_DIR return_list dir pattern)
+    FILE(GLOB_RECURSE new_list "${dir}/${pattern}")
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+        SET(dir_list ${dir_list} ${dir_path})
+    ENDFOREACH()
+    LIST(REMOVE_DUPLICATES dir_list)
+    SET(${return_list} ${dir_list})
+ENDMACRO()
+
+MACRO(RECURSIVE_FIND_FILE return_list dir pattern)
+    FILE(GLOB_RECURSE new_list "${dir}/${pattern}")
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        #GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+        SET(dir_list ${dir_list} ${file_path})
+    ENDFOREACH()
+    LIST(REMOVE_DUPLICATES dir_list)
+    SET(${return_list} ${dir_list})
+ENDMACRO()
+
+MACRO(SOURCE_FILES return_list dir)
+    FILE(GLOB new_list "${dir}/*.c??")
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+        SET(dir_list ${dir_list} ${dir_path})
+    ENDFOREACH()
+    LIST(REMOVE_DUPLICATES dir_list)
+    SET(${return_list} ${dir_list})
+ENDMACRO()
+
+function(INSTALL_DEPENDENCY dir name url branch type)
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/${dir}")
+        message("Creating libraries folder")
+        FILE(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/${dir}")
+    endif()
+
+    if(EXISTS "${PROJECT_SOURCE_DIR}/${dir}/${name}")
+        message("${name} is already installed")
+        return()
+    endif()
+
+    if(type STREQUAL "git")
+        message("Cloning into: ${url}")
+
+        if(NOT "${branch}" STREQUAL "NONE")
+            message("Checking out branch: ${branch}")
+            execute_process(
+                COMMAND git clone -b ${branch} ${url} ${name}
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
+            )
+        else()
+            execute_process(
+                COMMAND git clone ${url} ${name}
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
+            )
+        endif()
+    else()
+        message("No mechanism exists to install this library.")
+    endif()
+endfunction()
+
+MACRO(SUB_DIRS return_dirs dir)
+    FILE(GLOB list "${PROJECT_SOURCE_DIR}/${dir}/*")
+    SET(dir_list "")
+    FOREACH(file_path ${list})
+        SET(dir_list ${dir_list} ${file_path})
+    ENDFOREACH()
+    set(${return_dirs} ${dir_list})
+ENDMACRO()
