@@ -25,8 +25,10 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/RefCounted.cpp"
     "types/RefCountedInit.cpp"
 
-    "device/DeviceTimer.cpp"
-    "device/USB.cpp"
+    "device/SAMD21/DeviceTimer.cpp"
+    "device/SAMD21/USB.cpp"
+    "device/SAMD21/SAMD21DMAC.cpp"
+    "device/SAMD21/SAMD21DAC.cpp"
 
     "drivers/DynamicPwm.cpp"
     "drivers/AbstractButton.cpp"
