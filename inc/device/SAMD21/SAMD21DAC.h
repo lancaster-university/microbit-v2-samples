@@ -6,7 +6,7 @@
 #ifndef SAMD21DAC_H
 #define SAMD21DAC_H
 
-class SAMD21DAC : DeviceComponent
+class SAMD21DAC : public DeviceComponent, public DmaComponent
 {
 
 private:
@@ -26,6 +26,8 @@ public:
     void setValue(int value);
     int getValue();
     void play(uint16_t *buffer, int length);
+    virtual void dmaTransferComplete();
+    
 };
 
 #endif

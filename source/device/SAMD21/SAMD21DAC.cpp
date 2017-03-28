@@ -109,6 +109,10 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
         DMAC->CHCTRLB.bit.EVIE = 0;                 // no events 
         DMAC->CHCTRLB.bit.EVACT = 0;                // no events 
 
+        DMAC->CHINTENSET.bit.TCMPL = 1;             // Enable interrupt on completion.
+
+        dmac.onTransferComplete(dmaChannel, this);
+
         SERIAL_DEBUG->printf("DAC: ALLOCATED DMA CHANNEL: %d\n", dmaChannel);
     }
 
@@ -157,3 +161,12 @@ int SAMD21DAC::getValue()
 {
     return DAC->DATA.reg;
 }
+
+/**
+ * Base implementation of a DMA callback
+ */
+void SAMD21DAC::dmaTransferComplete()
+{
+    SERIAL_DEBUG->printf("*");
+}
+
