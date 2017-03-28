@@ -6,6 +6,36 @@
 
 #undef ENABLE
 
+static DmaComponent* apps[DMA_DESCRIPTOR_COUNT]= {NULL};
+
+extern "C" void DMAC_Handler( void )
+{
+    uint32_t oldChannel = DMAC->CHID.bit.ID;
+    int channel = 0;
+    uint32_t pend = DMAC->INTSTATUS.reg;
+
+    while((pend & 1) == 0)
+    {
+        pend = pend >> 1;
+        channel++;
+    }
+
+    DMAC->CHID.bit.ID = channel;
+    DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; 
+
+    if(apps[channel] != NULL)
+        apps[channel]->dmaTransferComplete();
+
+    DMAC->CHID.bit.ID = oldChannel;
+}
+
+/**
+ * Base implementation of a DMA callback
+ */
+void DmaComponent::dmaTransferComplete()
+{
+}
+
 SAMD21DMAC::SAMD21DMAC()
 {
     memclr(descriptors, sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT + 1));
@@ -27,6 +57,8 @@ SAMD21DMAC::SAMD21DMAC()
     DMAC->WRBADDR.reg = (uint32_t) &descriptors[0];       // initialise Writeback table entry
 
     this->enable();
+
+    NVIC_EnableIRQ(DMAC_IRQn);
 }
 
 void SAMD21DMAC::enable()
@@ -107,4 +139,21 @@ int SAMD21DMAC::allocateChannel()
     }
 
     return DEVICE_NO_RESOURCES;
+}
+
+/**
+ * Registers a component to receive low level, hardware interrupt upon DMA transfer completion
+ *
+ * @param channel the DMA channel that the component is interested in.
+ * @param component the component that wishes to receive the interrupt.
+ *
+ * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER if the channel number is invalid.
+ */
+int SAMD21DMAC::onTransferComplete(int channel, DmaComponent *component)
+{
+    if (channel >= DMA_DESCRIPTOR_COUNT)
+        return DEVICE_INVALID_PARAMETER;
+
+    apps[channel] = component;
+    return DEVICE_OK;
 }

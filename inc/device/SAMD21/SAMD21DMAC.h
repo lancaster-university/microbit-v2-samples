@@ -7,6 +7,13 @@
 
 #define DMA_DESCRIPTOR_COUNT 2
 
+class DmaComponent
+{
+    public:
+    virtual void dmaTransferComplete();
+};
+
+
 class SAMD21DMAC
 {
     DmacDescriptor descriptors[DMA_DESCRIPTOR_COUNT+1];
@@ -47,6 +54,16 @@ public:
      * Enables all confgures DMA activity
      */
     void enable();
+
+    /**
+     * Registers a component to receive low level, hardware interrupt upon DMA transfer completion
+     *
+     * @param channel the DMA channel that the component is interested in.
+     * @param component the component that wishes to receive the interrupt.
+     *
+     * @return DEVICE_OK on success, or DEVICE_INVALID_PARAMETER if the channel number is invalid.
+     */
+    int onTransferComplete(int channel, DmaComponent *component);
 
     // DEBUG HELPERS
     void showDescriptor(DmacDescriptor *desc);
