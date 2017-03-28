@@ -103,10 +103,10 @@ DEALINGS IN THE SOFTWARE.
 #endif
 
 // If enabled, RefCounted objects include 2 bytes of space for virtual method table
-// at the beginning.
+// at the beginning. This requires rather intricate post-processing of the hex file.
 // Set '1' to enable.
 #ifndef DEVICE_VTABLE
-#define DEVICE_VTABLE                         1
+#define DEVICE_VTABLE                         0
 #endif
 
 
