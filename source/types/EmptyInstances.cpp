@@ -30,9 +30,11 @@ DEALINGS IN THE SOFTWARE.
 
 /*
  * These are in separate file, since the vtable pointers in them, which get copied to live
- * instances can be patched by the runtime before genearting the final binary file.
- * If these are in the same file, the C++ compile will optimize the reads from static
+ * instances, are patched by the runtime-compiler before genearting the final binary file.
+ * If these are in the same file, the C++ compiler will optimize the reads from static
  * const data and patching up will come to nothing.
+ *
+ * This only applies when DEVICE_VTABLE is true.
  */
 
 REF_COUNTED_DEF_EMPTY(ManagedString, 0, 0)
