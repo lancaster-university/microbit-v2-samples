@@ -24,7 +24,7 @@ SET(CMAKE_RANLIB "${ARM_NONE_EABI_RANLIB}" CACHE FILEPATH "rlib")
 set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
 
 # required to force settings...
-project(my_project VERSION 0.0.0 LANGUAGES C CXX ASM)
+project(codal)
 
 # include additional cmake
 include(utils/cmake/JSONParser.cmake)
@@ -60,30 +60,30 @@ sbeParseJson(device device_json)
 #endforeach()
 
 set(TARGET_PROCESSOR_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}")
-message("TARGET_PROCESSOR_DIRECTORY: ${TARGET_PROCESSOR_DIRECTORY}")
+
+#include processor specific files
+include_directories("${TARGET_PROCESSOR_DIRECTORY}")
+SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
+
 # if built on something...
-if("${device.platform}" STRGREATER "")
-    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.platform}/${device.processor}/${device.device}")
+if("${codal.target.platform}" STRGREATER "")
+    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/${device.processor}/${device.device}")
 # otherwise use the native implementation
 else()
     set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}/${device.device}")
 endif()
 
-#include processor specific files
-message("BEFORE: ${INCLUDE_DIRECTORIES}")
-include_directories(${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor})
-message("AFTER: ${INCLUDE_DIRECTORIES}")
-SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
-
 #include software libs
 RECURSIVE_FIND_DIR(INCLUDE_DIRS "${TARGET_SOFTWARE_DIRECTORY}" "*.h")
-
 RECURSIVE_FIND_FILE(SOURCE_FILES "${TARGET_SOFTWARE_DIRECTORY}" "*.c??")
 
-message("INCLUDE_DIRS: ${INCLUDE_DIRS}")
-message("SOURCE_FILES: ${SOURCE_FILES}")
 SOURCE_FILES(SOURCE ${SOURCE_FILES})
 include_directories("${INCLUDE_DIRS}")
+
+# Find headers within Codal and include them
+RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
+include_directories("${INCLUDES}")
+
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
@@ -144,8 +144,19 @@ if("${device.cmake_definitions}" STRGREATER "")
     endforeach()
 endif()
 
+# this variable is used in the linking step of CODAL.
+set(CODAL_DEPS "")
+
+# if we're building on top of a platform, import files and build. The library name must
+# be the same as the platform name specified in JSON.
+if("${codal.target.platform}" STRGREATER "")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/")
+    list(APPEND CODAL_DEPS "${codal.target.platform}")
+endif()
+
 set(LIB_FOLDERS "")
-# "import" and build any specified libraries
+
+# "import" and add any specified libraries to the build list
 if("${device.libraries}" STRGREATER "")
     message("${Magenta}Installing dependencies...${ColourReset}")
     set(DEVICE_LIBS ${device.libraries})
@@ -155,6 +166,7 @@ if("${device.libraries}" STRGREATER "")
             SET(BRANCH "${device.libraries_${i}.branch}")
         endif()
         INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
+        list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
         list(APPEND LIB_FOLDERS "${PROJECT_SOURCE_DIR}/${LIB_DEST}/${device.libraries_${i}.name}")
     endforeach()
 
@@ -162,15 +174,11 @@ if("${device.libraries}" STRGREATER "")
     foreach(dir ${CODAL_LIB_SOURCE})
         message("${Magenta}Adding library: ${dir}${ColourReset}")
         add_subdirectory("${dir}")
-        #include_directories("${dir}")
     endforeach()
 endif()
 
-# Find headers within Codal and include them
-RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
-include_directories("${INCLUDES}")
-
-# add our source files using the CMake in ./source
+# add our source files last, using the CMake in ./source
+# the cmake here will use CODAL_DEPS when linking
 add_subdirectory("${codal.source}")
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
@@ -186,9 +194,9 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
 add_executable(codal_${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
-
 target_link_libraries(codal_${device.device} codal)
 
+# turn our bin to a hex.
 add_custom_command(
     OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
     COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
@@ -196,4 +204,5 @@ add_custom_command(
     COMMENT "converting to hex file."
 )
 
+#specify a dependency on the binary file so that hex is automatically rebuilt when bin is changed.
 add_custom_target(codal_${device.device}_hex ALL DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex")

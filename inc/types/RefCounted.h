@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef REF_COUNTED_H
 #define REF_COUNTED_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 #include "CodalDevice.h"
 

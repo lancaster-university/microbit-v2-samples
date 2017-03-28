@@ -89,7 +89,7 @@ void device_heap_print(HeapDefinition &heap)
     if(SERIAL_DEBUG) SERIAL_DEBUG->printf("heap_size  : %d\n", (int)heap.heap_end - (int)heap.heap_start);
 
     // Disable IRQ temporarily to ensure no race conditions!
-    __disable_irq();
+    device.disableInterrupts();
 
     block = heap.heap_start;
     while (block < heap.heap_end)
@@ -111,7 +111,7 @@ void device_heap_print(HeapDefinition &heap)
     }
 
     // Enable Interrupts
-    __enable_irq();
+    device.enableInterrupts();
 
     if(SERIAL_DEBUG) SERIAL_DEBUG->printf("\n");
 
@@ -165,7 +165,7 @@ int device_create_heap(uint32_t start, uint32_t end)
         return DEVICE_INVALID_PARAMETER;
 
     // Disable IRQ temporarily to ensure no race conditions!
-    __disable_irq();
+    device.disableInterrupts();
 
     // Record the dimensions of this new heap
     heap[heap_count].heap_start = (uint32_t *)start;
@@ -176,7 +176,7 @@ int device_create_heap(uint32_t start, uint32_t end)
     heap_count++;
 
     // Enable Interrupts
-    __enable_irq();
+    device.enableInterrupts();
 
 #if CONFIG_ENABLED(DEVICE_DBG) && CONFIG_ENABLED(DEVICE_HEAP_DBG)
     device_heap_print();
@@ -207,7 +207,7 @@ void *device_malloc(size_t size, HeapDefinition &heap)
     blocksNeeded++;
 
     // Disable IRQ temporarily to ensure no race conditions!
-    __disable_irq();
+    device.disableInterrupts();
 
     // We implement a first fit algorithm with cache to handle rapid churn...
     // We also defragment free blocks as we search, to optimise this and future searches.
@@ -250,7 +250,7 @@ void *device_malloc(size_t size, HeapDefinition &heap)
     // We're full!
     if (block >= heap.heap_end)
     {
-        __enable_irq();
+        device.enableInterrupts();
         return NULL;
     }
 
@@ -271,7 +271,7 @@ void *device_malloc(size_t size, HeapDefinition &heap)
     }
 
     // Enable Interrupts
-    __enable_irq();
+    device.enableInterrupts();
 
     return block+1;
 }

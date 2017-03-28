@@ -20,12 +20,5 @@
     "cpp_flags":"-fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
     "linker_flags":"-Wl,-wrap,main",
     "pre_build":"",
-    "post_build":"",
-    "libraries":[
-        {
-            "name":"mbed-classic",
-            "url":"https://github.com/lancaster-university/mbed-classic",
-            "type":"git"
-        }
-    ]
+    "post_build":""
 }

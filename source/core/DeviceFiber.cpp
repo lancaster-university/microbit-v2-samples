@@ -65,6 +65,8 @@ static uint8_t fiber_flags = 0;
  */
 static EventModel *messageBus = NULL;
 
+extern CodalDevice& device;
+
 /**
   * Utility function to add the currenty running fiber to the given queue.
   *
@@ -79,7 +81,7 @@ static EventModel *messageBus = NULL;
   */
 void queue_fiber(Fiber *f, Fiber **queue)
 {
-    __disable_irq();
+    device.disableInterrupts();
 
     // Record which queue this fiber is on.
     f->queue = queue;
@@ -106,7 +108,7 @@ void queue_fiber(Fiber *f, Fiber **queue)
         f->next = NULL;
     }
 
-    __enable_irq();
+    device.enableInterrupts();
 }
 
 /**
@@ -121,7 +123,7 @@ void dequeue_fiber(Fiber *f)
         return;
 
     // Remove this fiber fromm whichever queue it is on.
-    __disable_irq();
+    device.disableInterrupts();
 
     if (f->prev != NULL)
         f->prev->next = f->next;
@@ -135,7 +137,7 @@ void dequeue_fiber(Fiber *f)
     f->prev = NULL;
     f->queue = NULL;
 
-    __enable_irq();
+    device.enableInterrupts();
 }
 
 /**
@@ -145,7 +147,7 @@ Fiber *getFiberContext()
 {
     Fiber *f;
 
-    __disable_irq();
+    device.disableInterrupts();
 
     if (fiberPool != NULL)
     {
@@ -163,7 +165,7 @@ Fiber *getFiberContext()
         f->stack_top = 0;
     }
 
-    __enable_irq();
+    device.enableInterrupts();
 
     // Ensure this fiber is in suitable state for reuse.
     f->flags = 0;
@@ -334,7 +336,8 @@ void fiber_sleep(unsigned long t)
     // If the scheduler is not running, then simply perform a spin wait and exit.
     if (!fiber_scheduler_running())
     {
-        wait_ms(t);
+        #warning "wait_ms needs to be implemented, commented out here"
+        //wait_ms(t);
         return;
     }
 
@@ -894,7 +897,7 @@ void idle()
         // because we enforce MESSAGE_BUS_LISTENER_IMMEDIATE for listeners placed
         // on the scheduler.
         fiber_flags &= ~DEVICE_SCHEDULER_IDLE;
-        __WFE();
+        device.waitForEvent();
     }
 }
 

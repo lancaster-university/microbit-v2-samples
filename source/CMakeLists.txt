@@ -20,37 +20,21 @@ set(CODAL_CPP_FILES
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
     "types/DeviceEvent.cpp"
+
     "types/ManagedBuffer.cpp"
     "types/RefCounted.cpp"
-    "types/RefCountedInit.cpp"
-    "types/DataStream.cpp"
 
-    "device/SAMD21/DeviceTimer.cpp"
-    "device/SAMD21/USB.cpp"
-    "device/SAMD21/SAMD21DMAC.cpp"
-    "device/SAMD21/SAMD21DAC.cpp"
-    "device/SAMD21/SAMD21PDM.cpp"
-    "device/SAMD21/adafruit_ptc.cpp"
-
-    "drivers/DynamicPwm.cpp"
     "drivers/AbstractButton.cpp"
     "drivers/DeviceButton.cpp"
     "drivers/MultiButton.cpp"
     "drivers/TouchButton.cpp"
-    "drivers/CapTouchButton.cpp"
     "drivers/TouchSensor.cpp"
-    "drivers/DevicePin.cpp"
-    "drivers/TimedInterruptIn.cpp"
-    "drivers/DeviceSerial.cpp"
     "drivers/DeviceMessageBus.cpp"
-    "drivers/DeviceI2C.cpp"
     "drivers/HID.cpp"
     "drivers/LIS3DH.cpp"
     "drivers/AnalogSensor.cpp"
     "drivers/LinearAnalogSensor.cpp"
     "drivers/NonLinearAnalogSensor.cpp"
-    "drivers/Synthesizer.cpp"
-    "drivers/LevelDetector.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)
@@ -83,13 +67,4 @@ add_library(codal
     ${CODAL_S_FILES}
 )
 
-#yotta_postprocess_target(LIBRARY codal)
-
-target_link_libraries(codal
-    mbed-classic
-)
-
-if(CMAKE_COMPILER_IS_GNUCC)
-    message("suppressing ALL warnings from mbed-classic")
-    target_compile_options(mbed-classic PRIVATE "-w")
-endif()
+target_link_libraries(codal ${CODAL_DEPS})

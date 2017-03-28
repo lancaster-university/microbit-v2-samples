@@ -6,8 +6,11 @@
 #include "DeviceComponent.h"
 #include "list.h"
 #include "ErrorNo.h"
+#include "CodalDevice.h"
 
 #define SYSTEM_CLOCK_INIT 0x01
+
+extern CodalDevice& device;
 
 struct ClockEvent
 {
@@ -85,9 +88,9 @@ struct ClockEvent
 
         this->period = repeating ? period : 0;
 
-        __disable_irq();
+        device.disableInterrupts();
         addToList(this, head);
-        __enable_irq();
+        device.enableInterrupts();
     };
 };
 

@@ -51,7 +51,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_HEAP_ALLOCTOR_H
 #define DEVICE_HEAP_ALLOCTOR_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 
 // The maximum number of heap segments that can be created.

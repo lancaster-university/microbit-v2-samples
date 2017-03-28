@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 void CodalDevice::panic(int statusCode)
 {
-    __disable_irq();
+    this->disableInterrupts();
 
 #if DEVICE_DMESG_BUFFER_SIZE > 0
     DMESG("*** CODAL PANIC : [%d]", statusCode);
@@ -83,5 +83,3 @@ int CodalDevice::random(int max)
 
     return result;
 }
-
-  

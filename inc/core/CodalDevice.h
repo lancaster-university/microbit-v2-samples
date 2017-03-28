@@ -27,13 +27,14 @@ DEALINGS IN THE SOFTWARE.
 #define CODAL_DEVICE_H
 
 #include "DeviceConfig.h"
+#include "device_types.h"
 #include "ErrorNo.h"
 
 /**
   * Class definition for CodalDevice.
   *
   * All devices should inherit from this class, and override any of the methods below
-  * to provide define core functionality needed by codal. 
+  * to provide define core functionality needed by codal.
   *
   */
 class CodalDevice
@@ -54,10 +55,27 @@ class CodalDevice
       * Perform a hard reset of the device.
       * default: Use CMSIS NVIC reset vector.
       */
-    virtual void reset()
-    {
-        NVIC_SystemReset();
-    }
+    virtual void reset() { }
+
+    /**
+      * Disable global interrupts.
+      */
+    virtual void disableInterrupts() { }
+
+    /**
+      * Enable global interrupts.
+      */
+    virtual void enableInterrupts() { }
+
+    /**
+      * Enable global interrupts.
+      */
+    virtual void waitForEvent() { }
+
+    /**
+      * returns the current stack pointer
+      */
+    virtual PROCESSOR_WORD_TYPE getMSP() { return 0; }
 
     /**
      * Determine the version of system software currently running.
@@ -65,13 +83,13 @@ class CodalDevice
      * @return a pointer to a NULL terminated character buffer containing a representation of the current version using semantic versioning.
      */
     virtual const char *
-    device_dal_version()
+    getVersion()
     {
         return DEVICE_DAL_VERSION;
     }
 
     /**
-      * Determines a unique 32 bit ID for this device, if provided by the hardware. 
+      * Determines a unique 32 bit ID for this device, if provided by the hardware.
       * default: 0.
       * @return A 32 bit unique identifier.
       */
@@ -111,6 +129,6 @@ class CodalDevice
     }
 };
 
-extern CodalDevice device;
+extern CodalDevice& device;
 
 #endif

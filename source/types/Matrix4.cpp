@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceConfig.h"
 #include "Matrix4.h"
-#include "mbed.h"
 
 /**
 * Class definition for a simple matrix, optimised for n x 4 or 4 x n matrices.

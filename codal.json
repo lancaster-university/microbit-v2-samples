@@ -2,7 +2,7 @@
     "target":{
         "processor":"SAMD21G18A",
         "device":"CIRCUIT_PLAYGROUND",
-        "platform":"MBED",
+        "platform":"MBED_CLASSIC",
         "manufacturer":"ATMEL"
     },
     "source":"source",

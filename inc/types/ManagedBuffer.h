@@ -2,7 +2,6 @@
 #define DEVICE_MANAGED_BUFFER_H
 
 #include "CodalCompat.h"
-//#include "mbed.h"
 #include "RefCounted.h"
 
 struct BufferData : RefCounted
@@ -19,23 +18,23 @@ struct BufferData : RefCounted
 class ManagedBuffer
 {
     BufferData      *ptr;     // Pointer to payload data
-    
+
     public:
 
     /**
-      * Default Constructor. 
+      * Default Constructor.
       * Creates an empty ManagedBuffer.  The 'ptr' field in all empty buffers is shared.
       *
       * Example:
       * @code
-      * ManagedBuffer p(); 
+      * ManagedBuffer p();
       * @endcode
       */
     ManagedBuffer();
 
     /**
-      * Constructor. 
-      * Creates a new ManagedBuffer of the given size. 
+      * Constructor.
+      * Creates a new ManagedBuffer of the given size.
       *
       * @param length The length of the buffer to create.
       *
@@ -47,13 +46,13 @@ class ManagedBuffer
     ManagedBuffer(int length);
 
     /**
-      * Constructor. 
+      * Constructor.
       * Creates an empty ManagedBuffer of the given size,
       * and fills it with the data provided.
       *
       * @param data The data with which to fill the buffer.
       * @param length The length of the buffer to create.
-      * 
+      *
       * Example:
       * @code
       * uint8_t buf[] = {13,5,2};
@@ -63,25 +62,25 @@ class ManagedBuffer
     ManagedBuffer(uint8_t *data, int length);
 
     /**
-      * Copy Constructor. 
+      * Copy Constructor.
       * Add ourselves as a reference to an existing ManagedBuffer.
-      * 
+      *
       * @param buffer The ManagedBuffer to reference.
       *
       * Example:
       * @code
       * ManagedBuffer p();
-      * ManagedBuffer p2(i);        // Refers to the same buffer as p. 
+      * ManagedBuffer p2(i);        // Refers to the same buffer as p.
       * @endcode
       */
     ManagedBuffer(const ManagedBuffer &buffer);
 
     /**
-      * Constructor. 
+      * Constructor.
       * Create a buffer from a raw BufferData pointer. It will ptr->incr(). This is to be used by specialized runtimes.
       *
       * @param p The pointer to use.
-      */    
+      */
     ManagedBuffer(BufferData *p);
 
     /**
@@ -95,12 +94,12 @@ class ManagedBuffer
      *
      * @param data The data with which to fill the buffer.
      * @param length The length of the buffer to create.
-     * 
+     *
      */
     void init(uint8_t *data, int length);
 
     /**
-      * Destructor. 
+      * Destructor.
       * Removes buffer resources held by the instance.
       */
     ~ManagedBuffer();
@@ -121,7 +120,7 @@ class ManagedBuffer
     BufferData *leakData();
 
     /**
-      * Copy assign operation. 
+      * Copy assign operation.
       *
       * Called when one ManagedBuffer is assigned the value of another using the '=' operator.
       * Decrements our reference count and free up the buffer as necessary.
@@ -129,27 +128,27 @@ class ManagedBuffer
       * and increase its reference count.
       *
       * @param p The ManagedBuffer to reference.
-      * 
+      *
       * Example:
       * @code
       * uint8_t buf = {13,5,2};
-      * ManagedBuffer p1(16); 
-      * ManagedBuffer p2(buf, 3);        
+      * ManagedBuffer p1(16);
+      * ManagedBuffer p2(buf, 3);
       *
-      * p1 = p2;  
+      * p1 = p2;
       * @endcode
       */
     ManagedBuffer& operator = (const ManagedBuffer& p);
 
     /**
-     * Array access operation (read). 
+     * Array access operation (read).
      *
      * Called when a ManagedBuffer is dereferenced with a [] operation.
      * Transparently map this through to the underlying payload for elegance of programming.
      *
      * Example:
      * @code
-     * ManagedBuffer p1(16); 
+     * ManagedBuffer p1(16);
      * uint8_t data = p1[0];
      * @endcode
      */
@@ -159,14 +158,14 @@ class ManagedBuffer
     }
 
     /**
-     * Array access operation (modify). 
+     * Array access operation (modify).
      *
      * Called when a ManagedBuffer is dereferenced with a [] operation.
      * Transparently map this through to the underlying payload for elegance of programming.
      *
      * Example:
      * @code
-     * ManagedBuffer p1(16); 
+     * ManagedBuffer p1(16);
      * p1[0] = 42;
      * @endcode
      */
@@ -182,20 +181,20 @@ class ManagedBuffer
       *
       * @param p The ManagedBuffer to test ourselves against.
       * @return true if this ManagedBuffer is identical to the one supplied, false otherwise.
-      * 
+      *
       * Example:
       * @code
       *
       * uint8_t buf = {13,5,2};
-      * ManagedBuffer p1(16); 
-      * ManagedBuffer p2(buf, 3);        
+      * ManagedBuffer p1(16);
+      * ManagedBuffer p2(buf, 3);
       *
       * if(p1 == p2)                    // will be true
       *     uBit.display.scroll("same!");
       * @endcode
       */
     bool operator== (const ManagedBuffer& p);
-    
+
     /**
       * Sets the byte at the given index to value provided.
       * @param position The index of the byte to change.
@@ -204,7 +203,7 @@ class ManagedBuffer
       *
       * Example:
       * @code
-      * ManagedBuffer p1(16); 
+      * ManagedBuffer p1(16);
       * p1.setByte(0,255);              // Sets the first byte in the buffer to the value 255.
       * @endcode
       */
@@ -218,7 +217,7 @@ class ManagedBuffer
       *
       * Example:
       * @code
-      * ManagedBuffer p1(16); 
+      * ManagedBuffer p1(16);
       * p1.setByte(0,255);              // Sets the first byte in the buffer to the value 255.
       * p1.getByte(0);                  // Returns 255.
       * @endcode
@@ -226,12 +225,12 @@ class ManagedBuffer
     int getByte(int position);
 
     /**
-      * Gets number of bytes in this buffer 
+      * Gets number of bytes in this buffer
       * @return The size of the buffer in bytes.
-      * 
+      *
       * Example:
       * @code
-      * ManagedBuffer p1(16); 
+      * ManagedBuffer p1(16);
       * p1.length();                 // Returns 16.
       * @endcode
       */
@@ -257,4 +256,3 @@ class ManagedBuffer
 };
 
 #endif
-

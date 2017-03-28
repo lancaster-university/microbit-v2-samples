@@ -35,7 +35,6 @@ DEALINGS IN THE SOFTWARE.
 #include "TimedInterruptIn.h"
 #include "DynamicPwm.h"
 #include "ErrorNo.h"
-#include "Glue.h"
 
 /**
   * Constructor.
@@ -82,10 +81,8 @@ void DevicePin::disconnect()
     if (status & IO_STATUS_DIGITAL_OUT)
         delete ((DigitalOut *)pin);
 
-    if (status & IO_STATUS_ANALOG_IN){
-        analogin_disable();
+    if (status & IO_STATUS_ANALOG_IN)
         delete ((AnalogIn *)pin);
-    }
 
     if (status & IO_STATUS_ANALOG_OUT)
     {
