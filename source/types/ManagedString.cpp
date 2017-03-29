@@ -71,7 +71,7 @@ void ManagedString::initString(const char *str, int len)
 {
     // Initialise this ManagedString as a new string, using the data provided.
     // We assume the string is sane, and null terminated.
-    ptr = (StringData *) malloc(4+len+1);
+    ptr = (StringData *) malloc(sizeof(StringData) + len + 1);
     REF_COUNTED_INIT(ptr);
     ptr->len = len;
     memcpy(ptr->data, str, len);
@@ -186,7 +186,7 @@ ManagedString::ManagedString(const ManagedString &s1, const ManagedString &s2)
     int len = s1.length() + s2.length();
 
     // Create a new buffer for holding the new string data.
-    ptr = (StringData*) malloc(4+len+1);
+    ptr = (StringData*) malloc(sizeof(StringData) + len + 1);
     REF_COUNTED_INIT(ptr);
     ptr->len = len;
 
