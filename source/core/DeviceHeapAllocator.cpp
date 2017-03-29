@@ -345,13 +345,15 @@ void free (void *mem)
         {
             // The memory block given is part of this heap, so we can simply
             // flag that this memory area is now free, and we're done.
+            if (*cb == 0 || *cb & DEVICE_HEAP_BLOCK_FREE)
+                device.panic(DEVICE_HEAP_ERROR);
             *cb |= DEVICE_HEAP_BLOCK_FREE;
             return;
         }
     }
 
     // If we reach here, then the memory is not part of any registered heap.
-    // Quietly ignore the request, as the standard free() call has no return code...
+    device.panic(DEVICE_HEAP_ERROR);
 }
 
 void* calloc (size_t num, size_t size)
