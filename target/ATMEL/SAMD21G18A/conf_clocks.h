@@ -148,6 +148,7 @@
 #  define CONF_CLOCK_GCLK_2_CLOCK_SOURCE          SYSTEM_CLOCK_SOURCE_ULP32K
 #  define CONF_CLOCK_GCLK_2_PRESCALER             32
 #  define CONF_CLOCK_GCLK_2_OUTPUT_ENABLE         false
+#  define RTC_CLOCK_SOURCE SYSTEM_CLOCK_SOURCE_OSC8M
 
 /* Configure GCLK generator 3 */
 #  define CONF_CLOCK_GCLK_3_ENABLE                true

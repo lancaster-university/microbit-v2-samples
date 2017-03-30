@@ -14,7 +14,7 @@ set(CODAL_CPP_FILES
     "core/DeviceFiber.cpp"
     "core/DeviceHeapAllocator.cpp"
     "core/DeviceListener.cpp"
-    "core/DeviceSystemTimer.cpp"
+    "core/Timer.cpp"
     "core/CodalUSB.cpp"
 
     "types/ManagedString.cpp"

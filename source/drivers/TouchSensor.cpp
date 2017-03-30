@@ -26,7 +26,9 @@ DEALINGS IN THE SOFTWARE.
 #include "TouchSensor.h"
 #include "DeviceEvent.h"
 #include "DeviceFiber.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
+
+using namespace codal;
 
 /**
  * Constructor.
@@ -36,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
  * @param pin The physical pin on the device that drives the capacitative sensing.
  * @id The ID of this component, defaults to DEVICE_ID_TOUCH_SENSOR
  */
-TouchSensor::TouchSensor(DevicePin &pin, uint16_t id) : drivePin(pin)
+TouchSensor::TouchSensor(Pin &pin, uint16_t id) : drivePin(pin)
 {
     this->id = id;
     this->numberOfButtons = 0;
@@ -48,7 +50,7 @@ TouchSensor::TouchSensor(DevicePin &pin, uint16_t id) : drivePin(pin)
     for (int i=0; i<TOUCH_SENSOR_MAX_BUTTONS; i++)
         buttons[i] = NULL;
 
-    // Configure a periodic callback event. 
+    // Configure a periodic callback event.
     if(EventModel::defaultEventBus)
         EventModel::defaultEventBus->listen(id, TOUCH_SENSOR_UPDATE_NEEDED, this, &TouchSensor::onSampleEvent, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
@@ -160,4 +162,3 @@ TouchSensor::~TouchSensor()
     if(EventModel::defaultEventBus)
         EventModel::defaultEventBus->ignore(id, TOUCH_SENSOR_UPDATE_NEEDED, this, &TouchSensor::onSampleEvent);
 }
-

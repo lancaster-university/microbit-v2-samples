@@ -25,8 +25,10 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceConfig.h"
 #include "DeviceButton.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 #include "EventModel.h"
+
+using namespace codal;
 
 /**
   * Constructor.
@@ -43,7 +45,7 @@ DEALINGS IN THE SOFTWARE.
   * @param mode the configuration of internal pullups/pulldowns, as defined in the mbed PinMode class. PullNone by default.
   *
   */
-DeviceButton::DeviceButton(DevicePin &pin, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, DeviceButtonPolarity polarity, PinMode mode) : _pin(pin)
+DeviceButton::DeviceButton(Pin &pin, uint16_t id, DeviceButtonEventConfiguration eventConfiguration, DeviceButtonPolarity polarity, PinMode mode) : _pin(pin)
 {
     this->id = id;
     this->eventConfiguration = eventConfiguration;

@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
   */
 #include "DeviceConfig.h"
 #include "DeviceFiber.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 
 #define INITIAL_STACK_DEPTH (fiber_initial_stack_base() - 0x04)
 

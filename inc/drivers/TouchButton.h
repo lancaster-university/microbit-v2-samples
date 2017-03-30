@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceButton.h"
 #include "DeviceComponent.h"
 #include "DeviceEvent.h"
-#include "DevicePin.h"
+#include "Pin.h"
 #include "TouchSensor.h"
 
 // Constants associated with TouchButton
@@ -41,70 +41,73 @@ DEALINGS IN THE SOFTWARE.
 // Status flags associated with a touch sensor
 #define TOUCH_BUTTON_CALIBRATING            0x10
 
-class TouchSensor;
-
-/**
-  * Class definition for a TouchButtonButton.
-  *
-  * Represents a single, software controlled capacitative touch button on the device.
-  */
-class TouchButton : public DeviceButton
+namespace codal
 {
-    public:
-
-    TouchSensor     &touchSensor;           // The TouchSensor driving this button
-    int             threshold;              // The calibration threshold of this button
-    int             reading;                // The last sample taken of this button.
-    bool            active;                 // true if this button is currnelty being sensed, false otherwise.
-
+    class TouchSensor;
 
     /**
-      * Constructor.
+      * Class definition for a TouchButtonButton.
       *
-      * Enables software controlled capacitative touch sensing on the given pin.
-      *
-      * @param pin The physical pin on the device to sense.
-      * @param sensor The touch sensor driver for this touch sensitive pin.
-      * @param threshold The calibration threshold to use for this button. If undefined, auto calibration will be performed.
+      * Represents a single, software controlled capacitative touch button on the device.
       */
-    TouchButton(DevicePin &pin, TouchSensor &sensor, int threshold = -1);
+    class TouchButton : public DeviceButton
+    {
+        public:
 
-    /**
-      * Estimate and apply a threshold based on the current reading of the device.
-      */
-    void calibrate();
+        TouchSensor     &touchSensor;           // The TouchSensor driving this button
+        int             threshold;              // The calibration threshold of this button
+        int             reading;                // The last sample taken of this button.
+        bool            active;                 // true if this button is currnelty being sensed, false otherwise.
 
-    /**
-      * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater than this value will
-      * be interpreted as a touch. See getValue().
-      *
-      * @param threshold The threshold value to use for this touchButton. 
-      */
-    void setThreshold(int threshold);
 
-    /**
-      * Determine the last reading taken from this button.
-      *
-      * @return the last reading taken.
-      */
-    int getValue();
+        /**
+          * Constructor.
+          *
+          * Enables software controlled capacitative touch sensing on the given pin.
+          *
+          * @param pin The physical pin on the device to sense.
+          * @param sensor The touch sensor driver for this touch sensitive pin.
+          * @param threshold The calibration threshold to use for this button. If undefined, auto calibration will be performed.
+          */
+        TouchButton(Pin &pin, TouchSensor &sensor, int threshold = -1);
 
-    /**
-     * Updates the record of the last reading from this button.
-     */
-    void setValue(int reading);
+        /**
+          * Estimate and apply a threshold based on the current reading of the device.
+          */
+        void calibrate();
 
-    /**
-     * Determines if this button is instantenously active (i.e. pressed).
-     * Internal method, use before debouncing.
-     */
-    int buttonActive();
+        /**
+          * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater than this value will
+          * be interpreted as a touch. See getValue().
+          *
+          * @param threshold The threshold value to use for this touchButton.
+          */
+        void setThreshold(int threshold);
 
-    /**
-      * Destructor for DeviceButton, where we deregister this instance from the array of fiber components.
-      */
-    ~TouchButton();
+        /**
+          * Determine the last reading taken from this button.
+          *
+          * @return the last reading taken.
+          */
+        int getValue();
 
-};
+        /**
+         * Updates the record of the last reading from this button.
+         */
+        void setValue(int reading);
+
+        /**
+         * Determines if this button is instantenously active (i.e. pressed).
+         * Internal method, use before debouncing.
+         */
+        int buttonActive();
+
+        /**
+          * Destructor for DeviceButton, where we deregister this instance from the array of fiber components.
+          */
+        ~TouchButton();
+
+    };
+}
 
 #endif

@@ -35,23 +35,24 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "CodalCompat.h"
 #include "DeviceFiber.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 
+using namespace codal;
 
 /**
  * Constructor.
  *
- * Creates a LinearAnalogSensor. 
+ * Creates a LinearAnalogSensor.
  *
  * @param pin The pin on which to sense
- * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER 
+ * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER
  * @param inputFloor The minimum level in the input range.
  * @param inputCeiling The maximum level in the input range.
  * @param outputFloor The minimum level in the output range. Default: 0.
  * @param outputCeiling The maximum level in the output range. Default: 1023.
  *
  */
-LinearAnalogSensor::LinearAnalogSensor(DevicePin &pin, uint16_t id, uint16_t inputFloor, uint16_t inputCeiling, float outputFloor, float outputCeiling) : AnalogSensor(pin, id)
+LinearAnalogSensor::LinearAnalogSensor(Pin &pin, uint16_t id, uint16_t inputFloor, uint16_t inputCeiling, float outputFloor, float outputCeiling) : AnalogSensor(pin, id)
 {
     this->inputFloor = inputFloor;
     this->outputFloor = outputFloor;
@@ -84,4 +85,3 @@ void LinearAnalogSensor::updateSample()
 
     checkThresholding();
 }
-

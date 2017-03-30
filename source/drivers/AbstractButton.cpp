@@ -25,8 +25,10 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceConfig.h"
 #include "AbstractButton.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 #include "EventModel.h"
+
+using namespace codal;
 
 /**
  * Constructor.

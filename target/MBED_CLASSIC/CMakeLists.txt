@@ -12,6 +12,7 @@ add_library(MBED_CLASSIC "${SOURCE_FILES}")
 target_link_libraries(
     MBED_CLASSIC
     mbed-classic
+    codal
 )
 
 target_include_directories(MBED_CLASSIC PUBLIC ${INCLUDE_DIRS})

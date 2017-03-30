@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "mbed.h"
 #include "DeviceConfig.h"
-#include "DevicePin.h"
+#include "Pin.h"
 
 //
 // Component IDs for each pin.
@@ -76,24 +76,24 @@ class CircuitPlaygroundIO
 {
     public:
 
-    DevicePin          pin[0];
-    DevicePin          rx;
-    DevicePin          tx;
-    DevicePin          sda;
-    DevicePin          scl;
-    DevicePin          d6;
-    DevicePin          d9;
-    DevicePin          d10;
-    DevicePin          d12;
-    DevicePin          speaker;
-    DevicePin          led;
-    DevicePin          int1;
-    DevicePin          temperature;
-    DevicePin          light;
-    DevicePin          buttonA;
-    DevicePin          buttonB;
-    DevicePin          buttonC;
-    DevicePin          touchDrive;
+    codal::mbed::Pin          pin[0];
+    codal::mbed::Pin          rx;
+    codal::mbed::Pin          tx;
+    codal::mbed::Pin          sda;
+    codal::mbed::Pin          scl;
+    codal::mbed::Pin          d6;
+    codal::mbed::Pin          d9;
+    codal::mbed::Pin          d10;
+    codal::mbed::Pin          d12;
+    codal::mbed::Pin          speaker;
+    codal::mbed::Pin          led;
+    codal::mbed::Pin          int1;
+    codal::mbed::Pin          temperature;
+    codal::mbed::Pin          light;
+    codal::mbed::Pin          buttonA;
+    codal::mbed::Pin          buttonB;
+    codal::mbed::Pin          buttonC;
+    codal::mbed::Pin          touchDrive;
 
     /**
       * Constructor.

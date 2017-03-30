@@ -31,8 +31,10 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceConfig.h"
 #include "TouchButton.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 #include "EventModel.h"
+
+using namespace codal;
 
 /**
  * Constructor.
@@ -42,7 +44,7 @@ DEALINGS IN THE SOFTWARE.
  * @param pin The physical pin on the device to sense.
  * @param sensor The touch sensor driver for this touch sensitive pin.
  */
-TouchButton::TouchButton(DevicePin &pin, TouchSensor &sensor, int threshold) : DeviceButton(pin, pin.id, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW, PullNone), touchSensor(sensor)
+TouchButton::TouchButton(Pin &pin, TouchSensor &sensor, int threshold) : DeviceButton(pin, pin.id, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW, PullNone), touchSensor(sensor)
 {
     // Disable periodic events. These will come from our TouchSensor.
     this->threshold = threshold;
@@ -84,7 +86,7 @@ void TouchButton::calibrate()
  * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater than this value will
  * be interpreted as a touch. See getValue().
  *
- * @param threshold The threshold value to use for this touchButton. 
+ * @param threshold The threshold value to use for this touchButton.
  */
 void TouchButton::setThreshold(int threshold)
 {
@@ -134,4 +136,3 @@ TouchButton::~TouchButton()
 {
     touchSensor.removeTouchButton(this);
 }
-

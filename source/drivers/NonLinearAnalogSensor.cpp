@@ -35,21 +35,23 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "CodalCompat.h"
 #include "DeviceFiber.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
+
+using namespace codal;
 
 /**
  * Constructor.
  *
- * Creates a generic AnalogSensor. 
+ * Creates a generic AnalogSensor.
  *
  * @param pin The pin on which to sense
  * @param nominalValue The value (in SI units) of a nominal position.
  * @param nominalReading The raw reading from the sensor at the nominal position.
  * @param beta The Steinhart-Hart Beta constant for the device
  * @param seriesResistor The value (in ohms) of the resistor in series with the sensor.
- * @param zeroOffset Optional zero offset applied to all SI units (e.g. 273.15 for temperature sensing in C vs Kelvin). 
+ * @param zeroOffset Optional zero offset applied to all SI units (e.g. 273.15 for temperature sensing in C vs Kelvin).
  */
-NonLinearAnalogSensor::NonLinearAnalogSensor(DevicePin &pin, uint16_t id, float nominalValue, float nominalReading, float beta, float seriesResistor, float zeroOffset) : AnalogSensor(pin, id)
+NonLinearAnalogSensor::NonLinearAnalogSensor(Pin &pin, uint16_t id, float nominalValue, float nominalReading, float beta, float seriesResistor, float zeroOffset) : AnalogSensor(pin, id)
 {
     this->nominalValue = nominalValue;
     this->nominalReading = nominalReading;
@@ -83,4 +85,3 @@ void NonLinearAnalogSensor::updateSample()
 
     checkThresholding();
 }
-

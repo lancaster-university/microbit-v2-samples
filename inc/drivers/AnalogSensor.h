@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceConfig.h"
 #include "DeviceComponent.h"
-#include "DevicePin.h"
+#include "Pin.h"
 #include "DeviceEvent.h"
 
 
@@ -49,120 +49,121 @@ DEALINGS IN THE SOFTWARE.
 #define ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED            0x10
 
 
-/**
- * Class definition for a generic analog sensor, and performs periodic sampling, buffering and low pass filtering of the data.
- */
-class AnalogSensor : public DeviceComponent
+namespace codal
 {
-    protected:
-
-    DevicePin       &_pin;              // Pin where the sensor is connected.
-    uint16_t        samplePeriod;       // The time between samples, in milliseconds.
-    uint16_t        sensitivity;        // A value between 0..1023 used with a decay average to smooth the sample data. 
-    uint16_t        highThreshold;      // threshold at which a HIGH event is generated
-    uint16_t        lowThreshold;       // threshold at which a LOW event is generated
-    int             sensorValue;        // Last sampled data.
-
-    public:
-
     /**
-      * Constructor.
-      *
-      * Creates a generic AnalogSensor. 
-      *
-      * @param pin The pin on which to sense
-      * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER 
+     * Class definition for a generic analog sensor, and performs periodic sampling, buffering and low pass filtering of the data.
      */
-    AnalogSensor(DevicePin &pin, uint16_t id);
+    class AnalogSensor : public DeviceComponent
+    {
+        protected:
 
-    /*
-     * Event Handler for periodic sample timer
-     */
-    void onSampleEvent(DeviceEvent);
+        Pin             &_pin;              // Pin where the sensor is connected.
+        uint16_t        samplePeriod;       // The time between samples, in milliseconds.
+        uint16_t        sensitivity;        // A value between 0..1023 used with a decay average to smooth the sample data.
+        uint16_t        highThreshold;      // threshold at which a HIGH event is generated
+        uint16_t        lowThreshold;       // threshold at which a LOW event is generated
+        int             sensorValue;        // Last sampled data.
 
-    /**
-     * Updates the internal reading of the sensor. Typically called periodicaly.
-     *
-     * @return DEVICE_OK on success.
-     */
-    virtual void updateSample();
+        public:
 
-    /*
-     * Determines the instantaneous value of the sensor, in SI units, and returns it.
-     *
-     * @return The current value of the sensor.
-     */
-    int getValue();
-    
-    /**
-      * Set the automatic sample period of the accelerometer to the specified value (in ms).
-      *
-      * @param period the requested time between samples, in milliseconds.
-      *
-      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
-      */
-    int setPeriod(int period);
+        /**
+          * Constructor.
+          *
+          * Creates a generic AnalogSensor.
+          *
+          * @param pin The pin on which to sense
+          * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER
+         */
+        AnalogSensor(Pin &pin, uint16_t id);
 
-    /**
-      * Reads the currently configured sample period.
-      *
-      * @return The time between samples, in milliseconds.
-      */
-    int getPeriod();
+        /*
+         * Event Handler for periodic sample timer
+         */
+        void onSampleEvent(DeviceEvent);
 
-    /**
-      * Set threshold to the given value. Events will be generated when these thresholds are crossed.
-      *
-      * @param value the LOW threshold at which a ANALOG_THRESHOLD_LOW will be generated.
-      *
-      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
-      */
-    int setLowThreshold(uint16_t value);
+        /**
+         * Updates the internal reading of the sensor. Typically called periodicaly.
+         *
+         * @return DEVICE_OK on success.
+         */
+        virtual void updateSample();
 
-    /**
-      * Set threshold to the given value. Events will be generated when these thresholds are crossed.
-      *
-      * @param value the HIGH threshold at which a ANALOG_THRESHOLD_HIGH will be generated.
-      *
-      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
-      */
-    int setHighThreshold(uint16_t value);
+        /*
+         * Determines the instantaneous value of the sensor, in SI units, and returns it.
+         *
+         * @return The current value of the sensor.
+         */
+        int getValue();
 
-    /**
-      * Determines the currently defined low threshold.
-      *
-      * @return The current low threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
-      */
-    int getLowThreshold();
+        /**
+          * Set the automatic sample period of the accelerometer to the specified value (in ms).
+          *
+          * @param period the requested time between samples, in milliseconds.
+          *
+          * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+          */
+        int setPeriod(int period);
 
-    /**
-      * Determines the currently defined high threshold.
-      *
-      * @return The current high threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
-      */
-    int getHighThreshold();
+        /**
+          * Reads the currently configured sample period.
+          *
+          * @return The time between samples, in milliseconds.
+          */
+        int getPeriod();
 
-    /**
-      * Set smoothing value for the data. A decay average is taken of sampled data to smooth it into more accurate information.
-      *
-      * @param value A value between 0..1023 that detemrines the level of smoothing. Set to 1023 to disable smoothing. Default value is 868
-      *
-      * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
-      */
-    int setSensitivity(uint16_t value);
+        /**
+          * Set threshold to the given value. Events will be generated when these thresholds are crossed.
+          *
+          * @param value the LOW threshold at which a ANALOG_THRESHOLD_LOW will be generated.
+          *
+          * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+          */
+        int setLowThreshold(uint16_t value);
 
-    /**
-      * Destructor.
-      */
-    ~AnalogSensor();
+        /**
+          * Set threshold to the given value. Events will be generated when these thresholds are crossed.
+          *
+          * @param value the HIGH threshold at which a ANALOG_THRESHOLD_HIGH will be generated.
+          *
+          * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+          */
+        int setHighThreshold(uint16_t value);
 
-    protected:
-    /**
-     * Determine if any thresholding events need to be generated, and if so, raise them.
-     */
-    void checkThresholding();
+        /**
+          * Determines the currently defined low threshold.
+          *
+          * @return The current low threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+          */
+        int getLowThreshold();
 
+        /**
+          * Determines the currently defined high threshold.
+          *
+          * @return The current high threshold. DEVICE_INVALID_PARAMETER if no threshold has been defined.
+          */
+        int getHighThreshold();
 
-};
+        /**
+          * Set smoothing value for the data. A decay average is taken of sampled data to smooth it into more accurate information.
+          *
+          * @param value A value between 0..1023 that detemrines the level of smoothing. Set to 1023 to disable smoothing. Default value is 868
+          *
+          * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
+          */
+        int setSensitivity(uint16_t value);
+
+        /**
+          * Destructor.
+          */
+        ~AnalogSensor();
+
+        protected:
+        /**
+         * Determine if any thresholding events need to be generated, and if so, raise them.
+         */
+        void checkThresholding();
+    };
+}
 
 #endif

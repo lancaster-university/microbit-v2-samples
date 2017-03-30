@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "DeviceComponent.h"
 #include "DeviceEvent.h"
-#include "DevicePin.h"
+#include "Pin.h"
 #include "TouchButton.h"
 
 // Constants
@@ -40,50 +40,53 @@ DEALINGS IN THE SOFTWARE.
 // Event codes associate with this touch sensor.
 #define TOUCH_SENSOR_UPDATE_NEEDED      1
 
-class TouchButton;
-
-/**
-  * Class definition for a TouchSensor
-  *
-  * Drives a number of TouchButtons ona device.
-  */
-class TouchSensor : DeviceComponent
+namespace codal
 {
-    TouchButton*    buttons[TOUCH_SENSOR_MAX_BUTTONS];
-    DevicePin       &drivePin;
-    int             numberOfButtons;
-
-    public:
+    class TouchButton;
 
     /**
-      * Constructor.
+      * Class definition for a TouchSensor
       *
-      * Enables software controlled capacitative touch sensing on a set of pins.
-      *
-      * @param pin The physical pin on the device that drives the capacitative sensing.
-      * @id The ID of this component, defaults to DEVICE_ID_TOUCH_SENSOR
+      * Drives a number of TouchButtons ona device.
       */
-    TouchSensor(DevicePin &pin, uint16_t id = DEVICE_ID_TOUCH_SENSOR);
+    class TouchSensor : DeviceComponent
+    {
+        TouchButton*    buttons[TOUCH_SENSOR_MAX_BUTTONS];
+        Pin             &drivePin;
+        int             numberOfButtons;
 
-    /**
-      * Begin touch sensing on the given button
-      */
-    int addTouchButton(TouchButton *button);
+        public:
 
-    /**
-      * Stop touch sensing on the given button
-      */
-    int removeTouchButton(TouchButton *button);
+        /**
+          * Constructor.
+          *
+          * Enables software controlled capacitative touch sensing on a set of pins.
+          *
+          * @param pin The physical pin on the device that drives the capacitative sensing.
+          * @id The ID of this component, defaults to DEVICE_ID_TOUCH_SENSOR
+          */
+        TouchSensor(Pin &pin, uint16_t id = DEVICE_ID_TOUCH_SENSOR);
 
-    /**
-     * Initiate a scan of the sensors.
-     */
-    void onSampleEvent(DeviceEvent);
+        /**
+          * Begin touch sensing on the given button
+          */
+        int addTouchButton(TouchButton *button);
 
-    /**
-      * Destructor.
-      */
-    ~TouchSensor();
-};
+        /**
+          * Stop touch sensing on the given button
+          */
+        int removeTouchButton(TouchButton *button);
+
+        /**
+         * Initiate a scan of the sensors.
+         */
+        void onSampleEvent(DeviceEvent);
+
+        /**
+          * Destructor.
+          */
+        ~TouchSensor();
+    };
+}
 
 #endif

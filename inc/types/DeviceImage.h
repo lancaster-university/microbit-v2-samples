@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DEVICE_IMAGE_H
 #define DEVICE_IMAGE_H
 
-#include "mbed.h"
 #include "DeviceConfig.h"
 #include "ManagedString.h"
 #include "RefCounted.h"

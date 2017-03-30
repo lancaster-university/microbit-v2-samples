@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
   * DEVICE_ID_NOTIFY, new events should be added here, to prevent duplication.
   */
 #define DEVICE_DISPLAY_EVT_FREE           1
-#define DEVICE_SERIAL_EVT_TX_EMPTY        2
+#define CODAL_SERIAL_EVT_TX_EMPTY         2
 #define DEVICE_UART_S_EVT_TX_EMPTY        3
 
 // Event codes with ID >=1024 are allocated dynamic by the MessageBus::allocateNotifyEvent() method.

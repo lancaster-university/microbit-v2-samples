@@ -24,39 +24,38 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /**
-  * Class definition for DevicePin.
+  * Class definition for Pin.
   *
   * Commonly represents an I/O pin on the edge connector.
   */
-#include "DeviceConfig.h"
-#include "DevicePin.h"
+#include "MbedPin.h"
 #include "DeviceButton.h"
-#include "DeviceSystemTimer.h"
-#include "TimedInterruptIn.h"
+#include "Timer.h"
+#include "MbedTimedInterruptIn.h"
 #include "DynamicPwm.h"
 #include "ErrorNo.h"
+#include "mbed.h"
+
+namespace mb=mbed;
+using namespace codal::mbed;
 
 /**
   * Constructor.
-  * Create a DevicePin instance, generally used to represent a pin on the edge connector.
+  * Create a Pin instance, generally used to represent a pin on the edge connector.
   *
   * @param id the unique EventModel id of this component.
   *
-  * @param name the mbed PinName for this DevicePin instance.
+  * @param name the mbed PinName for this Pin instance.
   *
-  * @param capability the capabilities this DevicePin instance should have.
+  * @param capability the capabilities this Pin instance should have.
   *                   (PIN_CAPABILITY_DIGITAL, PIN_CAPABILITY_ANALOG, PIN_CAPABILITY_AD, PIN_CAPABILITY_ALL)
   *
   * @code
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
   * @endcode
   */
-DevicePin::DevicePin(int id, PinName name, PinCapability capability)
+Pin::Pin(int id, PinName name, PinCapability capability) : codal::Pin(id, name, capability)
 {
-    //set mandatory attributes
-    this->id = id;
-    this->name = name;
-    this->capability = capability;
     this->pullMode = DEVICE_DEFAULT_PULLMODE;
 
     // Power up in a disconnected, low power state.
@@ -71,7 +70,7 @@ DevicePin::DevicePin(int id, PinName name, PinCapability capability)
   *
   * Used only when pin changes mode (i.e. Input/Output/Analog/Digital)
   */
-void DevicePin::disconnect()
+void Pin::disconnect()
 {
     // This is a bit ugly, but rarely used code.
     // It would be much better to use some polymorphism here, but the mBed I/O classes aren't arranged in an inheritance hierarchy... yet. :-)
@@ -109,11 +108,11 @@ void DevicePin::disconnect()
   *         if the given pin does not have digital capability.
   *
   * @code
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.setDigitalValue(1); // P0 is now HI
   * @endcode
   */
-int DevicePin::setDigitalValue(int value)
+int Pin::setDigitalValue(int value)
 {
     // Check if this pin has a digital mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
@@ -144,11 +143,11 @@ int DevicePin::setDigitalValue(int value)
   *         if the given pin does not have digital capability.
   *
   * @code
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.getDigitalValue(); // P0 is either 0 or 1;
   * @endcode
   */
-int DevicePin::getDigitalValue()
+int Pin::getDigitalValue()
 {
     //check if this pin has a digital mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
@@ -177,17 +176,17 @@ int DevicePin::getDigitalValue()
  *         if the given pin does not have digital capability.
  *
  * @code
- * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+ * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
  * P0.getDigitalValue(PullUp); // P0 is either 0 or 1;
  * @endcode
  */
-int DevicePin::getDigitalValue(PinMode pull)
+int Pin::getDigitalValue(PinMode pull)
 {
     setPull(pull);
     return getDigitalValue();
 }
 
-int DevicePin::obtainAnalogChannel()
+int Pin::obtainAnalogChannel()
 {
     // Move into an analogue input state if necessary, if we are no longer the focus of a DynamicPWM instance, allocate ourselves again!
     if (!(status & IO_STATUS_ANALOG_OUT) || !(((DynamicPwm *)pin)->getPinName() == name)){
@@ -207,7 +206,7 @@ int DevicePin::obtainAnalogChannel()
   * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int DevicePin::setAnalogValue(int value)
+int Pin::setAnalogValue(int value)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
@@ -243,7 +242,7 @@ int DevicePin::setAnalogValue(int value)
   * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int DevicePin::setServoValue(int value, int range, int center)
+int Pin::setServoValue(int value, int range, int center)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
@@ -275,11 +274,11 @@ int DevicePin::setServoValue(int value, int range, int center)
   *         DEVICE_NOT_SUPPORTED if the given pin does not have analog capability.
   *
   * @code
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.getAnalogValue(); // P0 is a value in the range of 0 - 1024
   * @endcode
   */
-int DevicePin::getAnalogValue()
+int Pin::getAnalogValue()
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
@@ -301,7 +300,7 @@ int DevicePin::getAnalogValue()
   *
   * @return 1 if pin is an analog or digital input, 0 otherwise.
   */
-int DevicePin::isInput()
+int Pin::isInput()
 {
     return (status & (IO_STATUS_DIGITAL_IN | IO_STATUS_ANALOG_IN)) == 0 ? 0 : 1;
 }
@@ -311,7 +310,7 @@ int DevicePin::isInput()
   *
   * @return 1 if pin is an analog or digital output, 0 otherwise.
   */
-int DevicePin::isOutput()
+int Pin::isOutput()
 {
     return (status & (IO_STATUS_DIGITAL_OUT | IO_STATUS_ANALOG_OUT)) == 0 ? 0 : 1;
 }
@@ -321,7 +320,7 @@ int DevicePin::isOutput()
   *
   * @return 1 if pin is digital, 0 otherwise.
   */
-int DevicePin::isDigital()
+int Pin::isDigital()
 {
     return (status & (IO_STATUS_DIGITAL_IN | IO_STATUS_DIGITAL_OUT)) == 0 ? 0 : 1;
 }
@@ -331,7 +330,7 @@ int DevicePin::isDigital()
   *
   * @return 1 if pin is analog, 0 otherwise.
   */
-int DevicePin::isAnalog()
+int Pin::isAnalog()
 {
     return (status & (IO_STATUS_ANALOG_IN | IO_STATUS_ANALOG_OUT)) == 0 ? 0 : 1;
 }
@@ -347,7 +346,7 @@ int DevicePin::isAnalog()
   * @code
   * DeviceMessageBus bus;
   *
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_ALL);
   * if(P0.isTouched())
   * {
   *     //do something!
@@ -357,7 +356,7 @@ int DevicePin::isAnalog()
   * bus.listen(DEVICE_ID_IO_P0, DEVICE_BUTTON_EVT_CLICK, someFunction);
   * @endcode
   */
-int DevicePin::isTouched()
+int Pin::isTouched()
 {
     //check if this pin has a touch mode...
     if(!(PIN_CAPABILITY_DIGITAL & capability))
@@ -382,7 +381,7 @@ int DevicePin::isTouched()
   * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if value is out of range, or DEVICE_NOT_SUPPORTED
   *         if the given pin does not have analog capability.
   */
-int DevicePin::setServoPulseUs(int pulseWidth)
+int Pin::setServoPulseUs(int pulseWidth)
 {
     //check if this pin has an analogue mode...
     if(!(PIN_CAPABILITY_ANALOG & capability))
@@ -412,7 +411,7 @@ int DevicePin::setServoPulseUs(int pulseWidth)
   *
   * @return DEVICE_OK on success.
   */
-int DevicePin::setAnalogPeriodUs(int period)
+int Pin::setAnalogPeriodUs(int period)
 {
     int ret;
 
@@ -435,7 +434,7 @@ int DevicePin::setAnalogPeriodUs(int period)
   * @return DEVICE_OK on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int DevicePin::setAnalogPeriod(int period)
+int Pin::setAnalogPeriod(int period)
 {
     return setAnalogPeriodUs(period*1000);
 }
@@ -446,7 +445,7 @@ int DevicePin::setAnalogPeriod(int period)
   * @return the period on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int DevicePin::getAnalogPeriodUs()
+int Pin::getAnalogPeriodUs()
 {
     if (!(status & IO_STATUS_ANALOG_OUT))
         return DEVICE_NOT_SUPPORTED;
@@ -460,7 +459,7 @@ int DevicePin::getAnalogPeriodUs()
   * @return the period on success, or DEVICE_NOT_SUPPORTED if the
   *         given pin is not configured as an analog output.
   */
-int DevicePin::getAnalogPeriod()
+int Pin::getAnalogPeriod()
 {
     return getAnalogPeriodUs()/1000;
 }
@@ -473,7 +472,7 @@ int DevicePin::getAnalogPeriod()
   * @return DEVICE_NOT_SUPPORTED if the current pin configuration is anything other
   *         than a digital input, otherwise DEVICE_OK.
   */
-int DevicePin::setPull(PinMode pull)
+int Pin::setPull(PinMode pull)
 {
     pullMode = pull;
 
@@ -498,7 +497,7 @@ int DevicePin::setPull(PinMode pull)
   *
   * @param eventValue the event value to distribute onto the message bus.
   */
-void DevicePin::pulseWidthEvent(int eventValue)
+void Pin::pulseWidthEvent(int eventValue)
 {
     DeviceEvent evt(id, eventValue, CREATE_ONLY);
     uint64_t now = evt.timestamp;
@@ -516,7 +515,7 @@ void DevicePin::pulseWidthEvent(int eventValue)
 /**
   * Interrupt handler for when an rise interrupt is triggered.
   */
-void DevicePin::onRise()
+void Pin::onRise()
 {
     if(status & IO_STATUS_EVENT_PULSE_ON_EDGE)
         pulseWidthEvent(DEVICE_PIN_EVT_PULSE_LO);
@@ -528,7 +527,7 @@ void DevicePin::onRise()
 /**
   * Interrupt handler for when an fall interrupt is triggered.
   */
-void DevicePin::onFall()
+void Pin::onFall()
 {
     if(status & IO_STATUS_EVENT_PULSE_ON_EDGE)
         pulseWidthEvent(DEVICE_PIN_EVT_PULSE_HI);
@@ -546,7 +545,7 @@ void DevicePin::onFall()
   *
   * @return DEVICE_OK on success
   */
-int DevicePin::enableRiseFallEvents(int eventType)
+int Pin::enableRiseFallEvents(int eventType)
 {
     // if we are in neither of the two modes, configure pin as a TimedInterruptIn.
     if (!(status & (IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE)))
@@ -555,8 +554,8 @@ int DevicePin::enableRiseFallEvents(int eventType)
         pin = new TimedInterruptIn(name);
 
         ((TimedInterruptIn *)pin)->mode((PinMode)pullMode);
-        ((TimedInterruptIn *)pin)->rise(this, &DevicePin::onRise);
-        ((TimedInterruptIn *)pin)->fall(this, &DevicePin::onFall);
+        ((TimedInterruptIn *)pin)->rise(this, &Pin::onRise);
+        ((TimedInterruptIn *)pin)->fall(this, &Pin::onFall);
     }
 
     status &= ~(IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE);
@@ -572,11 +571,11 @@ int DevicePin::enableRiseFallEvents(int eventType)
 
 /**
   * If this pin is in a mode where the pin is generating events, it will destruct
-  * the current instance attached to this DevicePin instance.
+  * the current instance attached to this Pin instance.
   *
   * @return DEVICE_OK on success.
   */
-int DevicePin::disableEvents()
+int Pin::disableEvents()
 {
     if (status & (IO_STATUS_EVENT_ON_EDGE | IO_STATUS_EVENT_PULSE_ON_EDGE | IO_STATUS_TOUCH_IN))
         disconnect();
@@ -585,7 +584,7 @@ int DevicePin::disableEvents()
 }
 
 /**
-  * Configures the events generated by this DevicePin instance.
+  * Configures the events generated by this Pin instance.
   *
   * DEVICE_PIN_EVENT_ON_EDGE - Configures this pin to a digital input, and generates events whenever a rise/fall is detected on this pin. (DEVICE_PIN_EVT_RISE, DEVICE_PIN_EVT_FALL)
   * DEVICE_PIN_EVENT_ON_PULSE - Configures this pin to a digital input, and generates events where the timestamp is the duration that this pin was either HI or LO. (DEVICE_PIN_EVT_PULSE_HI, DEVICE_PIN_EVT_PULSE_LO)
@@ -597,7 +596,7 @@ int DevicePin::disableEvents()
   * @code
   * DeviceMessageBus bus;
   *
-  * DevicePin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
+  * Pin P0(DEVICE_ID_IO_P0, DEVICE_PIN_P0, PIN_CAPABILITY_BOTH);
   * P0.eventOn(DEVICE_PIN_EVENT_ON_PULSE);
   *
   * void onPulse(DeviceEvent evt)
@@ -613,7 +612,7 @@ int DevicePin::disableEvents()
   * @note In the DEVICE_PIN_EVENT_ON_PULSE mode, the smallest pulse that was reliably detected was 85us, around 5khz. If more precision is required,
   *       please use the InterruptIn class supplied by ARM mbed.
   */
-int DevicePin::eventOn(int eventType)
+int Pin::eventOn(int eventType)
 {
     switch(eventType)
     {

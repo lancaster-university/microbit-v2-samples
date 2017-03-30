@@ -35,22 +35,24 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceEvent.h"
 #include "CodalCompat.h"
 #include "DeviceFiber.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
+
+using namespace codal;
 
 /**
  * Constructor.
  *
- * Creates a generic AnalogSensor. 
+ * Creates a generic AnalogSensor.
  *
  * @param pin The pin on which to sense
- * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER 
+ * @param id The ID of this compoenent e.g. DEVICE_ID_THERMOMETER
  */
-AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id) : _pin(pin)
+AnalogSensor::AnalogSensor(Pin &pin, uint16_t id) : _pin(pin)
 {
     this->id = id;
     this->sensitivity = 868;
 
-    // Configure for a 2 Hz update frequency by default. 
+    // Configure for a 2 Hz update frequency by default.
     if(EventModel::defaultEventBus)
         EventModel::defaultEventBus->listen(id, ANALOG_SENSOR_UPDATE_NEEDED, this, &AnalogSensor::onSampleEvent, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
@@ -170,7 +172,7 @@ int AnalogSensor::setLowThreshold(uint16_t value)
     if ((status & ANALOG_SENSOR_LOW_THRESHOLD_ENABLED) && lowThreshold == value)
         return DEVICE_OK;
 
-    // We need to update our threshold 
+    // We need to update our threshold
     lowThreshold = value;
 
     // Reset any exisiting threshold state, and enable threshold detection.
@@ -197,7 +199,7 @@ int AnalogSensor::setHighThreshold(uint16_t value)
     if ((status & ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED) && highThreshold == value)
         return DEVICE_OK;
 
-    // We need to update our threshold 
+    // We need to update our threshold
     highThreshold = value;
 
     // Reset any exisiting threshold state, and enable threshold detection.
@@ -243,5 +245,3 @@ int AnalogSensor::getHighThreshold()
 AnalogSensor::~AnalogSensor()
 {
 }
-
-

@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceHeapAllocator.h"
 #include "CodalDevice.h"
 #include "ErrorNo.h"
-#include "DeviceTimer.h"
+#include "MbedTimer.h"
 #include "Matrix4.h"
 #include "CodalCompat.h"
 #include "DeviceComponent.h"
@@ -42,20 +42,20 @@ DEALINGS IN THE SOFTWARE.
 
 #include "DeviceButton.h"
 #include "MultiButton.h"
-#include "DevicePin.h"
-#include "DeviceI2C.h"
+#include "MbedPin.h"
+#include "MbedI2C.h"
 #include "LIS3DH.h"
 #include "LinearAnalogSensor.h"
 #include "NonLinearAnalogSensor.h"
 #include "TouchSensor.h"
 
-#include "DeviceSerial.h"
+#include "MbedSerial.h"
 #include "CircuitPlaygroundIO.h"
 
 #include "DeviceFiber.h"
 #include "DeviceMessageBus.h"
 
-
+using namespace codal;
 /**
   * Class definition for a CircuitPlayground device.
   *
@@ -79,15 +79,15 @@ class CircuitPlayground
     public:
 
     DeviceMessageBus            messageBus;
-    DeviceTimer                 timer;
-    DeviceSerial                serial;
+    codal::mbed::Timer          timer;
+    codal::mbed::Serial         serial;
     CircuitPlaygroundIO         io;
     DeviceButton                buttonA;
     DeviceButton                buttonB;
     DeviceButton                buttonC;
     MultiButton                 buttonAB;
 
-    DeviceI2C                   i2c;
+    codal::mbed::I2C            i2c;
     LIS3DH                      accelerometer;
     NonLinearAnalogSensor       thermometer;
     AnalogSensor                lightSensor;

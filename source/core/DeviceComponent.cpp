@@ -1,7 +1,7 @@
 #include "DeviceComponent.h"
 #include "DeviceFiber.h"
 #include "EventModel.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 
 DeviceComponent* DeviceComponent::components[DEVICE_COMPONENT_COUNT];
 

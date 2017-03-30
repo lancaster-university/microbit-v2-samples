@@ -23,37 +23,60 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DEVICE_SYSTEM_TIMER_H
-#define DEVICE_SYSTEM_TIMER_H
-
+/**
+  * Definitions for the Device system timer.
+  *
+  * This module provides:
+  *
+  * 1) a concept of global system time since power up
+  * 2) a simple periodic multiplexing API for the underlying mbed implementation.
+  *
+  * The latter is useful to avoid costs associated with multiple mbed Ticker instances
+  * in codal components, as each incurs a significant additional RAM overhead (circa 80 bytes).
+  */
 #include "DeviceConfig.h"
-#include "DeviceComponent.h"
-#include "SystemClock.h"
+#include "Timer.h"
+#include "ErrorNo.h"
 
-SystemClock* system_timer_get_instance();
 
-void system_timer_set_instance(SystemClock* systemClock);
+// System timer.
+static codal::Timer* system_timer = NULL;
+
+codal::Timer* system_timer_get_instance()
+{
+    return system_timer;
+}
+
+void system_timer_set_instance(codal::Timer* systemTimer)
+{
+    system_timer = systemTimer;
+}
 
 /**
   * Determines the time since the device was powered on.
   *
   * @return the current time since power on in milliseconds
   */
-uint64_t system_timer_current_time();
+uint64_t system_timer_current_time()
+{
+    if(system_timer == NULL)
+        return 0;
+
+    return system_timer->getTime();
+}
 
 /**
   * Determines the time since the device was powered on.
   *
   * @return the current time since power on in microseconds
   */
-uint64_t system_timer_current_time_us();
+uint64_t system_timer_current_time_us()
+{
+    if(system_timer == NULL)
+        return 0;
 
-/**
-  * Fetch the system clocks' id bus id.
-  *
-  * @return the system clocks' id bus id.
-  */
-uint16_t system_timer_get_id();
+    return system_timer->getTimeUs();
+}
 
 /**
   * Configure an event to occur every period us.
@@ -64,7 +87,13 @@ uint16_t system_timer_get_id();
   *
   * @return DEVICE_OK or DEVICE_NOT_SUPPORTED if no timer has been registered.
   */
-int system_timer_event_every_us(uint64_t period, uint16_t id, uint16_t value);
+int system_timer_event_every_us(uint64_t period, uint16_t id, uint16_t value)
+{
+    if(system_timer == NULL)
+        return DEVICE_NOT_SUPPORTED;
+
+    return system_timer->eventEveryUs(period, id, value);
+}
 
 /**
   * Configure an event to occur after period us.
@@ -75,6 +104,10 @@ int system_timer_event_every_us(uint64_t period, uint16_t id, uint16_t value);
   *
   * @return DEVICE_OK or DEVICE_NOT_SUPPORTED if no timer has been registered.
   */
-int system_timer_event_after_us(uint64_t period, uint16_t id, uint16_t value);
+int system_timer_event_after_us(uint64_t period, uint16_t id, uint16_t value)
+{
+    if(system_timer == NULL)
+        return DEVICE_NOT_SUPPORTED;
 
-#endif
+    return system_timer->eventAfterUs(period, id, value);
+}

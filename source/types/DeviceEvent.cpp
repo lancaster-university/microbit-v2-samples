@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
   */
 #include "DeviceConfig.h"
 #include "DeviceEvent.h"
-#include "DeviceSystemTimer.h"
+#include "Timer.h"
 #include "EventModel.h"
 
 EventModel* EventModel::defaultEventBus = NULL;

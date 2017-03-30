@@ -63,7 +63,10 @@ enum ErrorCode{
     DEVICE_SERIAL_IN_USE = -1011,
 
     // The requested operation had no data to return.
-    DEVICE_NO_DATA = -1012
+    DEVICE_NO_DATA = -1012,
+
+    // function is not implemented.
+    DEVICE_NOT_IMPLEMENTED = -1013
 };
 
 /**
