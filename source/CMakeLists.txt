@@ -20,9 +20,9 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "types/ManagedString.cpp"
     "types/Matrix4.cpp"
     "types/DeviceEvent.cpp"
-
     "types/ManagedBuffer.cpp"
     "types/RefCounted.cpp"
+    "types/DataStream.cpp"
 
     "device/SAMD21/DeviceTimer.cpp"
     "device/SAMD21/USB.cpp"
@@ -45,6 +45,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "drivers/AnalogSensor.cpp"
     "drivers/LinearAnalogSensor.cpp"
     "drivers/NonLinearAnalogSensor.cpp"
+    "drivers/Synthesizer.cpp"
 )
 
 execute_process(WORKING_DIRECTORY "../../yotta_modules/${PROJECT_NAME}" COMMAND "git" "log" "--pretty=format:%h" "-n" "1" OUTPUT_VARIABLE git_hash)
