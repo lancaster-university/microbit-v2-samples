@@ -6,31 +6,6 @@
 
 #undef ENABLE
 
-void show_regs()
-{
-    /* Enable all EIC hardware modules. */
-    SERIAL_DEBUG->printf("CTRLA: 0x%.2x\n  CTRLB: 0x%.2x\n  EVCTRL: 0x%.2x\n", DAC->CTRLA.reg, DAC->CTRLB.reg, DAC->EVCTRL.reg);
-
-    SERIAL_DEBUG->printf("PM: 0x%.8x\n", PM->APBAMASK.reg);
-
-
-    /* Enable the generic clock */
-    //GCLK->CLKCTRL.reg |= GCLK_CLKCTRL_CLKEN;
-    
-    *((uint8_t*)&GCLK->CLKCTRL.reg) = 0x21;
-    SERIAL_DEBUG->printf("DAC_CLKCTRL: 0x%.8x\n", GCLK->CLKCTRL.reg);
-    *((uint8_t*)&GCLK->GENCTRL.reg) = 0x08;
-    SERIAL_DEBUG->printf("DAC_GENCTRL: 0x%.8x\n", GCLK->GENCTRL.reg);
-    *((uint8_t*)&GCLK->GENDIV.reg) = 0x08;
-    SERIAL_DEBUG->printf("DAC_GENDIV: 0x%.8x\n", GCLK->GENDIV.reg);
-
-    SERIAL_DEBUG->printf("APBCMASK: 0x%.8x\n", PM->APBCMASK.reg);
-    SERIAL_DEBUG->printf("APBCSEL: 0x%.2x\n", PM->APBCSEL.reg);
- 
-    //SERIAL_DEBUG->.printf("PINMUXEN: %.2X\n", PORT->Group[0].PINCFG[4].bit.PMUXEN);
-    //SERIAL_DEBUG->.printf("PINMUX: %.2X\n", PORT->Group[0].PMUX[2].bit.PMUXE);
-}
-
 SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
 {
     this->id = id;
@@ -42,38 +17,54 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
     uint32_t v = 0x51410000 | 0x01 << pin.name;
     PORT->Group[0].WRCONFIG.reg = v;
 
-    // Enbale the DAC bus clock (CLK_DAC_APB) 
-    PM->APBCMASK.reg |= 0x00040000;
+    // Enbale the DAC bus clock (CLK_DAC_APB | CLK_EVSYS_APB | CLK_TC3_APB) 
+    PM->APBCMASK.reg |= 0x00040802;
 
     // Bring up the necessry system clocks...
-    // Select the DAC clock source 
-    GCLK->CLKCTRL.bit.ID = 0x21; 
 
-    // Configure a new generator at 44KHz.
+    // First the DAC clock source 
+    GCLK->CLKCTRL.bit.ID = 0x21; 
+    GCLK->CLKCTRL.bit.CLKEN = 0;    
+    while(GCLK->CLKCTRL.bit.CLKEN);    
+
+    // Configure a new clock generator to run at the DAC conversion frequency
     GCLK->GENCTRL.bit.ID = 0x08;      
 
-    //GCLK->GENCTRL.bit.SRC = 0x06;   // 8MHz source
-    GCLK->GENCTRL.bit.SRC = 0x04;   // 32KHz source
+    GCLK->GENCTRL.bit.SRC = 0x06; // OSC8M source
     GCLK->GENCTRL.bit.DIVSEL = 0;   // linear clock divide 
     GCLK->GENCTRL.bit.OE = 0;       // Do not output to GPIO 
     GCLK->GENCTRL.bit.OOV = 0;      // Do not output to GPIO 
     GCLK->GENCTRL.bit.IDC = 1;      // improve accuracy 
     GCLK->GENCTRL.bit.RUNSTDBY = 1;    // improve accuracy 
-    GCLK->GENCTRL.bit.GENEN = 1;    // improve accuracy 
+    GCLK->GENCTRL.bit.GENEN = 1;    // enable clock generator
 
     GCLK->GENDIV.bit.ID = 0x08;      
-    //GCLK->GENDIV.bit.DIV = 181;     // Configure for 44.1KHz
-    GCLK->GENDIV.bit.DIV = 0;     // Configure for 44.1KHz
+    GCLK->GENDIV.bit.DIV = 32;   
 
     GCLK->CLKCTRL.bit.GEN = 0x08;      
     GCLK->CLKCTRL.bit.CLKEN = 1;    // Enable clock
 
-    DAC->CTRLB.reg = 0x53;
-    DAC->CTRLA.reg = 0x06;
-    DAC->EVCTRL.reg = 0x03;
+    // Next bring up the TC3 clock at 8MHz.
+    GCLK->CLKCTRL.bit.ID = 0x1B;    // TC3 Clock
+    GCLK->CLKCTRL.bit.CLKEN = 0;    
+    while(GCLK->CLKCTRL.bit.CLKEN);    
 
-    GCLK->CLKCTRL.bit.ID = 0x21; 
+    GCLK->CLKCTRL.bit.GEN = 0x03;   // 8MHz peripheral clock source
     GCLK->CLKCTRL.bit.CLKEN = 1;    // Enable clock
+
+    // Configure TC5 for a 1uS tick 10KHz overflow
+    TC3->COUNT16.CTRLA.reg = 0x0B20;        // 16 bit 8:1 prescaler
+    TC3->COUNT16.CTRLC.reg = 0x00;          // compare mode
+    TC3->COUNT16.CC[0].reg = 100;           // 100 uS period
+    TC3->COUNT16.EVCTRL.reg = 0x1100;       // Enable periodoverflow events.
+    TC3->COUNT16.CTRLBCLR.bit.DIR = 1;      // Start the timer
+    TC3->COUNT16.CTRLA.bit.ENABLE = 1;      // Start the timer
+
+    // Enable the DAC.
+    DAC->CTRLA.reg = 0x00;
+    DAC->EVCTRL.reg = 0x03;
+    DAC->CTRLB.reg = 0x5B;
+    DAC->CTRLA.reg = 0x06;
 
     // Initialise a DMA channel
     dmac.disable();
@@ -91,7 +82,7 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
         descriptor.BTCTRL.bit.SRCINC = 1;       // increment does apply to source address 
         descriptor.BTCTRL.bit.BEATSIZE = 1;     // 16 bit wide transfer. 
         descriptor.BTCTRL.bit.BLOCKACT = 0;     // No action when transfer complete. 
-        descriptor.BTCTRL.bit.EVOSEL = 0;       // Strobe events after every BEAT transfer
+        descriptor.BTCTRL.bit.EVOSEL = 3;       // Strobe events after every BEAT transfer
         descriptor.BTCTRL.bit.VALID = 1;        // Enable the descritor
 
         descriptor.BTCNT.bit.BTCNT = 0;
@@ -103,11 +94,11 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
 
         DMAC->CHCTRLB.bit.CMD = 0;                  // No Command (yet)
         DMAC->CHCTRLB.bit.TRIGACT = 2;              // One trigger per beat transfer
-        DMAC->CHCTRLB.bit.TRIGSRC = 0;              // Only softwate trigger (should be 0x28)
+        DMAC->CHCTRLB.bit.TRIGSRC = 0x18;           // TC3 overflow trigger (could also be 0x22? match Compare C0?)
         DMAC->CHCTRLB.bit.LVL = 0;                  // Low priority transfer 
-        DMAC->CHCTRLB.bit.EVOE = 0;                 // no events 
-        DMAC->CHCTRLB.bit.EVIE = 0;                 // no events 
-        DMAC->CHCTRLB.bit.EVACT = 0;                // no events 
+        DMAC->CHCTRLB.bit.EVOE = 0;                 // Enable output event on every BEAT 
+        DMAC->CHCTRLB.bit.EVIE = 1;                 // Enable input event 
+        DMAC->CHCTRLB.bit.EVACT = 0;                // Trigger DMA transfer on BEAT
 
         DMAC->CHINTENSET.bit.TCMPL = 1;             // Enable interrupt on completion.
 
@@ -119,37 +110,21 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
     dmac.enable();
 }
 
-void showBuf(uint16_t *buf)
-{
-    for (int i=0; i<16; i++)
-        SERIAL_DEBUG->printf("0x%.4X ", buf[i]);
-    SERIAL_DEBUG->printf("\n");
-}
-
-
-void SAMD21DAC::play(uint16_t *buffer, int length)
+int SAMD21DAC::play(const uint16_t *buffer, int length)
 {
     if (dmaChannel == DEVICE_NO_RESOURCES)
-    {
-        SERIAL_DEBUG->printf("PLAY: NO DMA CHANNEL\n");
-        return;
-    }
+        return DEVICE_NO_RESOURCES;
 
     DmacDescriptor &descriptor = dmac.getDescriptor(dmaChannel);
 
-    descriptor.SRCADDR.reg = ((uint32_t) buffer) + (length * 2);
+    descriptor.SRCADDR.reg = ((uint32_t) buffer) + ((length) * 2);
     descriptor.BTCNT.bit.BTCNT = length;
 
     // Enable our DMA channel.
     DMAC->CHID.bit.ID = dmaChannel;             
     DMAC->CHCTRLA.bit.ENABLE = 1;                
 
-    // Start the transfer. For now, clock from the CPU (just for testing).
-    for (int i=0; i<length; i++)
-    {
-        wait_us(100);
-        DMAC->SWTRIGCTRL.bit.SWTRIG0 = 1;           // Start the DMA transfer!
-    }
+    return DEVICE_OK;
 }
 
 void SAMD21DAC::setValue(int value)
@@ -162,11 +137,15 @@ int SAMD21DAC::getValue()
     return DAC->DATA.reg;
 }
 
+extern void debug_flip();
+
 /**
  * Base implementation of a DMA callback
  */
 void SAMD21DAC::dmaTransferComplete()
 {
-    SERIAL_DEBUG->printf("*");
+    // restart the last transfer
+    DMAC->CHID.bit.ID = dmaChannel;             
+    DMAC->CHCTRLA.bit.ENABLE = 1;                
 }
 
