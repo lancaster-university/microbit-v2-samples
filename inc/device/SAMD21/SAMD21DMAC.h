@@ -65,9 +65,10 @@ public:
      */
     int onTransferComplete(int channel, DmaComponent *component);
 
-    // DEBUG HELPERS
+#if CONFIG_ENABLED(DEVICE_DBG)
     void showDescriptor(DmacDescriptor *desc);
     void showRegisters();
+#endif
 
 };
 

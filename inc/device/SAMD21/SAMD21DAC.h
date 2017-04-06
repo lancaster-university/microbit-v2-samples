@@ -25,7 +25,7 @@ public:
 
     void setValue(int value);
     int getValue();
-    void play(uint16_t *buffer, int length);
+    int play(const uint16_t *buffer, int length);
     virtual void dmaTransferComplete();
     
 };

@@ -13,7 +13,7 @@ extern "C" void DMAC_Handler( void )
     uint32_t oldChannel = DMAC->CHID.bit.ID;
     int channel = 0;
     uint32_t pend = DMAC->INTSTATUS.reg;
-
+   
     while((pend & 1) == 0)
     {
         pend = pend >> 1;
@@ -59,6 +59,7 @@ SAMD21DMAC::SAMD21DMAC()
     this->enable();
 
     NVIC_EnableIRQ(DMAC_IRQn);
+    NVIC_SetPriority(DMAC_IRQn, 1);
 }
 
 void SAMD21DMAC::enable()
@@ -71,44 +72,6 @@ void SAMD21DMAC::disable()
 {
     DMAC->CTRL.bit.DMAENABLE = 0;               // Diable controller, just while we configure it.
     DMAC->CTRL.bit.CRCENABLE = 0;               // Disable CRC checking.
-}
-
-void SAMD21DMAC::showDescriptor(DmacDescriptor *desc)
-{
-    SERIAL_DEBUG->printf("DESC: %p\n", desc);
-    SERIAL_DEBUG->printf("DESC->SRCADDR: %p\n", &desc->SRCADDR);
-    SERIAL_DEBUG->printf("DESC->DSTADDR: %p\n", &desc->DSTADDR);
-
-    SERIAL_DEBUG->printf("STESIZE: %d\n", desc->BTCTRL.bit.STEPSIZE);
-    SERIAL_DEBUG->printf("DSTINC: %d\n", desc->BTCTRL.bit.DSTINC);
-    SERIAL_DEBUG->printf("SRCINC: %d\n", desc->BTCTRL.bit.SRCINC);
-    SERIAL_DEBUG->printf("BEATSIZE: %d\n", desc->BTCTRL.bit.BEATSIZE);
-    SERIAL_DEBUG->printf("BLOCKACT: %d\n", desc->BTCTRL.bit.BLOCKACT);
-    SERIAL_DEBUG->printf("EVOSEL: %d\n", desc->BTCTRL.bit.EVOSEL);
-    SERIAL_DEBUG->printf("VALID: %d\n", desc->BTCTRL.bit.VALID);
-
-    SERIAL_DEBUG->printf("BTCNT: %d\n", desc->BTCNT.bit.BTCNT);
-    SERIAL_DEBUG->printf("SRCADDR: %p\n", desc->SRCADDR.bit.SRCADDR);
-    SERIAL_DEBUG->printf("DSTADDR: %p\n", desc->DSTADDR.bit.DSTADDR);
-    SERIAL_DEBUG->printf("DESCADDR: %p\n", desc->DESCADDR.bit.DESCADDR);
-}
-
-void SAMD21DMAC::showRegisters()
-{
-    SERIAL_DEBUG->printf("BASEADDR: 0x%.8x[%p]\n", DMAC->BASEADDR.reg, &descriptors[1]);
-    SERIAL_DEBUG->printf("WRBADDR: 0x%.8x [%p]\n", DMAC->WRBADDR.reg, &descriptors[0]);
-    SERIAL_DEBUG->printf("CTRL: 0x%.2x\n", DMAC->CTRL.reg);
-    SERIAL_DEBUG->printf("PENDCH: 0x%.8x\n", DMAC->PENDCH.reg);
-    DMAC->CHID.bit.ID = 0;                      // Select channel 0 
-    SERIAL_DEBUG->printf("CHCTRLA: 0x%.8x\n", DMAC->CHCTRLA.reg);
-    SERIAL_DEBUG->printf("CHCTRLB: 0x%.8x\n", DMAC->CHCTRLB.reg);
-    SERIAL_DEBUG->printf("INTPEND: 0x%.8x\n", DMAC->INTPEND.reg);
-    SERIAL_DEBUG->printf("ACTIVE: 0x%.8x\n", DMAC->ACTIVE.reg);
-    SERIAL_DEBUG->printf("BUSYCH: 0x%.8x\n", DMAC->BUSYCH.reg);
-
-    SERIAL_DEBUG->printf("APBBMASK: 0x%.8x\n", PM->APBBMASK.reg);
-    SERIAL_DEBUG->printf("AHBMASK: 0x%.2x\n", PM->AHBMASK.reg);
-
 }
 
 /**
@@ -157,3 +120,45 @@ int SAMD21DMAC::onTransferComplete(int channel, DmaComponent *component)
     apps[channel] = component;
     return DEVICE_OK;
 }
+
+#if CONFIG_ENABLED(DEVICE_DBG)
+
+void SAMD21DMAC::showDescriptor(DmacDescriptor *desc)
+{
+    SERIAL_DEBUG->printf("DESC: %p\n", desc);
+    SERIAL_DEBUG->printf("DESC->SRCADDR: %p\n", &desc->SRCADDR);
+    SERIAL_DEBUG->printf("DESC->DSTADDR: %p\n", &desc->DSTADDR);
+
+    SERIAL_DEBUG->printf("STESIZE: %d\n", desc->BTCTRL.bit.STEPSIZE);
+    SERIAL_DEBUG->printf("DSTINC: %d\n", desc->BTCTRL.bit.DSTINC);
+    SERIAL_DEBUG->printf("SRCINC: %d\n", desc->BTCTRL.bit.SRCINC);
+    SERIAL_DEBUG->printf("BEATSIZE: %d\n", desc->BTCTRL.bit.BEATSIZE);
+    SERIAL_DEBUG->printf("BLOCKACT: %d\n", desc->BTCTRL.bit.BLOCKACT);
+    SERIAL_DEBUG->printf("EVOSEL: %d\n", desc->BTCTRL.bit.EVOSEL);
+    SERIAL_DEBUG->printf("VALID: %d\n", desc->BTCTRL.bit.VALID);
+
+    SERIAL_DEBUG->printf("BTCNT: %d\n", desc->BTCNT.bit.BTCNT);
+    SERIAL_DEBUG->printf("SRCADDR: %p\n", desc->SRCADDR.bit.SRCADDR);
+    SERIAL_DEBUG->printf("DSTADDR: %p\n", desc->DSTADDR.bit.DSTADDR);
+    SERIAL_DEBUG->printf("DESCADDR: %p\n", desc->DESCADDR.bit.DESCADDR);
+}
+
+void SAMD21DMAC::showRegisters()
+{
+    SERIAL_DEBUG->printf("BASEADDR: 0x%.8x[%p]\n", DMAC->BASEADDR.reg, &descriptors[1]);
+    SERIAL_DEBUG->printf("WRBADDR: 0x%.8x [%p]\n", DMAC->WRBADDR.reg, &descriptors[0]);
+    SERIAL_DEBUG->printf("CTRL: 0x%.2x\n", DMAC->CTRL.reg);
+    SERIAL_DEBUG->printf("PENDCH: 0x%.8x\n", DMAC->PENDCH.reg);
+    DMAC->CHID.bit.ID = 0;                      // Select channel 0 
+    SERIAL_DEBUG->printf("CHCTRLA: 0x%.8x\n", DMAC->CHCTRLA.reg);
+    SERIAL_DEBUG->printf("CHCTRLB: 0x%.8x\n", DMAC->CHCTRLB.reg);
+    SERIAL_DEBUG->printf("INTPEND: 0x%.8x\n", DMAC->INTPEND.reg);
+    SERIAL_DEBUG->printf("ACTIVE: 0x%.8x\n", DMAC->ACTIVE.reg);
+    SERIAL_DEBUG->printf("BUSYCH: 0x%.8x\n", DMAC->BUSYCH.reg);
+
+    SERIAL_DEBUG->printf("APBBMASK: 0x%.8x\n", PM->APBBMASK.reg);
+    SERIAL_DEBUG->printf("AHBMASK: 0x%.2x\n", PM->AHBMASK.reg);
+}
+
+#endif
+
