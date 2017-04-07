@@ -1,4 +1,7 @@
 #include "DataStream.h"
+#include "DeviceComponent.h"
+#include "DeviceMessageBus.h"
+#include "DeviceFiber.h"
 #include "ErrorNo.h"
 
 /**
@@ -28,7 +31,7 @@ DataStream::DataStream(DataSource &upstream)
     this->bufferCount = 0;
     this->bufferLength = 0;
     this->preferredBufferSize = 0;
-	this->blocked = false;
+    this->notifyEventCode = allocateNotifyEvent();
 
     this->downStream = NULL;
     this->upStream = &upstream;
@@ -157,16 +160,18 @@ ManagedBuffer DataStream::pull()
 	// A simplistic FIFO for now. Copy cost is actually pretty low because ManagedBuffer is a managed type,
 	// so we're just moving a few references here.
 	//
-	if (bufferLength > 0)
+	if (bufferCount > 0)
 	{
-		for (int i = 0; i < bufferCount; i++)
+		for (int i = 0; i < bufferCount-1; i++)
 			stream[i] = stream[i + 1];
+
+        stream[bufferCount-1] = ManagedBuffer();
 
 		bufferCount--;
 		bufferLength = bufferLength - out.length();
 	}
 
-	blocked = false;
+    DeviceEvent(DEVICE_ID_NOTIFY, notifyEventCode);
 
 	return out;
 }
@@ -176,12 +181,8 @@ ManagedBuffer DataStream::pull()
  */
 int DataStream::pullRequest()
 {
-	if (bufferCount == DATASTREAM_MAXIMUM_BUFFERS)
-	{
-		// TODO: BLOCK awaiting event
-		blocked = true;
-		return DEVICE_NO_RESOURCES;
-	}
+	if (bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength > preferredBufferSize)
+        fiber_wait_for_event(DEVICE_ID_NOTIFY, notifyEventCode);
 
 	stream[bufferCount] = upStream->pull();
 	bufferLength = bufferLength + stream[bufferCount].length();
@@ -189,9 +190,6 @@ int DataStream::pullRequest()
 	
 	if (downStream != NULL)
 		downStream->pullRequest();
-
-	if (bufferLength > preferredBufferSize)
-		blocked = true;
 
 	return DEVICE_OK;
 }

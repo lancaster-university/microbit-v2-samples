@@ -34,4 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_SERIAL_EVT_TX_EMPTY        2
 #define DEVICE_UART_S_EVT_TX_EMPTY        3
 
+// Event codes with ID >=1024 are allocated dynamic by the MessageBus::allocateNotifyEvent() method.
+#define DEVICE_NOTIFY_USER_EVENT_BASE     1024
+
 #endif

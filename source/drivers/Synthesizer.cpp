@@ -9,7 +9,7 @@
 Synthesizer::Synthesizer(int sampleRate) : output(*this)
 {
 	this->sampleRate = sampleRate;
-	this->bufferSize = 256;
+	this->bufferSize = 512;
 
 	this->position = 0;
 	this->samplePeriodNs = 1000000000 / sampleRate;
@@ -39,7 +39,7 @@ Synthesizer::~Synthesizer()
  */
 void Synthesizer::generate()
 {
-	buffer = ManagedBuffer(512);
+	buffer = ManagedBuffer(bufferSize);
 	
 	uint16_t *ptr = (uint16_t *) &buffer[0];
 
