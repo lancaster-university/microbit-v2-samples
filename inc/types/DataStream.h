@@ -3,7 +3,7 @@
 
 #include "ManagedBuffer.h"
 
-#define DATASTREAM_MAXIMUM_BUFFERS      4
+#define DATASTREAM_MAXIMUM_BUFFERS      1
 
 /**
  * Interface definition for a DataSource.
@@ -37,7 +37,7 @@ class DataStream : public DataSource, public DataSink
     int bufferCount;
     int bufferLength;
     int preferredBufferSize;
-	bool blocked;
+    uint16_t notifyEventCode;
 
     DataSink *downStream;
     DataSource *upStream;

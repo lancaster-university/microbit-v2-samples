@@ -3,7 +3,7 @@
 
 #include "DataStream.h"
 
-#define SYNTHESIZER_SAMPLE_RATE		44100
+#define SYNTHESIZER_SAMPLE_RATE		10000
 
 /**
   * Class definition for DataStream.

@@ -6,9 +6,14 @@
 
 #undef ENABLE
 
-SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
+SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16_t id) : dmac(dma), upstream(source)
 {
     this->id = id;
+    this->active = false;
+    this->dataReady = 0;
+
+    // Register with our upstream component
+    source.connect(*this);
 
     // Put the pin into output mode.
     pin.setDigitalValue(0);
@@ -110,10 +115,50 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, uint16_t id) : dmac(dma)
     dmac.enable();
 }
 
+/**
+ * Callback provided when data is ready.
+ */
+int SAMD21DAC::pullRequest()
+{
+    dataReady++;
+
+    if (!active)
+        pull();
+
+    return DEVICE_OK;
+}
+
+/**
+ * Pull down a buffer from upstream, and schedule a DMA transfer from it.
+ */
+int SAMD21DAC::pull()
+{
+    output = upstream.pull();
+    dataReady--;
+
+    if (dmaChannel == DEVICE_NO_RESOURCES)
+        return DEVICE_NO_RESOURCES;
+
+    active = true;
+
+    DmacDescriptor &descriptor = dmac.getDescriptor(dmaChannel);
+
+    descriptor.SRCADDR.reg = ((uint32_t) &output[0]) + (output.length());
+    descriptor.BTCNT.bit.BTCNT = output.length()/2;
+
+    // Enable the DMA channel.
+    DMAC->CHID.bit.ID = dmaChannel;             
+    DMAC->CHCTRLA.bit.ENABLE = 1;                
+
+    return DEVICE_OK;
+}
+
 int SAMD21DAC::play(const uint16_t *buffer, int length)
 {
     if (dmaChannel == DEVICE_NO_RESOURCES)
         return DEVICE_NO_RESOURCES;
+
+    active = true;
 
     DmacDescriptor &descriptor = dmac.getDescriptor(dmaChannel);
 
@@ -144,8 +189,12 @@ extern void debug_flip();
  */
 void SAMD21DAC::dmaTransferComplete()
 {
-    // restart the last transfer
-    DMAC->CHID.bit.ID = dmaChannel;             
-    DMAC->CHCTRLA.bit.ENABLE = 1;                
+    if (dataReady == 0)
+    {
+        active = false;
+        return;
+    }
+
+    pull();
 }
 
