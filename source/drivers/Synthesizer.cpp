@@ -1,6 +1,16 @@
 #include "Synthesizer.h"
+#include "DeviceFiber.h"
 #include "ErrorNo.h"
 
+/*
+ * Simple internal helper funtion that creates a fiber within the givien Synthesizer to handle playback
+ */
+static Synthesizer *launching = NULL;
+void begin_playback()
+{
+    if (launching)
+        launching->generate();
+}
 
 /**
   * Class definition for a Synthesizer.
@@ -16,6 +26,9 @@ Synthesizer::Synthesizer(int sampleRate) : output(*this)
 	this->setFrequency(261.62);
 	this->setVolume(1023);
 	this->periodNs = newPeriodNs;
+
+    launching = this;
+    create_fiber(begin_playback);
 }
 
 /**
@@ -39,25 +52,28 @@ Synthesizer::~Synthesizer()
  */
 void Synthesizer::generate()
 {
-	buffer = ManagedBuffer(bufferSize);
-	
-	uint16_t *ptr = (uint16_t *) &buffer[0];
+    while(1)
+    {
+        buffer = ManagedBuffer(bufferSize);
 
-	for (int i = 0; i < buffer.length() / 2; i++)
-	{
-		*ptr = periodNs > 0 ? (amplitude * position) / periodNs : 0;
-		position += samplePeriodNs;
+        uint16_t *ptr = (uint16_t *) &buffer[0];
 
-		if (position > periodNs)
-		{
-			position -= periodNs;
-			periodNs = newPeriodNs;
-		}
+        for (int i = 0; i < buffer.length() / 2; i++)
+        {
+            *ptr = periodNs > 0 ? (amplitude * position) / periodNs : 0;
+            position += samplePeriodNs;
 
-		ptr++;
-	}
+            if (position > periodNs)
+            {
+                position -= periodNs;
+                periodNs = newPeriodNs;
+            }
 
-	output.pullRequest();
+            ptr++;
+        }
+
+        output.pullRequest();
+    }
 }
 
 /**
