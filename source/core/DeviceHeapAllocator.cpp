@@ -385,4 +385,16 @@ void* realloc (void* ptr, size_t size)
     return mem;
 }
 
+// make sure the libc allocator is not pulled in
+
+void *_malloc_r(struct _reent *, size_t len)
+{
+    return malloc(len);
+}
+
+void _free_r(struct _reent *, void *addr)
+{
+    free(addr);
+}
+
 #endif
