@@ -64,6 +64,8 @@ public:
       */
     void init();
 
+    void destroy();
+
     /**
       * Checks if the object resides in flash memory.
       *

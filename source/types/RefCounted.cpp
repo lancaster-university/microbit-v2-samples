@@ -33,15 +33,6 @@ DEALINGS IN THE SOFTWARE.
 #include "RefCounted.h"
 
 /**
-  * Initializes for one outstanding reference.
-  */
-void RefCounted::init()
-{
-    // Initialize to one reference (lowest bit set to 1)
-    refCount = 3;
-}
-
-/**
   * Checks if the object resides in flash memory.
   *
   * @param t the object to check.
@@ -93,6 +84,9 @@ void RefCounted::decr()
 
     refCount -= 2;
     if (refCount == 1) {
-        free(this);
+        // if we just call plain free(), the write to refCount will
+        // be optimized away, and it will stay '3'; this way we make
+        // sure to get a panic on next incr()/decr()
+        destroy();
     }
 }
