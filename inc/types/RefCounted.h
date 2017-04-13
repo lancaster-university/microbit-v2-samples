@@ -37,62 +37,52 @@ DEALINGS IN THE SOFTWARE.
 struct RefCounted
 {
 public:
-    /**
+  /**
       * The high 15 bits hold the number of outstanding references. The lowest bit is always 1
       * to make sure it doesn't look like C++ vtable.
       * Should never be even or one (object should be deleted then).
       * When it's set to 0xffff, it means the object sits in flash and should not be counted.
       */
-    uint16_t refCount;
+  uint16_t refCount;
 
-#if CONFIG_ENABLED(DEVICE_VTABLE)
-    uint16_t vtablePtr;
+#if CONFIG_ENABLED(DEVICE_TAG)
+  uint16_t tag;
 #endif
 
-    /**
+  /**
       * Increment reference count.
       */
-    void incr();
+  void incr();
 
-    /**
+  /**
       * Decrement reference count.
       */
-    void decr();
+  void decr();
 
-    /**
+  /**
       * Initializes for one outstanding reference.
       */
-    void init();
+  void init();
 
-    void destroy();
+  void destroy();
 
-    /**
+  /**
       * Checks if the object resides in flash memory.
       *
       * @return true if the object resides in flash memory, false otherwise.
       */
-    bool isReadOnly();
+  bool isReadOnly();
 };
 
-#if CONFIG_ENABLED(DEVICE_VTABLE)
-// In case VTABLE is enabled, we leave 2 bytes of space for the runtime-specific
-// virtual table pointer. This is mostly to distinguish types of values at runtime.
-// Codal doesn't know what's the encoding of vtable pointer nor what it is,
-// so when the final binary is generated, the language-specific compiler will need to
-// insert the right value in the binary.
-//
-// The vtable pointer value from the empty instance is then copied (by codal) to all
-// newly created instances. 
-#define REF_COUNTED_DEF_EMPTY(className, ...)                                                      \
-    const uint16_t className::emptyData[] __attribute__((aligned(4))) = {0xffff, 0, __VA_ARGS__};
-#define REF_COUNTED_INIT(ptr)                                                                      \
-    ptr->init();                                                                             \
-    ptr->vtablePtr = EMPTY_DATA->vtablePtr;                                                        \
-    if (!ptr->vtablePtr)                                                                           \
-    device.panic(DEVICE_HEAP_ERROR)
+#if CONFIG_ENABLED(DEVICE_TAG)
+#define REF_COUNTED_DEF_EMPTY(...) \
+  static const uint16_t emptyData[] __attribute__((aligned(4))) = {0xffff, REF_CLASS::TAG, __VA_ARGS__};
+#define REF_COUNTED_INIT(ptr) \
+  ptr->init();                \
+  ptr->tag = REF_CLASS::TAG
 #else
-#define REF_COUNTED_DEF_EMPTY(className, ...)                                                      \
-    const uint16_t className::emptyData[] __attribute__((aligned(4))) = {0xffff, __VA_ARGS__};
+#define REF_COUNTED_DEF_EMPTY(className, ...) \
+  static const uint16_t emptyData[] __attribute__((aligned(4))) = {0xffff, __VA_ARGS__};
 #define REF_COUNTED_INIT(ptr) ptr->init()
 #endif
 

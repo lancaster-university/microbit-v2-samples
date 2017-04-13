@@ -366,7 +366,7 @@ class ManagedString
       */
     static ManagedString EmptyString;
 
-    static const uint16_t emptyData[];
+    static const int TAG = 1;
 
     private:
 
@@ -396,6 +396,7 @@ class ManagedString
       * @param str2 The second string on which to base the new ManagedString.
       */
     ManagedString(const ManagedString &s1, const ManagedString &s2);
+
 };
 
 #endif

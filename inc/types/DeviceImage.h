@@ -67,7 +67,6 @@ class DeviceImage
 
     public:
     static DeviceImage EmptyImage;    // Shared representation of a null image.
-    static const uint16_t emptyData[];
 
     /**
       * Get current ptr, do not decr() it, and set the current instance to empty image.
@@ -476,6 +475,8 @@ class DeviceImage
       * @return an instance of DeviceImage which can be modified independently of the current instance
       */
     DeviceImage clone();
+
+    static const int TAG = 3;
 };
 
 #endif

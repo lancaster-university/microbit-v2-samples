@@ -2,7 +2,12 @@
 #include "ManagedBuffer.h"
 #include <limits.h>
 
+
+#define REF_CLASS ManagedBuffer
 #define EMPTY_DATA ((BufferData*)(void*)emptyData)
+
+REF_COUNTED_DEF_EMPTY(0, 0)
+
 
 using namespace std;
 

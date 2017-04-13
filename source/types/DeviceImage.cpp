@@ -37,11 +37,13 @@ DEALINGS IN THE SOFTWARE.
 #include "ManagedString.h"
 #include "ErrorNo.h"
 
-
 /**
   * The null image. We actally create a small one byte buffer here, just to keep NULL pointers out of the equation.
   */
+#define REF_CLASS ManagedString
 #define EMPTY_DATA ((ImageData*)(void*)emptyData)
+
+REF_COUNTED_DEF_EMPTY(1, 1, 0)
 
 DeviceImage DeviceImage::EmptyImage(EMPTY_DATA);
 

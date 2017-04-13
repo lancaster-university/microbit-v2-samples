@@ -102,11 +102,10 @@ DEALINGS IN THE SOFTWARE.
 #define DEVICE_HEAP_REUSE_SD                  1
 #endif
 
-// If enabled, RefCounted objects include 2 bytes of space for virtual method table
-// at the beginning. This requires rather intricate post-processing of the hex file.
+// If enabled, RefCounted objects include a constant tag at the beginning. 
 // Set '1' to enable.
-#ifndef DEVICE_VTABLE
-#define DEVICE_VTABLE                         0
+#ifndef DEVICE_TAG
+#define DEVICE_TAG                            0
 #endif
 
 
