@@ -366,8 +366,6 @@ class ManagedString
       */
     static ManagedString EmptyString;
 
-    static const int TAG = 1;
-
     private:
 
     /**

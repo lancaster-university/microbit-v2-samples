@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ManagedString.h"
 #include "CodalCompat.h"
 
-#define REF_CLASS ManagedString
+#define REF_TAG REF_TAG_STRING
 #define EMPTY_DATA ((StringData*)(void*)emptyData)
 
 REF_COUNTED_DEF_EMPTY(0, 0)

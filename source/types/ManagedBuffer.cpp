@@ -3,7 +3,7 @@
 #include <limits.h>
 
 
-#define REF_CLASS ManagedBuffer
+#define REF_TAG REF_TAG_BUFFER
 #define EMPTY_DATA ((BufferData*)(void*)emptyData)
 
 REF_COUNTED_DEF_EMPTY(0, 0)

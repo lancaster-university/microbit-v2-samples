@@ -77,13 +77,19 @@ public:
     bool isReadOnly();
 };
 
+
 #if CONFIG_ENABLED(DEVICE_TAG)
+#define REF_TAG_STRING 1
+#define REF_TAG_BUFFER 2
+#define REF_TAG_IMAGE 3
+#define REF_TAG_USER 32
+
 #define REF_COUNTED_DEF_EMPTY(...)                                                                 \
     static const uint16_t emptyData[]                                                              \
-        __attribute__((aligned(4))) = {0xffff, REF_CLASS::TAG, __VA_ARGS__};
+        __attribute__((aligned(4))) = {0xffff, REF_TAG, __VA_ARGS__};
 #define REF_COUNTED_INIT(ptr)                                                                      \
     ptr->init();                                                                                   \
-    ptr->tag = REF_CLASS::TAG
+    ptr->tag = REF_TAG
 #else
 #define REF_COUNTED_DEF_EMPTY(className, ...)                                                      \
     static const uint16_t emptyData[] __attribute__((aligned(4))) = {0xffff, __VA_ARGS__};

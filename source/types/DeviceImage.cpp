@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 /**
   * The null image. We actally create a small one byte buffer here, just to keep NULL pointers out of the equation.
   */
-#define REF_CLASS ManagedString
+#define REF_TAG REF_TAG_IMAGE
 #define EMPTY_DATA ((ImageData*)(void*)emptyData)
 
 REF_COUNTED_DEF_EMPTY(1, 1, 0)

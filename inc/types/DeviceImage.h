@@ -475,8 +475,6 @@ class DeviceImage
       * @return an instance of DeviceImage which can be modified independently of the current instance
       */
     DeviceImage clone();
-
-    static const int TAG = 3;
 };
 
 #endif
