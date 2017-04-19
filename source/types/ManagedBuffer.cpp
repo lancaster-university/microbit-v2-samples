@@ -2,7 +2,12 @@
 #include "ManagedBuffer.h"
 #include <limits.h>
 
-static const char empty[] __attribute__ ((aligned (4))) = "\xff\xff\0\0\0";
+
+#define REF_TAG REF_TAG_BUFFER
+#define EMPTY_DATA ((BufferData*)(void*)emptyData)
+
+REF_COUNTED_DEF_EMPTY(0, 0)
+
 
 using namespace std;
 
@@ -12,7 +17,7 @@ using namespace std;
   */
 void ManagedBuffer::initEmpty()
 {
-    ptr = (BufferData*)(void*)empty;
+    ptr = EMPTY_DATA;
 }
 
 /**
@@ -109,7 +114,7 @@ void ManagedBuffer::init(uint8_t *data, int length)
     }
 
     ptr = (BufferData *) malloc(sizeof(BufferData) + length);
-    ptr->init();
+    REF_COUNTED_INIT(ptr);
 
     ptr->length = length;
 

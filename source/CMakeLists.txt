@@ -23,6 +23,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
 
     "types/ManagedBuffer.cpp"
     "types/RefCounted.cpp"
+    "types/RefCountedInit.cpp"
 
     "device/DeviceTimer.cpp"
     "device/USB.cpp"

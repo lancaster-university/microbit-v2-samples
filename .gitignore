@@ -5,3 +5,4 @@ yotta_targets
 *.swp
 Makefile
 *.DS_Store
+.vscode
