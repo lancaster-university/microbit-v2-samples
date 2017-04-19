@@ -79,6 +79,8 @@ public:
 
 
 #if CONFIG_ENABLED(DEVICE_TAG)
+// Note that there might be binary dependencies on these values (and layout of 
+// RefCounted and derived classes), so the existing ones are best left unchanged.
 #define REF_TAG_STRING 1
 #define REF_TAG_BUFFER 2
 #define REF_TAG_IMAGE 3
