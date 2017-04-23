@@ -210,6 +210,12 @@ DeviceImage::DeviceImage(const char *s)
   */
 DeviceImage::DeviceImage(ImageData *p)
 {
+    if(p == NULL)
+    {
+        init_empty();
+        return;
+    }
+
     ptr = p;
     ptr->incr();
 }
@@ -289,7 +295,7 @@ void DeviceImage::init(const int16_t x, const int16_t y, const uint8_t *bitmap)
     REF_COUNTED_INIT(ptr);
     ptr->width = x;
     ptr->height = y;
-    
+
 
     // create a linear buffer to represent the image. We could use a jagged/2D array here, but experimentation
     // showed this had a negative effect on memory management (heap fragmentation etc).
