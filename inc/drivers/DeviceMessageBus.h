@@ -58,6 +58,8 @@ DEALINGS IN THE SOFTWARE.
   */
 class DeviceMessageBus : public EventModel, public DeviceComponent
 {
+    uint16_t        userNotifyId;
+
     public:
 
     /**
@@ -139,6 +141,7 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
     virtual int remove(DeviceListener *newListener);
 
 
+
     private:
 
     DeviceListener            *listeners;           // Chain of active listeners.
@@ -177,5 +180,10 @@ class DeviceMessageBus : public EventModel, public DeviceComponent
       */
     void idle(DeviceEvent);
 };
+
+/**
+ * Allocate a NOTIFY event code dynamicaly, for generally purpose condition synchronisation.
+ */
+uint16_t allocateNotifyEvent();
 
 #endif
