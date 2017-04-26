@@ -35,8 +35,6 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceFiber.h"
 #include "Timer.h"
 
-using namespace codal;
-
 #define INITIAL_STACK_DEPTH (fiber_initial_stack_base() - 0x04)
 
 //Serial serial(USBTX, USBRX);
@@ -45,6 +43,8 @@ using namespace codal;
  * Statically allocated values used to create and destroy Fibers.
  * required to be defined here to allow persistence during context switches.
  */
+namespace codal
+{
 Fiber *currentFiber = NULL;                        // The context in which the current fiber is executing.
 static Fiber *forkedFiber = NULL;                  // The context in which a newly created child fiber is executing.
 static Fiber *idleFiber = NULL;                    // the idle task - performs a power efficient sleep, and system maintenance tasks.
@@ -66,6 +66,9 @@ static uint8_t fiber_flags = 0;
  * Fibers may perform wait/notify semantics on events. If set, these operations will be permitted on this EventModel.
  */
 static EventModel *messageBus = NULL;
+}
+
+using namespace codal;
 
 extern CodalDevice& device;
 

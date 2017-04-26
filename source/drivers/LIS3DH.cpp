@@ -734,14 +734,14 @@ LIS3DH::~LIS3DH()
 {
 }
 
-const LIS3DHSampleRangeConfig LIS3DHSampleRange[LIS3DH_SAMPLE_RANGES] = {
+const LIS3DHSampleRangeConfig codal::LIS3DHSampleRange[LIS3DH_SAMPLE_RANGES] = {
     {2, 0},
     {4, 1},
     {8, 2},
     {16, 3}
 };
 
-const LIS3DHSampleRateConfig LIS3DHSampleRate[LIS3DH_SAMPLE_RATES] = {
+const LIS3DHSampleRateConfig codal::LIS3DHSampleRate[LIS3DH_SAMPLE_RATES] = {
     {2500,      0x70},
     {5000,      0x60},
     {10000,     0x50},
