@@ -22,7 +22,16 @@
     "linker_flags":"-Wl,-wrap,main",
     "pre_build":"",
     "post_build":"",
+    "target":{
+
+    },
     "libraries":[
+        {
+            "name":"codal-samd21-mbed",
+            "url":"https://github.com/lancaster-university/codal-samd21-mbed",
+            "branch":"master",
+            "type":"git"
+        },
         {
             "name":"mbed-classic",
             "url":"https://github.com/lancaster-university/mbed-classic",
@@ -32,12 +41,6 @@
         {
             "name":"codal-mbed",
             "url":"https://github.com/lancaster-university/codal-mbed",
-            "branch":"master",
-            "type":"git"
-        },
-        {
-            "name":"codal-samd21-mbed",
-            "url":"https://github.com/lancaster-university/codal-samd21-mbed",
             "branch":"master",
             "type":"git"
         }
