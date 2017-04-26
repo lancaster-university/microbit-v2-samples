@@ -171,16 +171,16 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT        "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
-add_executable(codal_${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
-target_link_libraries(codal_${device.device} codal)
+add_executable(${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
+target_link_libraries(${device.device} codal)
 
 # turn our bin to a hex.
 add_custom_command(
-    OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
-    COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex"
-    DEPENDS codal_${device.device}
+    OUTPUT "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
+    COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${device.device}" "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
+    DEPENDS ${device.device}
     COMMENT "converting to hex file."
 )
 
 #specify a dependency on the binary file so that hex is automatically rebuilt when bin is changed.
-add_custom_target(codal_${device.device}_hex ALL DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/codal_${device.device}.hex")
+add_custom_target(${device.device}_hex ALL DEPENDS "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex")

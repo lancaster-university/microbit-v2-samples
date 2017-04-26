@@ -8,5 +8,6 @@
     "source":"source",
     "includes":"inc",
     "application":"application",
-    "output":"build"
+    "output_folder":".",
+    "output_name":"circuit_playground"
 }
