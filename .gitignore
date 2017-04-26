@@ -6,5 +6,6 @@ yotta_targets
 *.swp
 *~
 Makefile
+*.hex
 *.DS_Store
 .vscode
