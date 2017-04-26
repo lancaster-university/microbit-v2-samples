@@ -91,71 +91,74 @@ DEALINGS IN THE SOFTWARE.
   * register their components using system_timer_add_component() fiber_add_idle_component() respectively.
   *
   */
-class DeviceComponent
+namespace codal
 {
-    static uint8_t configuration;
-
-    /**
-      * Adds the current DeviceComponent instance to our array of components.
-      */
-    void addComponent();
-
-    /**
-      * Removes the current DeviceComponent instance from our array of components.
-      */
-    void removeComponent();
-
-    public:
-
-    static DeviceComponent* components[DEVICE_COMPONENT_COUNT];
-
-    uint16_t id;                    // Event Bus ID of this component
-    uint16_t status;                // Component defined state.
-
-    /**
-      * The default constructor of a DeviceComponent
-      */
-    DeviceComponent()
+    class DeviceComponent
     {
-        this->id = 0;
-        this->status = 0;
+        static uint8_t configuration;
 
-        addComponent();
-    }
+        /**
+          * Adds the current DeviceComponent instance to our array of components.
+          */
+        void addComponent();
 
-    DeviceComponent(uint16_t id, uint16_t status)
-    {
-        this->id = id;
-        this->status = status;
+        /**
+          * Removes the current DeviceComponent instance from our array of components.
+          */
+        void removeComponent();
 
-        addComponent();
-    }
+        public:
 
-    /**
-      * Implement this function to receive a function call after the devices'
-      * device model has been instantiated.
-      */
-    virtual int init() { return DEVICE_NOT_SUPPORTED; }
+        static DeviceComponent* components[DEVICE_COMPONENT_COUNT];
 
-    /**
-      * Implement this function to receive a callback every SCHEDULER_TICK_PERIOD_MS.
-      */
-    virtual void periodicCallback() {}
+        uint16_t id;                    // Event Bus ID of this component
+        uint16_t status;                // Component defined state.
 
-    /**
-      * Implement this function to receive a callback when the device is idling.
-      */
-    virtual void idleCallback() {}
+        /**
+          * The default constructor of a DeviceComponent
+          */
+        DeviceComponent()
+        {
+            this->id = 0;
+            this->status = 0;
 
-    /**
-      * If you have added your component to the idle or system tick component arrays,
-      * you must remember to remove your component from them if your component is destructed.
-      */
-    virtual ~DeviceComponent()
-    {
-        status = 0;
-        removeComponent();
-    }
-};
+            addComponent();
+        }
+
+        DeviceComponent(uint16_t id, uint16_t status)
+        {
+            this->id = id;
+            this->status = status;
+
+            addComponent();
+        }
+
+        /**
+          * Implement this function to receive a function call after the devices'
+          * device model has been instantiated.
+          */
+        virtual int init() { return DEVICE_NOT_SUPPORTED; }
+
+        /**
+          * Implement this function to receive a callback every SCHEDULER_TICK_PERIOD_MS.
+          */
+        virtual void periodicCallback() {}
+
+        /**
+          * Implement this function to receive a callback when the device is idling.
+          */
+        virtual void idleCallback() {}
+
+        /**
+          * If you have added your component to the idle or system tick component arrays,
+          * you must remember to remove your component from them if your component is destructed.
+          */
+        virtual ~DeviceComponent()
+        {
+            status = 0;
+            removeComponent();
+        }
+    };
+}
 
 #endif

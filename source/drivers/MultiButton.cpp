@@ -32,6 +32,8 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "MultiButton.h"
 
+using namespace codal;
+
 /**
  * Constructor.
  *

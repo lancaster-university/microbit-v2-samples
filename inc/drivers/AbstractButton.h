@@ -63,52 +63,55 @@ enum DeviceButtonPolarity
     ACTIVE_HIGH = 1
 };
 
-/**
-  * Class definition for Device Button.
-  *
-  * Represents a single, generic button on the device.
-  */
-class AbstractButton : public DeviceComponent
+namespace codal
 {
-    public:
-
-    uint16_t clickCount;
-
     /**
-      * Constructor.
+      * Class definition for Device Button.
       *
-      * Create a abstract software representation of a button.
+      * Represents a single, generic button on the device.
       */
-    AbstractButton();
+    class AbstractButton : public DeviceComponent
+    {
+        public:
 
-    /**
-      * Tests if this Button is currently pressed.
-      *
-      * @code
-      * if(buttonA.isPressed())
-      *     display.scroll("Pressed!");
-      * @endcode
-      *
-      * @return 1 if this button is pressed, 0 otherwise.
-      */
-    virtual int isPressed();
+        uint16_t clickCount;
 
-    /**
-      * Determines if this button has been pressed.
-      *
-      * @code
-      * if(buttonA.wasPressed())
-      *     display.scroll("Pressed!");
-      * @endcode
-      *
-      * @return the number of time this button has been pressed since the last time wasPressed() has been called.
-      */
-    int wasPressed();
+        /**
+          * Constructor.
+          *
+          * Create a abstract software representation of a button.
+          */
+        AbstractButton();
 
-    /**
-     * Destructor
-     */
-    ~AbstractButton();
-};
+        /**
+          * Tests if this Button is currently pressed.
+          *
+          * @code
+          * if(buttonA.isPressed())
+          *     display.scroll("Pressed!");
+          * @endcode
+          *
+          * @return 1 if this button is pressed, 0 otherwise.
+          */
+        virtual int isPressed();
+
+        /**
+          * Determines if this button has been pressed.
+          *
+          * @code
+          * if(buttonA.wasPressed())
+          *     display.scroll("Pressed!");
+          * @endcode
+          *
+          * @return the number of time this button has been pressed since the last time wasPressed() has been called.
+          */
+        int wasPressed();
+
+        /**
+         * Destructor
+         */
+        ~AbstractButton();
+    };
+}
 
 #endif

@@ -50,10 +50,9 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "DeviceMessageBus.h"
 #include "DeviceFiber.h"
-#include "NotifyEvents.h"
 #include "ErrorNo.h"
 
-static uint16_t userNotifyId = DEVICE_NOTIFY_USER_EVENT_BASE;
+using namespace codal;
 
 /**
   * Default constructor.
@@ -544,14 +543,6 @@ DeviceListener* DeviceMessageBus::elementAt(int n)
     }
 
     return l;
-}
-
-/**
- * Allocate a NOTIFY event code dynamicaly, for generally purpose condition synchronisation.
- */
-uint16_t allocateNotifyEvent()
-{
-    return userNotifyId++;
 }
 
 /**

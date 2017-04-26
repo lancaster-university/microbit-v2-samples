@@ -3,6 +3,8 @@
 #include "EventModel.h"
 #include "Timer.h"
 
+using namespace codal;
+
 DeviceComponent* DeviceComponent::components[DEVICE_COMPONENT_COUNT];
 
 uint8_t DeviceComponent::configuration = 0;

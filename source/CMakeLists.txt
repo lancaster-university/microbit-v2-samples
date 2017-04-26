@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 2.8.12)
 
 enable_language(ASM)
 
+include(../utils/cmake/util.cmake)
+RECURSIVE_FIND_DIR(INCLUDE_DIRS "../inc" "*.h")
+
 set(CODAL_CPP_FILES
     "core/MemberFunctionCallback.cpp"
     "core/CodalCompat.cpp"
@@ -66,5 +69,7 @@ add_library(codal
     ${CODAL_CPP_FILES}
     ${CODAL_S_FILES}
 )
+message("INCS ${INCLUDE_DIRS}")
+target_include_directories(codal PUBLIC ${INCLUDE_DIRS})
 
 target_link_libraries(codal ${CODAL_DEPS})

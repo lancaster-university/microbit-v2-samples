@@ -35,6 +35,8 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceFiber.h"
 #include "Timer.h"
 
+using namespace codal;
+
 #define INITIAL_STACK_DEPTH (fiber_initial_stack_base() - 0x04)
 
 //Serial serial(USBTX, USBRX);
@@ -79,7 +81,7 @@ extern CodalDevice& device;
   *
   * @param queue The run queue to add the fiber to.
   */
-void queue_fiber(Fiber *f, Fiber **queue)
+void codal::queue_fiber(Fiber *f, Fiber **queue)
 {
     device.disableInterrupts();
 
@@ -116,7 +118,7 @@ void queue_fiber(Fiber *f, Fiber **queue)
   *
   * @param f the fiber to remove.
   */
-void dequeue_fiber(Fiber *f)
+void codal::dequeue_fiber(Fiber *f)
 {
     // If this fiber is already dequeued, nothing the there's nothing to do.
     if (f->queue == NULL)
@@ -184,7 +186,7 @@ Fiber *getFiberContext()
   *
   * @param _messageBus An event model, used to direct the priorities of the scheduler.
   */
-void scheduler_init(EventModel &_messageBus)
+void codal::scheduler_init(EventModel &_messageBus)
 {
     // If we're already initialised, then nothing to do.
     if (fiber_scheduler_running())
@@ -225,7 +227,7 @@ void scheduler_init(EventModel &_messageBus)
   *
   * @return 1 if the fber scheduler is running, 0 otherwise.
   */
-int fiber_scheduler_running()
+int codal::fiber_scheduler_running()
 {
     if (fiber_flags & DEVICE_SCHEDULER_RUNNING)
         return 1;
@@ -238,7 +240,7 @@ int fiber_scheduler_running()
   * This function checks to determine if any fibers blocked on the sleep queue need to be woken up
   * and made runnable.
   */
-void scheduler_tick(DeviceEvent evt)
+void codal::scheduler_tick(DeviceEvent evt)
 {
     Fiber *f = sleepQueue;
     Fiber *t;
@@ -269,7 +271,7 @@ void scheduler_tick(DeviceEvent evt)
   *
   * @param evt the event that has just been raised on an instance of DeviceMessageBus.
   */
-void scheduler_event(DeviceEvent evt)
+void codal::scheduler_event(DeviceEvent evt)
 {
     Fiber *f = waitQueue;
     Fiber *t;
@@ -329,7 +331,7 @@ void scheduler_event(DeviceEvent evt)
   * @note the fiber will not be be made runnable until after the elapsed time, but there
   * are no guarantees precisely when the fiber will next be scheduled.
   */
-void fiber_sleep(unsigned long t)
+void codal::fiber_sleep(unsigned long t)
 {
     Fiber *f = currentFiber;
 
@@ -386,7 +388,7 @@ void fiber_sleep(unsigned long t)
   * @note the fiber will not be be made runnable until after the event is raised, but there
   * are no guarantees precisely when the fiber will next be scheduled.
   */
-int fiber_wait_for_event(uint16_t id, uint16_t value)
+int codal::fiber_wait_for_event(uint16_t id, uint16_t value)
 {
     int ret = fiber_wake_on_event(id, value);
 
@@ -415,7 +417,7 @@ int fiber_wait_for_event(uint16_t id, uint16_t value)
   * schedule();
   * @endcode
   */
-int fiber_wake_on_event(uint16_t id, uint16_t value)
+int codal::fiber_wake_on_event(uint16_t id, uint16_t value)
 {
     Fiber *f = currentFiber;
 
@@ -466,7 +468,7 @@ int fiber_wake_on_event(uint16_t id, uint16_t value)
   *
   * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
-int invoke(void (*entry_fn)(void))
+int codal::invoke(void (*entry_fn)(void))
 {
     // Validate our parameters.
     if (entry_fn == NULL)
@@ -529,7 +531,7 @@ int invoke(void (*entry_fn)(void))
   *
   * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
-int invoke(void (*entry_fn)(void *), void *param)
+int codal::invoke(void (*entry_fn)(void *), void *param)
 {
     // Validate our parameters.
     if (entry_fn == NULL)
@@ -590,7 +592,7 @@ int invoke(void (*entry_fn)(void *), void *param)
  *
  * @param cp the completion routine after ep has finished execution
  */
-void launch_new_fiber(void (*ep)(void), void (*cp)(void))
+void codal::launch_new_fiber(void (*ep)(void), void (*cp)(void))
 {
     // Execute the thread's entrypoint
     ep();
@@ -611,7 +613,7 @@ void launch_new_fiber(void (*ep)(void), void (*cp)(void))
  *
  * @param pm the parameter to provide to ep and cp.
  */
-void launch_new_fiber_param(void (*ep)(void *), void (*cp)(void *), void *pm)
+void codal::launch_new_fiber_param(void (*ep)(void *), void (*cp)(void *), void *pm)
 {
     // Execute the thread's entrypoint.
     ep(pm);
@@ -658,7 +660,7 @@ Fiber *__create_fiber(uint32_t ep, uint32_t cp, uint32_t pm, int parameterised)
   *
   * @return The new Fiber, or NULL if the operation could not be completed.
   */
-Fiber *create_fiber(void (*entry_fn)(void), void (*completion_fn)(void))
+Fiber *codal::create_fiber(void (*entry_fn)(void), void (*completion_fn)(void))
 {
     if (!fiber_scheduler_running())
         return NULL;
@@ -679,7 +681,7 @@ Fiber *create_fiber(void (*entry_fn)(void), void (*completion_fn)(void))
   *
   * @return The new Fiber, or NULL if the operation could not be completed.
   */
-Fiber *create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)(void *))
+Fiber *codal::create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)(void *))
 {
     if (!fiber_scheduler_running())
         return NULL;
@@ -692,7 +694,7 @@ Fiber *create_fiber(void (*entry_fn)(void *), void *param, void (*completion_fn)
   *
   * Any fiber reaching the end of its entry function will return here  for recycling.
   */
-void release_fiber(void *)
+void codal::release_fiber(void *)
 {
     if (!fiber_scheduler_running())
         return;
@@ -705,7 +707,7 @@ void release_fiber(void *)
   *
   * Any fiber reaching the end of its entry function will return here  for recycling.
   */
-void release_fiber(void)
+void codal::release_fiber(void)
 {
     if (!fiber_scheduler_running())
         return;
@@ -730,7 +732,7 @@ void release_fiber(void)
   *
   * @return The stack depth of the given fiber.
   */
-void verify_stack_size(Fiber *f)
+void codal::verify_stack_size(Fiber *f)
 {
     // Ensure the stack buffer is large enough to hold the stack Reallocate if necessary.
     PROCESSOR_WORD_TYPE stackDepth;
@@ -765,7 +767,7 @@ void verify_stack_size(Fiber *f)
   *
   * @return The number of fibers currently on the run queue
   */
-int scheduler_runqueue_empty()
+int codal::scheduler_runqueue_empty()
 {
     return (runQueue == NULL);
 }
@@ -775,7 +777,7 @@ int scheduler_runqueue_empty()
   * The calling Fiber will likely be blocked, and control given to another waiting fiber.
   * Call this function to yield control of the processor when you have nothing more to do.
   */
-void schedule()
+void codal::schedule()
 {
     if (!fiber_scheduler_running())
         return;
@@ -878,7 +880,7 @@ void schedule()
   * Set of tasks to perform when idle.
   * Service any background tasks that are required, and attempt a power efficient sleep.
   */
-void idle()
+void codal::idle()
 {
     // Prevent an idle loop of death:
     // We will return to idle after processing any idle events that add anything
@@ -906,7 +908,7 @@ void idle()
   *
   * This function typically calls idle().
   */
-void idle_task()
+void codal::idle_task()
 {
     while(1)
     {

@@ -44,132 +44,135 @@ DEALINGS IN THE SOFTWARE.
   * Represents a virtual button, capable of reacting to simultaneous presses of two
   * other buttons.
   */
-class MultiButton : public AbstractButton
+namespace codal
 {
-    uint16_t    button1;        // ID of the first button we're monitoring
-    uint16_t    button2;        // ID of the second button we're monitoring
-    DeviceButtonEventConfiguration eventConfiguration;    // Do we want to generate high level event (clicks), or defer this to another service.
+    class MultiButton : public AbstractButton
+    {
+        uint16_t    button1;        // ID of the first button we're monitoring
+        uint16_t    button2;        // ID of the second button we're monitoring
+        DeviceButtonEventConfiguration eventConfiguration;    // Do we want to generate high level event (clicks), or defer this to another service.
 
-    /**
-      * Retrieves the button id for the alternate button id given.
-      *
-      * @param b the id of the button whose state we would like to retrieve.
-      *
-      * @return the other sub button id.
-      */
-    uint16_t    otherSubButton(uint16_t b);
+        /**
+          * Retrieves the button id for the alternate button id given.
+          *
+          * @param b the id of the button whose state we would like to retrieve.
+          *
+          * @return the other sub button id.
+          */
+        uint16_t    otherSubButton(uint16_t b);
 
-    /**
-      * Determines if the given button id is marked as pressed.
-      *
-      * @param button the id of the button whose state we would like to retrieve.
-      *
-      * @return 1 if pressed, 0 if not.
-      */
-    int         isSubButtonPressed(uint16_t button);
+        /**
+          * Determines if the given button id is marked as pressed.
+          *
+          * @param button the id of the button whose state we would like to retrieve.
+          *
+          * @return 1 if pressed, 0 if not.
+          */
+        int         isSubButtonPressed(uint16_t button);
 
-    /**
-      * Determines if the given button id is marked as held.
-      *
-      * @param button the id of the button whose state we would like to retrieve.
-      *
-      * @return 1 if held, 0 if not.
-      */
-    int         isSubButtonHeld(uint16_t button);
+        /**
+          * Determines if the given button id is marked as held.
+          *
+          * @param button the id of the button whose state we would like to retrieve.
+          *
+          * @return 1 if held, 0 if not.
+          */
+        int         isSubButtonHeld(uint16_t button);
 
-    /**
-      * Determines if the given button id is marked as supressed.
-      *
-      * @param button the id of the button whose state we would like to retrieve.
-      *
-      * @return 1 if supressed, 0 if not.
-      */
-    int         isSubButtonSupressed(uint16_t button);
+        /**
+          * Determines if the given button id is marked as supressed.
+          *
+          * @param button the id of the button whose state we would like to retrieve.
+          *
+          * @return 1 if supressed, 0 if not.
+          */
+        int         isSubButtonSupressed(uint16_t button);
 
-    /**
-      * Configures the button pressed state for the given button id.
-      *
-      * @param button the id of the button whose state requires updating.
-      *
-      * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
-      */
-    void        setButtonState(uint16_t button, int value);
+        /**
+          * Configures the button pressed state for the given button id.
+          *
+          * @param button the id of the button whose state requires updating.
+          *
+          * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
+          */
+        void        setButtonState(uint16_t button, int value);
 
-    /**
-      * Configures the button held state for the given button id.
-      *
-      * @param button the id of the button whose state requires updating.
-      *
-      * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
-      */
-    void        setHoldState(uint16_t button, int value);
+        /**
+          * Configures the button held state for the given button id.
+          *
+          * @param button the id of the button whose state requires updating.
+          *
+          * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
+          */
+        void        setHoldState(uint16_t button, int value);
 
-    /**
-      * Configures the button suppressed state for the given button id.
-      *
-      * @param button the id of the button whose state requires updating.
-      *
-      * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
-      */
-    void        setSupressedState(uint16_t button, int value);
+        /**
+          * Configures the button suppressed state for the given button id.
+          *
+          * @param button the id of the button whose state requires updating.
+          *
+          * @param value the value to set for this buttons state. (Transformed into a logical 0 or 1).
+          */
+        void        setSupressedState(uint16_t button, int value);
 
-    public:
+        public:
 
-    /**
-      * Constructor.
-      *
-      * Create a representation of a virtual button, that generates events based upon the combination
-      * of two given buttons.
-      *
-      * @param button1 the unique ID of the first button to watch.
-      *
-      * @param button2 the unique ID of the second button to watch.
-      *
-      * @param id the unique EventModel id of this MultiButton instance.
-      *
-      * @code
-      * multiButton(DEVICE_ID_BUTTON_A, DEVICE_ID_BUTTON_B, DEVICE_ID_BUTTON_AB);
-      * @endcode
-      */
-    MultiButton(uint16_t button1, uint16_t button2, uint16_t id);
+        /**
+          * Constructor.
+          *
+          * Create a representation of a virtual button, that generates events based upon the combination
+          * of two given buttons.
+          *
+          * @param button1 the unique ID of the first button to watch.
+          *
+          * @param button2 the unique ID of the second button to watch.
+          *
+          * @param id the unique EventModel id of this MultiButton instance.
+          *
+          * @code
+          * multiButton(DEVICE_ID_BUTTON_A, DEVICE_ID_BUTTON_B, DEVICE_ID_BUTTON_AB);
+          * @endcode
+          */
+        MultiButton(uint16_t button1, uint16_t button2, uint16_t id);
 
-    /**
-      * Tests if this MultiButton instance is virtually pressed.
-      *
-      * @return 1 if both physical buttons are pressed simultaneously.
-      *
-      * @code
-      * if(buttonAB.isPressed())
-      *     display.scroll("Pressed!");
-      * @endcode
-      */
-    virtual int isPressed();
+        /**
+          * Tests if this MultiButton instance is virtually pressed.
+          *
+          * @return 1 if both physical buttons are pressed simultaneously.
+          *
+          * @code
+          * if(buttonAB.isPressed())
+          *     display.scroll("Pressed!");
+          * @endcode
+          */
+        virtual int isPressed();
 
-    /**
-      * Changes the event configuration of this button to the given DeviceButtonEventConfiguration.
-      * All subsequent events generated by this button will then be informed by this configuration.
-      *
-      * @param config The new configuration for this button. Legal values are DEVICE_BUTTON_ALL_EVENTS or DEVICE_BUTTON_SIMPLE_EVENTS.
-      *
-      * @code
-      * // Configure a button to generate all possible events.
-      * buttonAB.setEventConfiguration(DEVICE_BUTTON_ALL_EVENTS);
-      *
-      * // Configure a button to suppress DEVICE_BUTTON_EVT_CLICK and DEVICE_BUTTON_EVT_LONG_CLICK events.
-      * buttonAB.setEventConfiguration(DEVICE_BUTTON_SIMPLE_EVENTS);
-      * @endcode
-      */
-    void setEventConfiguration(DeviceButtonEventConfiguration config);
+        /**
+          * Changes the event configuration of this button to the given DeviceButtonEventConfiguration.
+          * All subsequent events generated by this button will then be informed by this configuration.
+          *
+          * @param config The new configuration for this button. Legal values are DEVICE_BUTTON_ALL_EVENTS or DEVICE_BUTTON_SIMPLE_EVENTS.
+          *
+          * @code
+          * // Configure a button to generate all possible events.
+          * buttonAB.setEventConfiguration(DEVICE_BUTTON_ALL_EVENTS);
+          *
+          * // Configure a button to suppress DEVICE_BUTTON_EVT_CLICK and DEVICE_BUTTON_EVT_LONG_CLICK events.
+          * buttonAB.setEventConfiguration(DEVICE_BUTTON_SIMPLE_EVENTS);
+          * @endcode
+          */
+        void setEventConfiguration(DeviceButtonEventConfiguration config);
 
-    private:
+        private:
 
-    /**
-      * A member function that is invoked when any event is detected from the two
-      * button IDs this MicrobitMultiButton instance was constructed with.
-      *
-      * @param evt the event received from the default EventModel.
-      */
-    void onButtonEvent(DeviceEvent evt);
-};
+        /**
+          * A member function that is invoked when any event is detected from the two
+          * button IDs this MicrobitMultiButton instance was constructed with.
+          *
+          * @param evt the event received from the default EventModel.
+          */
+        void onButtonEvent(DeviceEvent evt);
+    };
+}
 
 #endif

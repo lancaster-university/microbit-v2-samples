@@ -33,6 +33,8 @@ DEALINGS IN THE SOFTWARE.
 #include "Timer.h"
 #include "EventModel.h"
 
+using namespace codal;
+
 EventModel* EventModel::defaultEventBus = NULL;
 
 /**

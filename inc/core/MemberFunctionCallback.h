@@ -40,15 +40,41 @@ DEALINGS IN THE SOFTWARE.
   * This class is used extensively by the DeviceMessageBus to deliver
   * events to C++ methods.
   */
-class MemberFunctionCallback
+namespace codal
 {
-    private:
-    void* object;
-    uint32_t method[4];
-    void (*invoke)(void *object, uint32_t *method, DeviceEvent e);
-    template <typename T> static void methodCall(void* object, uint32_t*method, DeviceEvent e);
+    class MemberFunctionCallback
+    {
+        private:
+        void* object;
+        uint32_t method[4];
+        void (*invoke)(void *object, uint32_t *method, DeviceEvent e);
+        template <typename T> static void methodCall(void* object, uint32_t*method, DeviceEvent e);
 
-    public:
+        public:
+
+        /**
+          * Constructor. Creates a MemberFunctionCallback based on a pointer to given method.
+          *
+          * @param object The object the callback method should be invooked on.
+          *
+          * @param method The method to invoke.
+          */
+        template <typename T> MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e));
+
+        /**
+          * A comparison of two MemberFunctionCallback objects.
+          *
+          * @return true if the given MemberFunctionCallback is equivalent to this one, false otherwise.
+          */
+        bool operator==(const MemberFunctionCallback &mfc);
+
+        /**
+          * Calls the method reference held by this MemberFunctionCallback.
+          *
+          * @param e The event to deliver to the method
+          */
+        void fire(DeviceEvent e);
+    };
 
     /**
       * Constructor. Creates a MemberFunctionCallback based on a pointer to given method.
@@ -57,57 +83,34 @@ class MemberFunctionCallback
       *
       * @param method The method to invoke.
       */
-    template <typename T> MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e));
+    template <typename T>
+    MemberFunctionCallback::MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e))
+    {
+        this->object = object;
+        memclr(this->method, sizeof(this->method));
+        memcpy(this->method, &method, sizeof(method));
+        invoke = &MemberFunctionCallback::methodCall<T>;
+    }
 
     /**
-      * A comparison of two MemberFunctionCallback objects.
+      * A template used to create a static method capable of invoking a C++ member function (method)
+      * based on the given parameters.
       *
-      * @return true if the given MemberFunctionCallback is equivalent to this one, false otherwise.
-      */
-    bool operator==(const MemberFunctionCallback &mfc);
-
-    /**
-      * Calls the method reference held by this MemberFunctionCallback.
+      * @param object The object the callback method should be invooked on.
       *
-      * @param e The event to deliver to the method
+      * @param method The method to invoke.
+      *
+      * @param method The DeviceEvent to supply to the given member function.
       */
-    void fire(DeviceEvent e);
-};
+    template <typename T>
+    void MemberFunctionCallback::methodCall(void *object, uint32_t *method, DeviceEvent e)
+    {
+        T* o = (T*)object;
+        void (T::*m)(DeviceEvent);
+        memcpy(&m, method, sizeof(m));
 
-/**
-  * Constructor. Creates a MemberFunctionCallback based on a pointer to given method.
-  *
-  * @param object The object the callback method should be invooked on.
-  *
-  * @param method The method to invoke.
-  */
-template <typename T>
-MemberFunctionCallback::MemberFunctionCallback(T* object, void (T::*method)(DeviceEvent e))
-{
-    this->object = object;
-    memclr(this->method, sizeof(this->method));
-    memcpy(this->method, &method, sizeof(method));
-    invoke = &MemberFunctionCallback::methodCall<T>;
-}
-
-/**
-  * A template used to create a static method capable of invoking a C++ member function (method)
-  * based on the given parameters.
-  *
-  * @param object The object the callback method should be invooked on.
-  *
-  * @param method The method to invoke.
-  *
-  * @param method The DeviceEvent to supply to the given member function.
-  */
-template <typename T>
-void MemberFunctionCallback::methodCall(void *object, uint32_t *method, DeviceEvent e)
-{
-    T* o = (T*)object;
-    void (T::*m)(DeviceEvent);
-    memcpy(&m, method, sizeof(m));
-
-    (o->*m)(e);
+        (o->*m)(e);
+    }
 }
 
 #endif

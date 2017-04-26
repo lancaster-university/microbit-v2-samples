@@ -37,6 +37,8 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "MemberFunctionCallback.h"
 
+using namespace codal;
+
 /**
   * Calls the method reference held by this MemberFunctionCallback.
   *

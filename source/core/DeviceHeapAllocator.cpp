@@ -55,6 +55,8 @@ DEALINGS IN THE SOFTWARE.
 #include "ErrorNo.h"
 #include <malloc.h>
 
+using namespace codal;
+
 #if CONFIG_ENABLED(DEVICE_HEAP_ALLOCATOR)
 
 // A list of all active heap regions, and their dimensions in memory.

@@ -1,5 +1,6 @@
 #include "ManagedBuffer.h"
 #include <limits.h>
+#include "CodalCompat.h"
 
 
 #define REF_TAG REF_TAG_BUFFER
@@ -8,7 +9,7 @@
 REF_COUNTED_DEF_EMPTY(0, 0)
 
 
-using namespace std;
+using namespace codal;
 
 /**
   * Internal constructor helper.

@@ -31,6 +31,8 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceConfig.h"
 #include "DeviceListener.h"
 
+using namespace codal;
+
 /**
   * Constructor.
   *

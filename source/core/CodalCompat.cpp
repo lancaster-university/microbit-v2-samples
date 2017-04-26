@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "CodalCompat.h"
 #include "ErrorNo.h"
 
-
 /**
   * Performs an in buffer reverse of a given char array.
   *
@@ -39,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
   *
   * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
-int string_reverse(char *s)
+int codal::string_reverse(char *s)
 {
     //sanity check...
     if(s == NULL)
@@ -69,7 +68,7 @@ int string_reverse(char *s)
   *
   * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
   */
-int itoa(int n, char *s)
+int codal::itoa(int n, char *s)
 {
     int i = 0;
     int positive = (n >= 0);

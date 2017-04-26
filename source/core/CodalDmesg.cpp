@@ -7,7 +7,7 @@
 
 CodalLogStore codalLogStore;
 
-using namespace std;
+using namespace codal;
 
 static void logwrite(const char *msg);
 
