@@ -47,10 +47,10 @@ sbeParseJson(codal codal_json)
 
 if("${codal.target.platform}" STRGREATER "")
     message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built on ${codal.target.platform}. ${ColourReset}")
-    file(READ "${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/${codal.target.processor}/${codal.target.device}/device.json" device_json)
+    file(READ "${PROJECT_SOURCE_DIR}/targets/${codal.target.processor}_${codal.target.device}_${codal.target.platform}.json" device_json)
 else()
     message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built natively. ${ColourReset}")
-    file(READ "${PROJECT_SOURCE_DIR}/target/${codal.target.manufacturer}/${codal.target.processor}/${codal.target.device}/device.json" device_json)
+    file(READ "${PROJECT_SOURCE_DIR}/targets/${codal.target.processor}_${codal.target.device}.json" device_json)
 endif()
 
 sbeParseJson(device device_json)
@@ -59,31 +59,30 @@ sbeParseJson(device device_json)
 #    message("${var} = ${${var}}")
 #endforeach()
 
-set(TARGET_PROCESSOR_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}")
+#set(TARGET_PROCESSOR_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}")
 
 #include processor specific files
-include_directories("${TARGET_PROCESSOR_DIRECTORY}")
-SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
+#include_directories("${TARGET_PROCESSOR_DIRECTORY}")
+#SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
 
 # if built on something...
-if("${codal.target.platform}" STRGREATER "")
-    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/${device.processor}/${device.device}")
+#if("${codal.target.platform}" STRGREATER "")
+#    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/libraries/${codal.target.platform}")
 # otherwise use the native implementation
-else()
-    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}/${device.device}")
-endif()
+#else()
+#    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/libraries/${device.manufacturer}/${device.processor}/${device.device}")
+#endif()
 
 #include software libs
-RECURSIVE_FIND_DIR(INCLUDE_DIRS "${TARGET_SOFTWARE_DIRECTORY}" "*.h")
-RECURSIVE_FIND_FILE(SOURCE_FILES "${TARGET_SOFTWARE_DIRECTORY}" "*.c??")
+#RECURSIVE_FIND_DIR(INCLUDE_DIRS "${TARGET_SOFTWARE_DIRECTORY}" "*.h")
+#RECURSIVE_FIND_FILE(SOURCE_FILES "${TARGET_SOFTWARE_DIRECTORY}" "*.c??")
 
-SOURCE_FILES(SOURCE ${SOURCE_FILES})
-include_directories("${INCLUDE_DIRS}")
+#SOURCE_FILES(SOURCE ${SOURCE_FILES})
+#include_directories("${INCLUDE_DIRS}")
 
 # Find headers within Codal and include them
 RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
 include_directories("${INCLUDES}")
-
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
