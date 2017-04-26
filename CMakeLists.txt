@@ -6,6 +6,10 @@ find_program(ARM_NONE_EABI_GCC arm-none-eabi-gcc)
 find_program(ARM_NONE_EABI_GPP arm-none-eabi-g++)
 find_program(ARM_NONE_EABI_OBJCOPY arm-none-eabi-objcopy)
 
+
+set(CMAKE_OSX_SYSROOT "/")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "")
+
 set(LIB_DEST "libraries")
 
 if(CMAKE_VERSION VERSION_LESS "3.5.0")
@@ -55,38 +59,11 @@ endif()
 
 sbeParseJson(device device_json)
 
-#foreach(var ${device})
-#    message("${var} = ${${var}}")
-#endforeach()
-
-#set(TARGET_PROCESSOR_DIRECTORY "${PROJECT_SOURCE_DIR}/target/${device.manufacturer}/${device.processor}")
-
-#include processor specific files
-#include_directories("${TARGET_PROCESSOR_DIRECTORY}")
-#SOURCE_FILES(SOURCE ${TARGET_PROCESSOR_DIRECTORY})
-
-# if built on something...
-#if("${codal.target.platform}" STRGREATER "")
-#    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/libraries/${codal.target.platform}")
-# otherwise use the native implementation
-#else()
-#    set(TARGET_SOFTWARE_DIRECTORY "${PROJECT_SOURCE_DIR}/libraries/${device.manufacturer}/${device.processor}/${device.device}")
-#endif()
-
-#include software libs
-#RECURSIVE_FIND_DIR(INCLUDE_DIRS "${TARGET_SOFTWARE_DIRECTORY}" "*.h")
-#RECURSIVE_FIND_FILE(SOURCE_FILES "${TARGET_SOFTWARE_DIRECTORY}" "*.c??")
-
-#SOURCE_FILES(SOURCE ${SOURCE_FILES})
-#include_directories("${INCLUDE_DIRS}")
-
-# Find headers within Codal and include them
-RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
-include_directories("${INCLUDES}")
+message("${EXPLICIT_INCLUDES}")
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
-    #message("Adding defs: ${device.definitions}")
+    message("Adding defs: ${device.definitions}")
     add_definitions("${device.definitions}")
 endif()
 
@@ -149,8 +126,8 @@ set(CODAL_DEPS "")
 # if we're building on top of a platform, import files and build. The library name must
 # be the same as the platform name specified in JSON.
 if("${codal.target.platform}" STRGREATER "")
-    add_subdirectory("${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/")
-    list(APPEND CODAL_DEPS "${codal.target.platform}")
+    #add_subdirectory("${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/")
+    #list(APPEND CODAL_DEPS "${codal.target.platform}")
 endif()
 
 set(LIB_FOLDERS "")
@@ -166,15 +143,17 @@ if("${device.libraries}" STRGREATER "")
         endif()
         INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
         list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
-        list(APPEND LIB_FOLDERS "${PROJECT_SOURCE_DIR}/${LIB_DEST}/${device.libraries_${i}.name}")
     endforeach()
 
-    SUB_DIRS(CODAL_LIB_SOURCE "${LIB_DEST}")
-    foreach(dir ${CODAL_LIB_SOURCE})
-        message("${Magenta}Adding library: ${dir}${ColourReset}")
-        add_subdirectory("${dir}")
+    foreach(dep ${CODAL_DEPS})
+        message("${Magenta}Adding library: ${dep}${ColourReset}")
+        add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
     endforeach()
 endif()
+
+# Find headers within Codal and include them
+RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
+include_directories("${INCLUDES}")
 
 # add our source files last, using the CMake in ./source
 # the cmake here will use CODAL_DEPS when linking
@@ -182,10 +161,10 @@ add_subdirectory("${codal.source}")
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
 set(CMAKE_CXX_COMPILE_OBJECT        "<CMAKE_CXX_COMPILER> <DEFINES> ${EXPLICIT_INCLUDES}<FLAGS> -o <OBJECT> -c <SOURCE>")
+
 # <LINK_LIBRARIES> is grouped with system libraries so that system library
 # functions (e.g. malloc) can be overridden by symbols in <LINK_LIBRARIES>
 set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> ${CMAKE_LINKER_FLAGS} -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> ${GLOBALLY_LINKED_TARGET_LIBS} -lstdc++ -lsupc++ -lm -lc -lgcc -lstdc++ -lsupc++ -lm -lc -lgcc -Wl,--end-group  --specs=nano.specs -o <TARGET>")
-
 set(CMAKE_CXX_FLAGS_DEBUG_INIT          "-g -gdwarf-3")
 set(CMAKE_CXX_FLAGS_MINSIZEREL_INIT     "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE_INIT        "-Os -DNDEBUG")
