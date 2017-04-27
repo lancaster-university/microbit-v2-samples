@@ -23,12 +23,15 @@
     "pre_build":"",
     "post_build":"",
     "target":{
-
+        "name":"codal-samd21-mbed",
+        "url":"https://github.com/lancaster-university/codal-samd21-mbed",
+        "branch":"master",
+        "type":"git"
     },
     "libraries":[
         {
-            "name":"codal-samd21-mbed",
-            "url":"https://github.com/lancaster-university/codal-samd21-mbed",
+            "name":"codal-core",
+            "url":"https://github.com/lancaster-university/codal-core",
             "branch":"master",
             "type":"git"
         },

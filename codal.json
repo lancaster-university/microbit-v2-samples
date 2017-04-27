@@ -5,9 +5,6 @@
         "platform":"MBED_CLASSIC",
         "manufacturer":"ATMEL"
     },
-    "source":"source",
-    "includes":"inc",
     "application":"application",
-    "output_folder":".",
-    "output_name":"circuit_playground"
+    "output_folder":"."
 }

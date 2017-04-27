@@ -6,7 +6,6 @@ find_program(ARM_NONE_EABI_GCC arm-none-eabi-gcc)
 find_program(ARM_NONE_EABI_GPP arm-none-eabi-g++)
 find_program(ARM_NONE_EABI_OBJCOPY arm-none-eabi-objcopy)
 
-
 set(CMAKE_OSX_SYSROOT "/")
 set(CMAKE_OSX_DEPLOYMENT_TARGET "")
 
@@ -30,6 +29,9 @@ set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
 # required to force settings...
 project(codal)
 
+set(CODAL_BUILD_SYSTEM TRUE)
+set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
+
 # include additional cmake
 include(utils/cmake/JSONParser.cmake)
 include(utils/cmake/util.cmake)
@@ -44,10 +46,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 #read our config file...
 file(READ "${PROJECT_SOURCE_DIR}/codal.json" codal_json)
 sbeParseJson(codal codal_json)
-
-#foreach(var ${codal})
-#    message("${var} = ${${var}}")
-#endforeach()
 
 if("${codal.target.platform}" STRGREATER "")
     message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built on ${codal.target.platform}. ${ColourReset}")
@@ -107,11 +105,6 @@ if("${device.linker_flags}" STRGREATER "")
 endif()
 ####################
 
-if("${device.extends}" STRGREATER "")
-    message("Opening file: ${PROJECT_SOURCE_DIR}/cmake/base/${device.extends}.json")
-    #file(READ "${PROJECT_SOURCE_DIR}/utils/cmake/base/${device.extends}" extended)
-endif()
-
 # Define any cmake variables the user has requested
 if("${device.cmake_definitions}" STRGREATER "")
     set(CMAKE_DEFS ${device.cmake_definitions})
@@ -120,44 +113,39 @@ if("${device.cmake_definitions}" STRGREATER "")
     endforeach()
 endif()
 
-# this variable is used in the linking step of CODAL.
+# this variable is used in the linking step of the final binary.
+set(LIB_FOLDERS "")
 set(CODAL_DEPS "")
 
-# if we're building on top of a platform, import files and build. The library name must
-# be the same as the platform name specified in JSON.
-if("${codal.target.platform}" STRGREATER "")
-    #add_subdirectory("${PROJECT_SOURCE_DIR}/target/${codal.target.platform}/")
-    #list(APPEND CODAL_DEPS "${codal.target.platform}")
+if(NOT "${device.target.url}" STRGREATER "")
+    message("${BoldRed}Target not correctly specified, exiting.${ColourReset}")
 endif()
 
-set(LIB_FOLDERS "")
+#install the target
+INSTALL_DEPENDENCY(${LIB_DEST} "codal-target" device.target)
+message("${BoldMagenta}Set target: ${device.target.name}, cloned as codal-target${ColourReset}")
+list(APPEND CODAL_DEPS "codal-target")
 
 # "import" and add any specified libraries to the build list
 if("${device.libraries}" STRGREATER "")
-    message("${Magenta}Installing dependencies...${ColourReset}")
+    message("Installing dependencies...")
     set(DEVICE_LIBS ${device.libraries})
+
     foreach(i ${DEVICE_LIBS})
         SET(BRANCH "NONE")
         if("${device.libraries_${i}.branch}" STRGREATER "")
             SET(BRANCH "${device.libraries_${i}.branch}")
         endif()
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
+
+        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} device.libraries_${i})
         list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
     endforeach()
 
     foreach(dep ${CODAL_DEPS})
-        message("${Magenta}Adding library: ${dep}${ColourReset}")
+        message("${BoldGreen}Using library: ${dep}${ColourReset}")
         add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
     endforeach()
 endif()
-
-# Find headers within Codal and include them
-RECURSIVE_FIND_DIR(INCLUDES "${PROJECT_SOURCE_DIR}/${codal.includes}" "*.h")
-include_directories("${INCLUDES}")
-
-# add our source files last, using the CMake in ./source
-# the cmake here will use CODAL_DEPS when linking
-add_subdirectory("${codal.source}")
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
 set(CMAKE_CXX_COMPILE_OBJECT        "<CMAKE_CXX_COMPILER> <DEFINES> ${EXPLICIT_INCLUDES}<FLAGS> -o <OBJECT> -c <SOURCE>")
@@ -172,7 +160,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
 add_executable(${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
-target_link_libraries(${device.device} codal)
+target_link_libraries(${device.device} ${CODAL_DEPS})
 
 # turn our bin to a hex.
 add_custom_command(
