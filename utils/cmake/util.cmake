@@ -36,7 +36,7 @@ MACRO(HEADER_FILES return_list dir)
     SET(${return_list} ${new_list})
 ENDMACRO()
 
-function(INSTALL_DEPENDENCY dir name json)
+function(INSTALL_DEPENDENCY dir name url branch type)
     if(NOT EXISTS "${PROJECT_SOURCE_DIR}/${dir}")
         message("Creating libraries folder")
         FILE(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/${dir}")
@@ -47,18 +47,18 @@ function(INSTALL_DEPENDENCY dir name json)
         return()
     endif()
 
-    if(json.type STREQUAL "git")
-        message("Cloning into: ${json.url}")
+    if(${type} STREQUAL "git")
+        message("Cloning into: ${url}")
 
-        if(NOT "${json.branch}" STREQUAL "NONE")
-            message("Checking out branch: ${json.branch}")
+        if(NOT "${branch}" STREQUAL "")
+            message("Checking out branch: ${branch}")
             execute_process(
-                COMMAND git clone -b ${json.branch} ${json.url} ${name}
+                COMMAND git clone -b ${branch} ${url} ${name}
                 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
             )
         else()
             execute_process(
-                COMMAND git clone ${json.url} ${name}
+                COMMAND git clone ${url} ${name}
                 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
             )
         endif()

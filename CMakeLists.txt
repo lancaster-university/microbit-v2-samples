@@ -122,7 +122,7 @@ if(NOT "${device.target.url}" STRGREATER "")
 endif()
 
 #install the target
-INSTALL_DEPENDENCY(${LIB_DEST} "codal-target" device.target)
+INSTALL_DEPENDENCY(${LIB_DEST} "codal-target" ${device.target.url} ${device.target.branch} ${device.target.type})
 message("${BoldMagenta}Set target: ${device.target.name}, cloned as codal-target${ColourReset}")
 list(APPEND CODAL_DEPS "codal-target")
 
@@ -137,7 +137,7 @@ if("${device.libraries}" STRGREATER "")
             SET(BRANCH "${device.libraries_${i}.branch}")
         endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} device.libraries_${i})
+        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
         list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
     endforeach()
 
