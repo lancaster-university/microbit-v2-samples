@@ -75,7 +75,9 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16
     dmac.disable();
 
     dmaChannel = dmac.allocateChannel();
+#if CONFIG_ENABLED(CODAL_DMA_DBG)
     SERIAL_DEBUG->printf("DAC: ALLOCATED DMA CHANNEL: %d\n", dmaChannel);
+#endif
 
     if (dmaChannel != DEVICE_NO_RESOURCES)
     {
@@ -108,8 +110,6 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16
         DMAC->CHINTENSET.bit.TCMPL = 1;             // Enable interrupt on completion.
 
         dmac.onTransferComplete(dmaChannel, this);
-
-        SERIAL_DEBUG->printf("DAC: ALLOCATED DMA CHANNEL: %d\n", dmaChannel);
     }
 
     dmac.enable();
