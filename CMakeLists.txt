@@ -121,10 +121,12 @@ if(NOT "${device.target.url}" STRGREATER "")
     message("${BoldRed}Target not correctly specified, exiting.${ColourReset}")
 endif()
 
+SET(CODAL_TARGET_NAME ${device.target.name})
+
 #install the target
-INSTALL_DEPENDENCY(${LIB_DEST} "codal-target" ${device.target.url} ${device.target.branch} ${device.target.type})
-message("${BoldMagenta}Set target: ${device.target.name}, cloned as codal-target${ColourReset}")
-list(APPEND CODAL_DEPS "codal-target")
+INSTALL_DEPENDENCY(${LIB_DEST} ${device.target.name} ${device.target.url} ${device.target.branch} ${device.target.type})
+message("${BoldMagenta}Set target: ${device.target.name} ${ColourReset}")
+list(APPEND CODAL_DEPS ${device.target.name})
 
 # "import" and add any specified libraries to the build list
 if("${device.libraries}" STRGREATER "")
