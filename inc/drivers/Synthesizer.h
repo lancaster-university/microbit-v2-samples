@@ -30,7 +30,7 @@ class Synthesizer : public DataSource
       * Default Constructor. 
       * Creates an empty DataStream.
       *
-      * @param upstream the component that will normally feed this datastream with data.
+      * @param sampleRate The sample rate aat which this synthesizer will produce data.
       */
     Synthesizer(int sampleRate = SYNTHESIZER_SAMPLE_RATE);
 
