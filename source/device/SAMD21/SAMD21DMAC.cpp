@@ -38,6 +38,11 @@ void DmaComponent::dmaTransferComplete()
 
 SAMD21DMAC::SAMD21DMAC()
 {
+    uint32_t ptr = (uint32_t)descriptorsBuffer;
+    while (ptr & (DMA_DESCRIPTOR_ALIGNMENT - 1))
+        ptr++;
+    descriptors = (DmacDescriptor*)ptr;
+
     memclr(descriptors, sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT + 1));
 
     // Set up to DMA Controller
