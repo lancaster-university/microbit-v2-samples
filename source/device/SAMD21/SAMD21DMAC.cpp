@@ -11,17 +11,10 @@ static DmaComponent* apps[DMA_DESCRIPTOR_COUNT]= {NULL};
 extern "C" void DMAC_Handler( void )
 {
     uint32_t oldChannel = DMAC->CHID.bit.ID;
-    int channel = 0;
-    uint32_t pend = DMAC->INTSTATUS.reg;
 
-    while((pend & 1) == 0)
-    {
-        pend = pend >> 1;
-        channel++;
-    }
-
+    int channel = DMAC->INTPEND.bit.ID;
     DMAC->CHID.bit.ID = channel;
-    DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL; 
+    DMAC->CHINTFLAG.reg = DMAC_CHINTENCLR_TCMPL;
 
     if(apps[channel] != NULL)
         apps[channel]->dmaTransferComplete();
@@ -43,7 +36,7 @@ SAMD21DMAC::SAMD21DMAC()
         ptr++;
     descriptors = (DmacDescriptor*)ptr;
 
-    memclr(descriptors, sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT + 1));
+    memclr(descriptors, sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT * 2));
 
     // Set up to DMA Controller
     this->disable();
@@ -58,8 +51,8 @@ SAMD21DMAC::SAMD21DMAC()
 
     DMAC->CRCCTRL.reg = 0;                      // Disable all CRC expectations
 
-    DMAC->BASEADDR.reg = (uint32_t) &descriptors[1];      // Initialise Descriptor table                
-    DMAC->WRBADDR.reg = (uint32_t) &descriptors[0];       // initialise Writeback table entry
+    DMAC->BASEADDR.reg = (uint32_t) &descriptors[DMA_DESCRIPTOR_COUNT];      // Initialise Descriptor table                
+    DMAC->WRBADDR.reg = (uint32_t) &descriptors[0];                          // initialise Writeback table 
 
     this->enable();
 
@@ -86,7 +79,7 @@ void SAMD21DMAC::disable()
 DmacDescriptor& SAMD21DMAC::getDescriptor(int channel)
 {
     if (channel < DMA_DESCRIPTOR_COUNT)
-        return descriptors[channel+1];
+        return descriptors[channel+DMA_DESCRIPTOR_COUNT];
 
     return descriptors[0];
 }
@@ -99,9 +92,9 @@ int SAMD21DMAC::allocateChannel()
 {
     for (int i=0; i<DMA_DESCRIPTOR_COUNT; i++)
     {
-        if (!descriptors[i+1].BTCTRL.bit.VALID)
+        if (!descriptors[i+DMA_DESCRIPTOR_COUNT].BTCTRL.bit.VALID)
         {
-            descriptors[i+1].BTCTRL.bit.VALID = 1;
+            descriptors[i+DMA_DESCRIPTOR_COUNT].BTCTRL.bit.VALID = 1;
             return i;
         }
     }

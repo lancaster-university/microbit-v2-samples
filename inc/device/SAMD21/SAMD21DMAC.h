@@ -19,7 +19,7 @@ class SAMD21DMAC
 {
     // descriptors have to be 128 bit aligned - we allocate 16 more bytes, and set descriptors
     // at the right offset in descriptorsBuffer
-    uint8_t descriptorsBuffer[sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT + 1) + DMA_DESCRIPTOR_ALIGNMENT];
+    uint8_t descriptorsBuffer[sizeof(DmacDescriptor) * (DMA_DESCRIPTOR_COUNT * 2) + DMA_DESCRIPTOR_ALIGNMENT];
     DmacDescriptor *descriptors;
 
 public:
