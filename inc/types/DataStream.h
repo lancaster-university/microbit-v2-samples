@@ -2,6 +2,7 @@
 #define CODAL_DATA_STREAM_H
 
 #include "ManagedBuffer.h"
+#include "DeviceMessageBus.h"
 
 #define DATASTREAM_MAXIMUM_BUFFERS      1
 
@@ -37,7 +38,10 @@ class DataStream : public DataSource, public DataSink
     int bufferCount;
     int bufferLength;
     int preferredBufferSize;
-    uint16_t notifyEventCode;
+    uint16_t spaceAvailableEventCode;
+    uint16_t pullRequestEventCode;
+    bool isBlocking;
+    bool deferred;
 
     DataSink *downStream;
     DataSource *upStream;
@@ -113,6 +117,14 @@ class DataStream : public DataSource, public DataSink
      */
     void setPreferredBufferSize(int size);
 
+    /**
+     * Determines if this stream acts in a synchronous, blocking mode or asynchronous mode. In blocking mode, writes to a full buffer
+     * will result int he calling fiber being blocked until space is available. Downstream DataSinks will also attempt to process data
+     * immediately as it becomes available. In non-blocking asynchronpus mode, writes to a full buffer are dropped and downstream Datasinks will 
+     * be processed in a new fiber.
+     */
+    void setBlocking(bool isBlocking);
+
 	/**
 	 * Provide the next available ManagedBuffer to our downstream caller, if available.
 	 */
@@ -122,6 +134,12 @@ class DataStream : public DataSource, public DataSink
 	 * Deliver the next available ManagedBuffer to our downstream caller.
 	 */
 	virtual int pullRequest();
+
+    private:
+    /**
+     * Issue a deferred pull request to our downstream component, if one has been registered.
+     */
+    void onDeferredPullRequest(DeviceEvent);
 
 };
 #endif

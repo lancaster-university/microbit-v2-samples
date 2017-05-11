@@ -1,6 +1,5 @@
 #include "DataStream.h"
 #include "DeviceComponent.h"
-#include "DeviceMessageBus.h"
 #include "DeviceFiber.h"
 #include "ErrorNo.h"
 
@@ -31,10 +30,13 @@ DataStream::DataStream(DataSource &upstream)
     this->bufferCount = 0;
     this->bufferLength = 0;
     this->preferredBufferSize = 0;
-    this->notifyEventCode = allocateNotifyEvent();
+    this->pullRequestEventCode = 0;
+    this->spaceAvailableEventCode = allocateNotifyEvent();
+    this->isBlocking = true;
 
     this->downStream = NULL;
     this->upStream = &upstream;
+
 }
 
 /**
@@ -150,6 +152,26 @@ void DataStream::setPreferredBufferSize(int size)
 }
 
 /**
+ * Determines if this stream acts in a synchronous, blocking mode or asynchronous mode. In blocking mode, writes to a full buffer
+ * will result in the calling fiber being blocked until space is available. Downstream DataSinks will also attempt to process data
+ * immediately as it becomes available. In non-blocking asynchronous mode, writes to a full buffer are dropped and processing of 
+ * downstream Datasinks will be deferred.
+ */
+void DataStream::setBlocking(bool isBlocking)
+{
+    this->isBlocking = isBlocking;
+
+    // If this is the first time async mode has been used on this stream, allocate the necessary resources.
+    if (!isBlocking && this->pullRequestEventCode == 0)
+    {
+        this->pullRequestEventCode = allocateNotifyEvent();
+    
+        if(EventModel::defaultEventBus)
+            EventModel::defaultEventBus->listen(DEVICE_ID_NOTIFY, pullRequestEventCode, this, &DataStream::onDeferredPullRequest);
+    }
+}
+
+/**
  * Provide the next available ManagedBuffer to our downstream caller, if available.
  */
 ManagedBuffer DataStream::pull()
@@ -171,9 +193,18 @@ ManagedBuffer DataStream::pull()
 		bufferLength = bufferLength - out.length();
 	}
 
-    DeviceEvent(DEVICE_ID_NOTIFY, notifyEventCode);
+    DeviceEvent(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
 
 	return out;
+}
+
+/**
+ * Issue a pull request to our downstream component, if one has been registered.
+ */
+void DataStream::onDeferredPullRequest(DeviceEvent)
+{
+    if (downStream != NULL)
+        downStream->pullRequest();
 }
 
 /**
@@ -182,14 +213,24 @@ ManagedBuffer DataStream::pull()
 int DataStream::pullRequest()
 {
 	if (bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength > preferredBufferSize)
-        fiber_wait_for_event(DEVICE_ID_NOTIFY, notifyEventCode);
+    {
+        if (this->isBlocking)
+            fiber_wait_for_event(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
+        else
+            return DEVICE_NO_RESOURCES;
+    }
 
 	stream[bufferCount] = upStream->pull();
 	bufferLength = bufferLength + stream[bufferCount].length();
 	bufferCount++;
-	
+
 	if (downStream != NULL)
-		downStream->pullRequest();
+    {
+        if (this->isBlocking)
+            downStream->pullRequest();
+        else
+            DeviceEvent(DEVICE_ID_NOTIFY, pullRequestEventCode);
+    }
 
 	return DEVICE_OK;
 }
