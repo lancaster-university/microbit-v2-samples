@@ -21,6 +21,8 @@ class Synthesizer : public DataSource
 	uint32_t newPeriodNs;
 	uint32_t amplitude;
 	uint32_t bufferSize;
+    int playoutTimeUs;
+    uint32_t playoutSoFarNs;
 
     public:
 
@@ -30,7 +32,7 @@ class Synthesizer : public DataSource
       * Default Constructor. 
       * Creates an empty DataStream.
       *
-      * @param sampleRate The sample rate aat which this synthesizer will produce data.
+      * @param sampleRate The sample rate at which this synthesizer will produce data.
       */
     Synthesizer(int sampleRate = SYNTHESIZER_SAMPLE_RATE);
 
@@ -42,9 +44,16 @@ class Synthesizer : public DataSource
 
 	/**
 	* Define the central frequency of this synthesizer. Takes effect at the start of the next waveform period.
-	* @frequency Te frequency, in Hz to generate.
+	* @frequency The frequency, in Hz to generate.
 	*/
 	void setFrequency(float frequency);
+
+	/**
+	* Define the central frequency of this synthesizer. Takes effect at the start of the next waveform period.
+	* @frequency The frequency, in Hz to generate.
+    * @period The period, in ms, to play the frequency.
+	*/
+	void setFrequency(float frequency, int period);
 
 	/**
 	* Define the volume of the wave to generate.

@@ -23,7 +23,7 @@ Synthesizer::Synthesizer(int sampleRate) : output(*this)
 
 	this->position = 0;
 	this->samplePeriodNs = 1000000000 / sampleRate;
-	this->setFrequency(261.62);
+	this->setFrequency(0);
 	this->setVolume(1023);
 	this->periodNs = newPeriodNs;
 
@@ -36,7 +36,20 @@ Synthesizer::Synthesizer(int sampleRate) : output(*this)
   */
 void Synthesizer::setFrequency(float frequency)
 {
-	this->newPeriodNs = (uint32_t) (1000000000.0 / frequency);
+    setFrequency(frequency, 0);
+}
+
+/**
+ * Define the central frequency of this synthesizer. 
+ * Takes effect immediately, and automatically stops the tone after the given period.
+ * @frequency The frequency, in Hz to generate.
+ * @period The period, in ms, to play the frequency.
+ */
+void Synthesizer::setFrequency(float frequency, int period)
+{
+	this->newPeriodNs = frequency == 0.0 ? 0 : (uint32_t) (1000000000.0 / frequency);
+    this->playoutTimeUs = 1000 * period ;
+    this->playoutSoFarNs = 0;
 }
 
 /**
@@ -63,10 +76,28 @@ void Synthesizer::generate()
             *ptr = periodNs > 0 ? (amplitude * position) / periodNs : 0;
             position += samplePeriodNs;
 
-            if (position > periodNs)
+            if (position >= periodNs)
             {
                 position -= periodNs;
-                periodNs = newPeriodNs;
+                if (periodNs != newPeriodNs)
+                {
+                    periodNs = newPeriodNs;
+                    position = 0;
+                }
+            }
+
+            if (playoutTimeUs > 0)
+            {
+                playoutSoFarNs += samplePeriodNs;
+                while (playoutSoFarNs > 1000)
+                {
+                    playoutSoFarNs -= 1000;
+                    if (playoutTimeUs > 0)
+                        playoutTimeUs--;
+                }
+
+                if (playoutTimeUs == 0)
+                    newPeriodNs = 0;
             }
 
             ptr++;
