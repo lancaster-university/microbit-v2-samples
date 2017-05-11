@@ -6,7 +6,7 @@
 #define SAMD21DMAC_H
 
 #define DMA_DESCRIPTOR_ALIGNMENT 16 // SAMD21 Datasheet 20.8.15 and 20.8.16
-#define DMA_DESCRIPTOR_COUNT 2
+#define DMA_DESCRIPTOR_COUNT 4
 
 class DmaComponent
 {

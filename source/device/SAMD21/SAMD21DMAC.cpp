@@ -13,7 +13,7 @@ extern "C" void DMAC_Handler( void )
     uint32_t oldChannel = DMAC->CHID.bit.ID;
     int channel = 0;
     uint32_t pend = DMAC->INTSTATUS.reg;
-   
+
     while((pend & 1) == 0)
     {
         pend = pend >> 1;
