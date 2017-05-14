@@ -212,16 +212,18 @@ void DataStream::onDeferredPullRequest(DeviceEvent)
  */
 int DataStream::pullRequest()
 {
-	if (bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength > preferredBufferSize)
-    {
-        if (this->isBlocking)
-            fiber_wait_for_event(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
-        else
-            return DEVICE_NO_RESOURCES;
-    }
+    bool full = bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength > preferredBufferSize;
 
-	stream[bufferCount] = upStream->pull();
-	bufferLength = bufferLength + stream[bufferCount].length();
+    if (full && this->isBlocking == false)
+        return DEVICE_NO_RESOURCES;
+
+    ManagedBuffer buffer = upStream->pull();
+
+    if (full)
+        fiber_wait_for_event(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
+
+	stream[bufferCount] = buffer;
+	bufferLength = bufferLength + buffer.length();
 	bufferCount++;
 
 	if (downStream != NULL)
