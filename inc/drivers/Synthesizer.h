@@ -12,17 +12,15 @@
   */
 class Synthesizer : public DataSource
 {
-	ManagedBuffer buffer;
+	int     samplePeriodNs;        // The length of a single sample, in nanoseconds.
+	int     bufferSize;            // The number of samples to create in a single buffer before scheduling it for playback
 
-	uint32_t position;
-	uint32_t sampleRate;
-	uint32_t periodNs;
-	uint32_t samplePeriodNs;
-	uint32_t newPeriodNs;
-	uint32_t amplitude;
-	uint32_t bufferSize;
-    int playoutTimeUs;
-    uint32_t playoutSoFarNs;
+    int     newPeriodNs;           // new period of waveform, if change has been requested.
+	int     amplitude;             // The maximum amplitude of the wave to generate (the volume of the output)
+    bool    active;                // Determines if background playback of audio is currently active.
+    bool    synchronous;           // Determines if a synchronous mode of operation has been requested. 
+
+    ManagedBuffer buffer;          // Playout buffer.
 
     public:
 
@@ -46,14 +44,14 @@ class Synthesizer : public DataSource
 	* Define the central frequency of this synthesizer. Takes effect at the start of the next waveform period.
 	* @frequency The frequency, in Hz to generate.
 	*/
-	void setFrequency(float frequency);
+	int setFrequency(float frequency);
 
 	/**
 	* Define the central frequency of this synthesizer. Takes effect at the start of the next waveform period.
 	* @frequency The frequency, in Hz to generate.
     * @period The period, in ms, to play the frequency.
 	*/
-	void setFrequency(float frequency, int period);
+	int setFrequency(float frequency, int period);
 
 	/**
 	* Define the volume of the wave to generate.
@@ -77,7 +75,7 @@ class Synthesizer : public DataSource
 	/**
 	* Creates the next audio buffer, and attmepts to queue this on the output stream.
 	*/
-	void generate();
+	void generate(int playoutTimeUs);
 
 };
 #endif

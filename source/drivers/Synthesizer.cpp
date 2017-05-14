@@ -9,7 +9,7 @@ static Synthesizer *launching = NULL;
 void begin_playback()
 {
     if (launching)
-        launching->generate();
+        launching->generate(-1);
 }
 
 /**
@@ -18,25 +18,19 @@ void begin_playback()
   */
 Synthesizer::Synthesizer(int sampleRate) : output(*this)
 {
-	this->sampleRate = sampleRate;
 	this->bufferSize = 512;
-
-	this->position = 0;
 	this->samplePeriodNs = 1000000000 / sampleRate;
-	this->setFrequency(0);
 	this->setVolume(1023);
-	this->periodNs = newPeriodNs;
-
-    launching = this;
-    create_fiber(begin_playback);
+    this->active = false;
+    this->synchronous = false;
 }
 
 /**
   * Define the central frequency of this synthesizer
   */
-void Synthesizer::setFrequency(float frequency)
+int Synthesizer::setFrequency(float frequency)
 {
-    setFrequency(frequency, 0);
+    return setFrequency(frequency, 0);
 }
 
 /**
@@ -45,11 +39,35 @@ void Synthesizer::setFrequency(float frequency)
  * @frequency The frequency, in Hz to generate.
  * @period The period, in ms, to play the frequency.
  */
-void Synthesizer::setFrequency(float frequency, int period)
+int Synthesizer::setFrequency(float frequency, int period)
 {
-	this->newPeriodNs = frequency == 0.0 ? 0 : (uint32_t) (1000000000.0 / frequency);
-    this->playoutTimeUs = 1000 * period ;
-    this->playoutSoFarNs = 0;
+    // If another fiber is already actively using this resource, we can't service this request.
+    if (synchronous)
+        return DEVICE_BUSY;
+
+    // record our new intended frequency.
+    newPeriodNs = frequency == 0.0 ? 0 : (uint32_t) (1000000000.0 / frequency);
+
+    if (period == 0)
+    {
+        // We've been asked to play a new tone in the background.
+        // If a tone is already playing in the background, we only need to update frequency (already done above). Otherwise also launch a playout fiber.
+        if(!active)
+        {
+            active = true;
+            launching = this;
+            create_fiber(begin_playback);
+        }
+    }
+    else
+    {
+        // We've been asked to playout a new note synchronously. Record the period of playback, and start creation of the sample content.
+        synchronous = true;
+        generate(1000 * period);
+        synchronous = false;
+    }
+
+    return DEVICE_OK;
 }
 
 /**
@@ -63,22 +81,39 @@ Synthesizer::~Synthesizer()
 /**
  * Creates the next audio buffer, and attmepts to queue this on the output stream.
  */
-void Synthesizer::generate()
+void Synthesizer::generate(int playoutTimeUs)
 {
-    while(1)
+    int periodNs = newPeriodNs;
+    int playoutSoFarNs = 0;
+    int position = 0;
+    int bytesWritten;
+
+    while(playoutTimeUs != 0)
     {
+        bytesWritten = 0;
         buffer = ManagedBuffer(bufferSize);
+        uint16_t *ptr = (uint16_t *) &buffer[bytesWritten];
 
-        uint16_t *ptr = (uint16_t *) &buffer[0];
-
-        for (int i = 0; i < buffer.length() / 2; i++)
+        while(bytesWritten < bufferSize)
         {
             *ptr = periodNs > 0 ? (amplitude * position) / periodNs : 0;
-            position += samplePeriodNs;
+            bytesWritten += 2;
+            ptr++;
 
-            if (position >= periodNs)
+            position += samplePeriodNs;
+            playoutSoFarNs += samplePeriodNs;
+
+            while (playoutSoFarNs > 1000)
+            {
+                playoutSoFarNs -= 1000;
+                if (playoutTimeUs > 0)
+                    playoutTimeUs--;
+            }
+
+            while (position >= periodNs)
             {
                 position -= periodNs;
+
                 if (periodNs != newPeriodNs)
                 {
                     periodNs = newPeriodNs;
@@ -86,24 +121,19 @@ void Synthesizer::generate()
                 }
             }
 
-            if (playoutTimeUs > 0)
-            {
-                playoutSoFarNs += samplePeriodNs;
-                while (playoutSoFarNs > 1000)
-                {
-                    playoutSoFarNs -= 1000;
-                    if (playoutTimeUs > 0)
-                        playoutTimeUs--;
-                }
-
-                if (playoutTimeUs == 0)
-                    newPeriodNs = 0;
-            }
-
-            ptr++;
+            if (playoutTimeUs == 0)
+                break;
         }
 
+        buffer.truncate(bytesWritten);
         output.pullRequest();
+
+        // There's now space for another buffer. If we're generating asynchronously and a synchronous request comes in, give control to that fiber.
+        if (playoutTimeUs < 0 && synchronous)
+        {
+            active = false;
+            return;
+        }
     }
 }
 
