@@ -378,3 +378,13 @@ int ManagedBuffer::readBytes(uint8_t *dst, int offset, int length, bool swapByte
 
     return DEVICE_OK;
 }
+
+int ManagedBuffer::truncate(int length) 
+{
+    if (length < 0 || length > ptr->length)
+        return DEVICE_INVALID_PARAMETER;
+
+    ptr->length = length;
+
+    return DEVICE_OK;
+}

@@ -252,6 +252,8 @@ class ManagedBuffer
     int writeBuffer(int dstOffset, const ManagedBuffer &src, int srcOffset = 0, int length = -1);
 
     bool isReadOnly() const { return ptr->isReadOnly(); }
+
+    int truncate(int length);
 };
 
 #endif
