@@ -105,8 +105,9 @@ void Synthesizer::generate(int playoutTimeUs)
 
     while(playoutTimeUs != 0)
     {
-        bytesWritten = 0;
-        buffer = ManagedBuffer(bufferSize);
+        if (bytesWritten == 0)
+            buffer = ManagedBuffer(bufferSize);
+
         uint16_t *ptr = (uint16_t *) &buffer[bytesWritten];
 
         while(bytesWritten < bufferSize)
@@ -141,6 +142,7 @@ void Synthesizer::generate(int playoutTimeUs)
         }
 
         output.pullRequest();
+        bytesWritten = 0;
 
         // There's now space for another buffer. If we're generating asynchronously and a synchronous request comes in, give control to that fiber.
         if (playoutTimeUs < 0 && synchronous)
