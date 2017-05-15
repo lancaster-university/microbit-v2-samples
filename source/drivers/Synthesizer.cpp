@@ -23,8 +23,24 @@ Synthesizer::Synthesizer(int sampleRate) : output(*this)
 	this->setVolume(1023);
     this->active = false;
     this->synchronous = false;
+    this->bytesWritten = 0;
+    this->status |= DEVICE_COMPONENT_STATUS_IDLE_TICK;
 }
 
+/**
+ * Implement this function to receive a callback when the device is idling.
+ */
+void Synthesizer::idleCallback() 
+{
+    if (bytesWritten && !synchronous && output.canPull(bytesWritten))
+    {
+        buffer.truncate(bytesWritten);
+        output.pullRequest();
+        bytesWritten = 0;
+    }
+}
+
+ 
 /**
   * Define the central frequency of this synthesizer
   */
@@ -86,7 +102,6 @@ void Synthesizer::generate(int playoutTimeUs)
     int periodNs = newPeriodNs;
     int playoutSoFarNs = 0;
     int position = 0;
-    int bytesWritten;
 
     while(playoutTimeUs != 0)
     {
@@ -122,10 +137,9 @@ void Synthesizer::generate(int playoutTimeUs)
             }
 
             if (playoutTimeUs == 0)
-                break;
+                return;
         }
 
-        buffer.truncate(bytesWritten);
         output.pullRequest();
 
         // There's now space for another buffer. If we're generating asynchronously and a synchronous request comes in, give control to that fiber.

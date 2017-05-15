@@ -10,7 +10,7 @@
   * A Datastream holds a number of ManagedBuffer references, provides basic flow control through a push/pull mechanism
   * and byte level access to the datastream, even if it spans different buffers.
   */
-class Synthesizer : public DataSource
+class Synthesizer : public DataSource, public DeviceComponent
 {
 	int     samplePeriodNs;        // The length of a single sample, in nanoseconds.
 	int     bufferSize;            // The number of samples to create in a single buffer before scheduling it for playback
@@ -21,6 +21,7 @@ class Synthesizer : public DataSource
     bool    synchronous;           // Determines if a synchronous mode of operation has been requested. 
 
     ManagedBuffer buffer;          // Playout buffer.
+    int     bytesWritten;          // Number of bytes written to the output buffer.
 
     public:
 
@@ -71,6 +72,11 @@ class Synthesizer : public DataSource
 	 * Provide the next available ManagedBuffer to our downstream caller, if available.
 	 */
 	virtual ManagedBuffer pull();
+
+    /**
+     * Implement this function to receive a callback when the device is idling.
+     */
+    virtual void idleCallback();
 
 	/**
 	* Creates the next audio buffer, and attmepts to queue this on the output stream.
