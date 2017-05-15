@@ -32,7 +32,7 @@ Synthesizer::Synthesizer(int sampleRate) : output(*this)
  */
 void Synthesizer::idleCallback() 
 {
-    if (bytesWritten && !synchronous && output.canPull(bytesWritten))
+    if (bytesWritten && !synchronous && !active && output.canPull(bytesWritten))
     {
         buffer.truncate(bytesWritten);
         output.pullRequest();
