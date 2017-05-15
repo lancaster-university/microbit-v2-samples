@@ -112,7 +112,7 @@ void Synthesizer::generate(int playoutTimeUs)
 
         while(bytesWritten < bufferSize)
         {
-            *ptr = periodNs > 0 ? (amplitude * position) / periodNs : 0;
+            *ptr = periodNs > 0 ? GENERATE_SAMPLE(amplitude, position, periodNs) : 0;
             bytesWritten += 2;
             ptr++;
 

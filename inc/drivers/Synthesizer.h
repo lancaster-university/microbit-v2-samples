@@ -5,6 +5,11 @@
 
 #define SYNTHESIZER_SAMPLE_RATE		10000
 
+#define SAWTOOTH_GENERATOR(amplitude, position, period) ((amplitude * position) / period)
+#define SQUAREWAVE_GENERATOR(amplitude, position, period) (position < (period >> 2) ? amplitude : 0)
+
+#define GENERATE_SAMPLE SQUAREWAVE_GENERATOR
+
 /**
   * Class definition for DataStream.
   * A Datastream holds a number of ManagedBuffer references, provides basic flow control through a push/pull mechanism
