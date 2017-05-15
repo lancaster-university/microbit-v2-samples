@@ -131,7 +131,7 @@ class DataStream : public DataSource, public DataSink
      * @param size The number of bytes to add to the buffer.
      * @return true if there is space for "size" bytes in the buffer. false otherwise.
      */
-    bool canPull(int size);
+    bool canPull(int size = 0);
 
 	/**
 	 * Provide the next available ManagedBuffer to our downstream caller, if available.

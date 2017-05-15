@@ -215,9 +215,13 @@ void DataStream::onDeferredPullRequest(DeviceEvent)
  */
 bool DataStream::canPull(int size)
 {
-    bool full = bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength+size > preferredBufferSize;
+    if(bufferCount == DATASTREAM_MAXIMUM_BUFFERS)
+        return false;
 
-    return !full;
+    if(preferredBufferSize > 0 && (bufferLength + size > preferredBufferSize))
+        return false;
+
+    return true;
 }
 
 /**
@@ -225,7 +229,7 @@ bool DataStream::canPull(int size)
  */
 int DataStream::pullRequest()
 {
-    bool full = bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength > preferredBufferSize;
+    bool full = !canPull();
 
     if (full && this->isBlocking == false)
         return DEVICE_NO_RESOURCES;
