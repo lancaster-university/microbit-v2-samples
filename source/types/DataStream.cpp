@@ -208,6 +208,19 @@ void DataStream::onDeferredPullRequest(DeviceEvent)
 }
 
 /**
+ * Determines if a buffer of the given size can be added to the buffer.
+ *
+ * @param size The number of bytes to add to the buffer.
+ * @return true if there is space for "size" bytes in the buffer. false otherwise.
+ */
+bool DataStream::canPull(int size)
+{
+    bool full = bufferCount == DATASTREAM_MAXIMUM_BUFFERS || bufferLength+size > preferredBufferSize;
+
+    return !full;
+}
+
+/**
  * Store the given buffer in our stream, possibly also causing a push operation on our downstream component.
  */
 int DataStream::pullRequest()
