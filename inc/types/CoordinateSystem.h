@@ -61,7 +61,8 @@ enum CoordinateSystem
 {
     RAW,
     SIMPLE_CARTESIAN,
-    NORTH_EAST_DOWN
+    NORTH_EAST_DOWN,
+    NORTH_EAST_UP
 };
 
 #endif

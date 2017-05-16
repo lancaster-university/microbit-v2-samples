@@ -167,7 +167,7 @@ int LIS3DH::readCommand(uint8_t reg, uint8_t* buffer, int length)
   * LIS3DH accelerometer = LIS3DH(i2c);
   * @endcode
  */
-LIS3DH::LIS3DH(DeviceI2C& _i2c, DevicePin &_int1, uint16_t address,  uint16_t id) : i2c(_i2c), int1(_int1), sample()
+LIS3DH::LIS3DH(DeviceI2C& _i2c, DevicePin &_int1, uint16_t address,  uint16_t id, CoordinateSystem coordinateSystem) : i2c(_i2c), int1(_int1), sample()
 {
     // Store our identifiers.
     this->id = id;
@@ -191,6 +191,7 @@ LIS3DH::LIS3DH(DeviceI2C& _i2c, DevicePin &_int1, uint16_t address,  uint16_t id
     this->shake.impulse_3 = 1;
     this->shake.impulse_6 = 1;
     this->shake.impulse_8 = 1;
+    this->coordinateSystem = coordinateSystem;
 
     // Configure and enable the accelerometer.
     configure();
@@ -545,16 +546,17 @@ int LIS3DH::getRange()
   * accelerometer.getX();
   * @endcode
   */
-int LIS3DH::getX(CoordinateSystem system)
+int LIS3DH::getX()
 {
     updateSample();
 
-    switch (system)
+    switch (coordinateSystem)
     {
         case SIMPLE_CARTESIAN:
             return sample.y;
 
         case NORTH_EAST_DOWN:
+        case NORTH_EAST_UP:
             return -sample.x;
 
         case RAW:
@@ -572,16 +574,17 @@ int LIS3DH::getX(CoordinateSystem system)
   * accelerometer.getY();
   * @endcode
   */
-int LIS3DH::getY(CoordinateSystem system)
+int LIS3DH::getY()
 {
     updateSample();
 
-    switch (system)
+    switch (coordinateSystem)
     {
         case SIMPLE_CARTESIAN:
             return sample.x;
 
         case NORTH_EAST_DOWN:
+        case NORTH_EAST_UP:
             return sample.y;
 
         case RAW:
@@ -599,14 +602,15 @@ int LIS3DH::getY(CoordinateSystem system)
   * accelerometer.getZ();
   * @endcode
   */
-int LIS3DH::getZ(CoordinateSystem system)
+int LIS3DH::getZ()
 {
     updateSample();
 
-    switch (system)
+    switch (coordinateSystem)
     {
 
         case SIMPLE_CARTESIAN:
+        case NORTH_EAST_UP:
             return -sample.z;
 
         case NORTH_EAST_DOWN:
@@ -686,9 +690,9 @@ float LIS3DH::getRollRadians()
   */
 void LIS3DH::recalculatePitchRoll()
 {
-    double x = (double) getX(NORTH_EAST_DOWN);
-    double y = (double) getY(NORTH_EAST_DOWN);
-    double z = (double) getZ(NORTH_EAST_DOWN);
+    double x = (double) getX();
+    double y = (double) getY();
+    double z = (double) getZ();
 
     roll = atan2(y, z);
     pitch = atan(-x / (y*sin(roll) + z*cos(roll)));
