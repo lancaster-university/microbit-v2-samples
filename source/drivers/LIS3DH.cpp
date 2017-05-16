@@ -556,6 +556,7 @@ int LIS3DH::getX()
             return sample.y;
 
         case NORTH_EAST_DOWN:
+        case NORTH_EAST_UP:
             return -sample.x;
 
         case RAW:
@@ -583,6 +584,7 @@ int LIS3DH::getY()
             return sample.x;
 
         case NORTH_EAST_DOWN:
+        case NORTH_EAST_UP:
             return sample.y;
 
         case RAW:
@@ -608,6 +610,7 @@ int LIS3DH::getZ()
     {
 
         case SIMPLE_CARTESIAN:
+        case NORTH_EAST_UP:
             return -sample.z;
 
         case NORTH_EAST_DOWN:
