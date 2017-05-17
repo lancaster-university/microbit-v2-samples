@@ -3,12 +3,9 @@
 
 #include "DataStream.h"
 
-#define SYNTHESIZER_SAMPLE_RATE		10000
-
-#define SAWTOOTH_GENERATOR(amplitude, position, period) ((amplitude * position) / period)
-#define SQUAREWAVE_GENERATOR(amplitude, position, period) (position < (period >> 2) ? amplitude : 0)
-
-#define GENERATE_SAMPLE SQUAREWAVE_GENERATOR
+#define SYNTHESIZER_SAMPLE_RATE		44100
+#define TONE_WIDTH                  1024
+//#define SYNTHESIZER_SIGMA_RESET
 
 /**
   * Class definition for DataStream.
@@ -27,10 +24,15 @@ class Synthesizer : public DataSource, public DeviceComponent
 
     ManagedBuffer buffer;          // Playout buffer.
     int     bytesWritten;          // Number of bytes written to the output buffer.
+    const uint16_t *tonePrint;     // The tone currently selected playout tone.
 
     public:
 
 	DataStream output;
+
+    static const uint16_t SineTone[];
+    static const uint16_t SawtoothTone[];
+    static const uint16_t SquareWaveTone[];
 
     /**
       * Default Constructor. 
@@ -73,7 +75,20 @@ class Synthesizer : public DataSource, public DeviceComponent
 	*/
 	int setBufferSize(int size);
 
-	/**
+    /**
+     * Determine the sample rate currently in use by this Synthesizer.
+     * @return the current sample rate, in Hz.
+     */
+    int getSampleRate();
+
+    /**
+     * Change the sample rate used by this Synthesizer,
+     * @param sampleRate The new sample rate, in Hz.
+     * @return DEVICE_OK on success.
+     */
+    int setSampleRate(int sampleRate);
+
+    /**
 	 * Provide the next available ManagedBuffer to our downstream caller, if available.
 	 */
 	virtual ManagedBuffer pull();
@@ -87,6 +102,17 @@ class Synthesizer : public DataSource, public DeviceComponent
 	* Creates the next audio buffer, and attmepts to queue this on the output stream.
 	*/
 	void generate(int playoutTimeUs);
+
+	/**
+     * Defines the tone to generate.
+     * @param the tone print to use with this synthesizer.
+     * Examples include:
+     *
+     * Synthesizer::SineTone
+     * Synthesizer::SawtoothTone
+     * Synthesizer::SquareWaveTone
+	 */
+	void setTone(const uint16_t *tonePrint);
 
 };
 #endif
