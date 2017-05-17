@@ -184,6 +184,7 @@ class LIS3DH : public DeviceComponent
     uint16_t        lastGesture;        // the last, stable gesture recorded.
     uint16_t        currentGesture;     // the instantaneous, unfiltered gesture detected.
     ShakeHistory    shake;              // State information needed to detect shake events.
+    CoordinateSystem coordinateSystem;  // the orientation of the driver
 
     public:
 
@@ -197,13 +198,15 @@ class LIS3DH : public DeviceComponent
       *
       * @param id the unique EventModel id of this component. Defaults to: DEVICE_ID_ACCELEROMETER
       *
+      * @param coordinateSystem the orientation of the sensor. Defaults to: SIMPLE_CARTESIAN
+      *
       * @code
       * DeviceI2C i2c = DeviceI2C(I2C_SDA0, I2C_SCL0);
       *
       * Accelerometer accelerometer = Accelerometer(i2c);
       * @endcode
      */
-    LIS3DH(DeviceI2C &_i2c, DevicePin &_int1, uint16_t address = LIS3DH_DEFAULT_ADDR, uint16_t id = DEVICE_ID_ACCELEROMETER);
+    LIS3DH(DeviceI2C &_i2c, DevicePin &_int1, uint16_t address = LIS3DH_DEFAULT_ADDR, uint16_t id = DEVICE_ID_ACCELEROMETER, CoordinateSystem coordinateSystem = SIMPLE_CARTESIAN);
 
     /**
       * Configures the accelerometer for G range and sample rate defined
@@ -301,7 +304,7 @@ class LIS3DH : public DeviceComponent
       * accelerometer.getX();
       * @endcode
       */
-    int getX(CoordinateSystem system = SIMPLE_CARTESIAN);
+    int getX();
 
     /**
       * Reads the value of the Y axis from the latest update retrieved from the accelerometer.
@@ -312,7 +315,7 @@ class LIS3DH : public DeviceComponent
       * accelerometer.getY();
       * @endcode
       */
-    int getY(CoordinateSystem system = SIMPLE_CARTESIAN);
+    int getY();
 
     /**
       * Reads the value of the Z axis from the latest update retrieved from the accelerometer.
@@ -323,7 +326,7 @@ class LIS3DH : public DeviceComponent
       * accelerometer.getZ();
       * @endcode
       */
-    int getZ(CoordinateSystem system = SIMPLE_CARTESIAN);
+    int getZ();
 
     /**
       * Provides a rotation compensated pitch of the device, based on the latest update retrieved from the accelerometer.
