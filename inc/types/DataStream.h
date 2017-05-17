@@ -38,6 +38,7 @@ class DataStream : public DataSource, public DataSink
     int bufferCount;
     int bufferLength;
     int preferredBufferSize;
+    int writers;
     uint16_t spaceAvailableEventCode;
     uint16_t pullRequestEventCode;
     bool isBlocking;
@@ -132,6 +133,13 @@ class DataStream : public DataSource, public DataSink
      * @return true if there is space for "size" bytes in the buffer. false otherwise.
      */
     bool canPull(int size = 0);
+
+    /**
+     * Determines if the DataStream can accept any more data.
+     *
+     * @return true if there if the buffer is ful, and can accept no more data at this time. False otherwise.
+     */
+    bool full();
 
 	/**
 	 * Provide the next available ManagedBuffer to our downstream caller, if available.

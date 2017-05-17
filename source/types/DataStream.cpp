@@ -33,6 +33,7 @@ DataStream::DataStream(DataSource &upstream)
     this->pullRequestEventCode = 0;
     this->spaceAvailableEventCode = allocateNotifyEvent();
     this->isBlocking = true;
+    this->writers = 0;
 
     this->downStream = NULL;
     this->upStream = &upstream;
@@ -193,7 +194,7 @@ ManagedBuffer DataStream::pull()
 		bufferLength = bufferLength - out.length();
 	}
 
-    DeviceEvent(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
+    DeviceEvent(DEVICE_ID_NOTIFY_ONE, spaceAvailableEventCode);
 
 	return out;
 }
@@ -215,7 +216,7 @@ void DataStream::onDeferredPullRequest(DeviceEvent)
  */
 bool DataStream::canPull(int size)
 {
-    if(bufferCount == DATASTREAM_MAXIMUM_BUFFERS)
+    if(bufferCount + writers >= DATASTREAM_MAXIMUM_BUFFERS)
         return false;
 
     if(preferredBufferSize > 0 && (bufferLength + size > preferredBufferSize))
@@ -225,19 +226,37 @@ bool DataStream::canPull(int size)
 }
 
 /**
+ * Determines if the DataStream can accept any more data.
+ *
+ * @return true if there if the buffer is ful, and can accept no more data at this time. False otherwise.
+ */
+bool DataStream::full()
+{
+    return !canPull();
+}
+
+/**
  * Store the given buffer in our stream, possibly also causing a push operation on our downstream component.
  */
 int DataStream::pullRequest()
 {
-    bool full = !canPull();
-
-    if (full && this->isBlocking == false)
+    // If we're defined as non-blocking and no space is available, then there's nothing we can do.
+    if (full() && this->isBlocking == false)
         return DEVICE_NO_RESOURCES;
 
+    // As there is either space available in the buffer or we want to block, pull the upstream buffer to release resources there.
     ManagedBuffer buffer = upStream->pull();
 
-    if (full)
-        fiber_wait_for_event(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
+    // If the buffer is full or we're behind another fiber, then wait for space to become available.
+    if (full() || writers)
+        fiber_wake_on_event(DEVICE_ID_NOTIFY, spaceAvailableEventCode);
+
+    if (full() || writers)
+    {
+        writers++;
+        schedule();
+        writers--;
+    }
 
 	stream[bufferCount] = buffer;
 	bufferLength = bufferLength + buffer.length();
