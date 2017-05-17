@@ -6,11 +6,13 @@
 
 #undef ENABLE
 
-SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16_t id) : dmac(dma), upstream(source)
+
+SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, int sampleRate, uint16_t id) : dmac(dma), upstream(source)
 {
     this->id = id;
     this->active = false;
     this->dataReady = 0;
+    this->sampleRate = sampleRate;
 
     // Register with our upstream component
     source.connect(*this);
@@ -44,7 +46,7 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16
     GCLK->GENCTRL.bit.GENEN = 1;    // enable clock generator
 
     GCLK->GENDIV.bit.ID = 0x08;      
-    GCLK->GENDIV.bit.DIV = 32;   
+    GCLK->GENDIV.bit.DIV = 24;   
 
     GCLK->CLKCTRL.bit.GEN = 0x08;      
     GCLK->CLKCTRL.bit.CLKEN = 1;    // Enable clock
@@ -54,13 +56,13 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16
     GCLK->CLKCTRL.bit.CLKEN = 0;    
     while(GCLK->CLKCTRL.bit.CLKEN);    
 
-    GCLK->CLKCTRL.bit.GEN = 0x03;   // 8MHz peripheral clock source
+    GCLK->CLKCTRL.bit.GEN = 0x01;   // 8MHz peripheral clock source
     GCLK->CLKCTRL.bit.CLKEN = 1;    // Enable clock
 
-    // Configure TC5 for a 1uS tick 10KHz overflow
-    TC3->COUNT16.CTRLA.reg = 0x0B20;        // 16 bit 8:1 prescaler
+    // Configure TC5 for a 1uS tick 40KHz overflow
+    TC3->COUNT16.CTRLA.reg = 0x0820;        // 16 bit 1:1 prescaler
     TC3->COUNT16.CTRLC.reg = 0x00;          // compare mode
-    TC3->COUNT16.CC[0].reg = 100;           // 100 uS period
+    TC3->COUNT16.CC[0].reg = 200;            // 25 uS period
     TC3->COUNT16.EVCTRL.reg = 0x1100;       // Enable periodoverflow events.
     TC3->COUNT16.CTRLBCLR.bit.DIR = 1;      // Start the timer
     TC3->COUNT16.CTRLA.bit.ENABLE = 1;      // Start the timer
@@ -112,7 +114,42 @@ SAMD21DAC::SAMD21DAC(DevicePin &pin, SAMD21DMAC &dma, DataSource &source, uint16
         dmac.onTransferComplete(dmaChannel, this);
     }
 
+    setSampleRate(sampleRate);
+
     dmac.enable();
+}
+
+/**
+ * Change the DAC playback sample rate to the given frequency.
+ * n.b. Only sample periods that are a multiple of 125nS are supported. 
+ * Frequencies mathcing other sample periods will be rounded down to the next lowest supported frequency.
+ *
+ * @param frequency The new sample playback frequency.
+ */
+int SAMD21DAC::getSampleRate()
+{
+    return sampleRate;
+}
+
+/**
+ * Change the DAC playback sample rate to the given frequency.
+ * n.b. Only sample periods that are a multiple of 125nS are supported. 
+ * Frequencies mathcing other sample periods will be rounded to the next highest supported frequency.
+ *
+ * @param frequency The new sample playback frequency.
+ */
+int SAMD21DAC::setSampleRate(int frequency)
+{
+    uint32_t period = 8000000 / frequency;
+    sampleRate = 8000000 / period;
+        
+    TC3->COUNT16.CTRLA.bit.ENABLE = 0;      // Stop the timer
+
+    TC3->COUNT16.CC[0].reg = period;        // Set period 
+
+    TC3->COUNT16.CTRLA.bit.ENABLE = 1;      // Restart the timer
+
+    return DEVICE_OK;
 }
 
 /**
