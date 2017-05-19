@@ -6,6 +6,20 @@ import fnmatch
 import glob
 import shutil
 import ntpath
+import json
+
+def make_cmake(lib_name, lib_file_name, include_path, dest):
+    print "LIB NAME " + lib_name
+    with open(dest + "/CMakeLists.txt", 'w') as f:
+        lines = [
+            "project(" + lib_name + ")\r\n"
+            "add_library(" + lib_name + " STATIC " + lib_file_name + ")\r\n",
+            "set_target_properties(" + lib_name +" PROPERTIES LINKER_LANGUAGE CXX)\r\n",
+            "target_include_directories(" + lib_name + " PUBLIC \"" + include_path + "\")\r\n",
+        ]
+        print "LINES : " + str(lines)
+        f.writelines(lines)
+        f.close()
 
 def copytree(src, dst, symlinks=False, ignore=None):
     if not os.path.exists(dst):
@@ -50,7 +64,10 @@ if options.clean:
     os.system("make clean")
 
 # build
-#os.system("make -j 10")
+os.system("make -j 10")
+
+with open('../codal.json') as data_file:
+    codal = json.load(data_file)
 
 #ntpath.basename(f)
 folders = [path_leaf(f) for f in glob.glob("../libraries/*/")]
@@ -66,17 +83,18 @@ mapping = []
 valid_libs = []
 
 for folder in header_folders:
-    lib_name = "lib" + folder + ".a"
-    if not os.path.exists("./"+lib_name):
-        print "No library exists, skipping: " + lib_name
+    lib_file_name = "lib" + folder + ".a"
+    if not os.path.exists("./"+lib_file_name):
+        print "No library exists, skipping: " + lib_file_name
         continue
 
-    shutil.copy("./" + lib_name, "./build/"+folder)
+    shutil.copy("./" + lib_file_name, "./build/"+folder)
     valid_libs = valid_libs + [folder]
 
 
 for folder in valid_libs:
-    lib_name = "lib" + folder + ".a"
+    lib_name = folder
+    lib_file_name = "lib" + folder + ".a"
     folder_path = '../libraries/' + folder
     header_folder = "./build/" + folder
     header_ext = "includes"
@@ -97,23 +115,29 @@ for folder in valid_libs:
 
     branch_names = [b.name for b in repo.branches]
 
-    # swap to an orphaned branch if none exists
-    if "library" not in branch_names:
-        repo.active_branch.checkout(orphan="library")
+    lib_branch_name = "lib_" + codal["target"]["processor"] + codal["target"]["device"]
 
-        for folder in glob.glob(folder_path + "/*/"):
-            shutil.rmtree(folder)
+    # tag using above + version specified in target.json
+
+    # swap to an orphaned branch if none exists
+    if lib_branch_name not in branch_names:
+        repo.active_branch.checkout(orphan=lib_branch_name)
+
+        for f in glob.glob(folder_path + "/*/"):
+            shutil.rmtree(f)
 
         files = [f for f in os.listdir('.') if os.path.isfile(f)]
 
         for file in files:
             os.remove(file)
     else:
-        repo.active_branch.checkout("library")
+        repo.active_branch.checkout(lib_branch_name)
 
     repo.index.remove("*", r=True)
 
     copytree(header_folder, folder_path + "/")
+
+    make_cmake(lib_name, lib_file_name, header_ext, folder_path + "/")
 
     repo.index.add("*")
 
@@ -121,6 +145,6 @@ for folder in valid_libs:
 
     repo.index.commit("Library generated", author=author, committer=author)
 
-    repo.git.checkout(active_branch)
+    #repo.git.checkout(active_branch)
 
-    break
+    #break
