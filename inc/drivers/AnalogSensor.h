@@ -58,7 +58,7 @@ class AnalogSensor : public DeviceComponent
 
     DevicePin       &_pin;              // Pin where the sensor is connected.
     uint16_t        samplePeriod;       // The time between samples, in milliseconds.
-    float           sensitivity;        // A value between 0..1 used with a decay average to smooth the sample data. 
+    uint16_t        sensitivity;        // A value between 0..1023 used with a decay average to smooth the sample data. 
     uint16_t        highThreshold;      // threshold at which a HIGH event is generated
     uint16_t        lowThreshold;       // threshold at which a LOW event is generated
     int             sensorValue;        // Last sampled data.
@@ -145,11 +145,11 @@ class AnalogSensor : public DeviceComponent
     /**
       * Set smoothing value for the data. A decay average is taken of sampled data to smooth it into more accurate information.
       *
-      * @param value A value between 0..1 that detemrines the level of smoothing. Set to 0 to disable smoothing. Default value is 0.1
+      * @param value A value between 0..1023 that detemrines the level of smoothing. Set to 1023 to disable smoothing. Default value is 868
       *
       * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
       */
-    int setSensitivity(float value);
+    int setSensitivity(uint16_t value);
 
     /**
       * Destructor.
