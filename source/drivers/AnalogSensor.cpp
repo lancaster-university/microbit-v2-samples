@@ -48,7 +48,7 @@ DEALINGS IN THE SOFTWARE.
 AnalogSensor::AnalogSensor(DevicePin &pin, uint16_t id) : _pin(pin)
 {
     this->id = id;
-    this->sensitivity = 0.1f;
+    this->sensitivity = 868;
 
     // Configure for a 2 Hz update frequency by default. 
     if(EventModel::defaultEventBus)
@@ -81,9 +81,7 @@ int AnalogSensor::getValue()
  */
 void AnalogSensor::updateSample()
 {
-    float value;
-
-    value = _pin.getAnalogValue();
+    int value = _pin.getAnalogValue();
 
     // If this is the first reading performed, take it a a baseline. Otherwise, perform a decay average to smooth out the data.
     if (!(status & ANALOG_SENSOR_INITIALISED))
@@ -93,7 +91,7 @@ void AnalogSensor::updateSample()
     }
     else
     {
-        sensorValue = (sensorValue * (1.0f - sensitivity)) + (value * sensitivity);
+        sensorValue = ((sensorValue * (1023 - sensitivity)) + (value * sensitivity)) >> 10;
     }
 
     checkThresholding();
@@ -123,13 +121,13 @@ void AnalogSensor::checkThresholding()
 /**
  * Set sensitivity value for the data. A decay average is taken of sampled data to smooth it into more accurate information.
  *
- * @param value A value between 0..1 that detemrines the level of smoothing. Set to 0 to disable smoothing. Default value is 0.1
+ * @param value A value between 0..1023 that detemrines the level of smoothing. Set to 1023 to disable smoothing. Default value is 868
  *
  * @return DEVICE_OK on success, DEVICE_INVALID_PARAMETER if the request fails.
  */
-int AnalogSensor::setSensitivity(float value)
+int AnalogSensor::setSensitivity(uint16_t value)
 {
-    this->sensitivity = value;
+    this->sensitivity = max(0, min(1023, value));
 
     return DEVICE_OK;
 }
