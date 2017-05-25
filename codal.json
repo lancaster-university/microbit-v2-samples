@@ -5,6 +5,12 @@
         "platform":"MBED_CLASSIC",
         "manufacturer":"ATMEL"
     },
+    "definitions":{
+        "SCHEDULER_TICK_PERIOD_US":5000,
+        "POOP":10,
+        "TEST":"HELLO",
+        "RET123":"STRING"
+    },
     "application":"application",
     "output_folder":"."
 }

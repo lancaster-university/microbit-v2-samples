@@ -61,15 +61,42 @@ message("${EXPLICIT_INCLUDES}")
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
+
     message("Adding defs: ${device.definitions}")
     add_definitions("${device.definitions}")
 endif()
 
-#define any additional symbols specified by codal.
-if("${codal.definitions}" STRGREATER "")
-    #message("Adding defs: ${codal.definitions}")
-    add_definitions("${codal.definitions}")
+
+SET(CODAL_DEFINITIONS "")
+
+#extract any definitions specified in the definitions object, and add them
+foreach(var ${codal})
+
+    #if it is not prefixed by codal.definitions, do not consider the key.
+    if(NOT "${var}" MATCHES "codal\.definitions\.")
+        continue()
+    endif()
+
+    string(REGEX MATCH "[^codal\.definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_DEFINITION "${var}")
+
+    #check if string or number
+    if(${${var}} MATCHES "[0-9]+")
+        set(CODAL_DEFINITION_VALUE "${${var}}")
+    else()
+        set(CODAL_DEFINITION_VALUE "\"${${var}}\"")
+    endif()
+
+    set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define ${CODAL_DEFINITION}\t ${CODAL_DEFINITION_VALUE}\n")
+endforeach()
+
+# create a header file from the definitions specified in JSON
+if("${CODAL_DEFINITIONS}" STRGREATER "")
+    set(EXTRA_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions.h")
+    file(WRITE "${EXTRA_INCLUDES_PATH}" ${CODAL_DEFINITIONS})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
 endif()
+
 
 ####################
 # optional JSON flags for compilation + assembly
