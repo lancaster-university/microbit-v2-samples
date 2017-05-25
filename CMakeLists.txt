@@ -61,8 +61,6 @@ message("${EXPLICIT_INCLUDES}")
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
-
-    message("Adding defs: ${device.definitions}")
     add_definitions("${device.definitions}")
 endif()
 
@@ -149,6 +147,9 @@ if(NOT "${device.target.url}" STRGREATER "")
 endif()
 
 SET(CODAL_TARGET_NAME ${device.target.name})
+SET(CODAL_OUTPUT_NAME ${device.device})
+SET(CODAL_TARGET_PROCESSOR ${device.processor})
+SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
 
 #install the target
 INSTALL_DEPENDENCY(${LIB_DEST} ${device.target.name} ${device.target.url} ${device.target.branch} ${device.target.type})
@@ -188,14 +189,27 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT        "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
-add_executable(${device.device} "${PROJECT_SOURCE_DIR}/${codal.application}/main.cpp")
-target_link_libraries(${device.device} ${CODAL_DEPS})
+MESSAGE("LINKER FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
+
+#finally, find sources and includes of the application, and create a target.
+RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${codal.application}" "*.h")
+RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.c??")
+
+if("${INCLUDE_DIRS}" STRGREATER "")
+    include_directories("${INCLUDE_DIRS}")
+endif()
+
+add_executable(ttttt "${SOURCE_FILES}")
+
+# link the target with supporting libraries.
+message("link ${SOURCE_FILES} ${device.device} with ${CODAL_DEPS}")
+target_link_libraries(ttttt ${CODAL_DEPS})
 
 # turn our bin to a hex.
 add_custom_command(
     OUTPUT "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
     COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${device.device}" "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
-    DEPENDS ${device.device}
+    DEPENDS ttttt
     COMMENT "converting to hex file."
 )
 
