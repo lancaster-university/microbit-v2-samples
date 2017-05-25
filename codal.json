@@ -11,6 +11,7 @@
         "TEST":"HELLO",
         "RET123":"STRING"
     },
+    "post_process":"python ./utils/uf2conv.py <OUTPUT_HEX_LOCATION> -o <OUTPUT_HEX_DESTINATION>/<OUTPUT_HEX_NAME>.uf2",
     "application":"application",
     "output_folder":"."
 }

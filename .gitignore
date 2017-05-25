@@ -9,3 +9,4 @@ Makefile
 *.hex
 *.DS_Store
 .vscode
+*.uf2

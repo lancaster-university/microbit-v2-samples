@@ -221,3 +221,23 @@ add_custom_command(
 
 #specify a dependency on the binary file so that hex is automatically rebuilt when bin is changed.
 add_custom_target(${device.device}_hex ALL DEPENDS "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex")
+
+if("${codal.post_process}" STRGREATER "")
+    string(REPLACE "<OUTPUT_HEX_LOCATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex  CODAL_POSTPROCESS_COMMAND ${codal.post_process})
+    string(REPLACE "<OUTPUT_HEX_DESTINATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    string(REPLACE "<OUTPUT_HEX_NAME>" ${device.device} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+
+    string(REPLACE "<OUTPUT_BIN_LOCATION>" ${PROJECT_SOURCE_DIR}/build/${device.device}  CODAL_POSTPROCESS_COMMAND ${codal.post_process})
+    string(REPLACE "<OUTPUT_BIN_DESTINATION>" ${PROJECT_SOURCE_DIR}/build CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    string(REPLACE "<OUTPUT_BIN_NAME>" ${device.device} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+
+    separate_arguments(FINAL_COMMAND UNIX_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    
+    add_custom_command(
+        TARGET ${device.device}_hex
+        COMMAND ${FINAL_COMMAND}
+        DEPENDS  ${device.device}_hex
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+        COMMENT "Executing post process command"
+    )
+endif()
