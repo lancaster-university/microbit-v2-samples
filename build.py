@@ -1,8 +1,9 @@
 import os
 import optparse
+import platform
 
 parser = optparse.OptionParser()
-parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building.', default=False)
+parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 
 (options, args) = parser.parse_args()
 
@@ -12,11 +13,18 @@ if not os.path.exists("build"):
 # out of source build!
 os.chdir("build")
 
-# configure
-os.system("cmake ..")
+if platform.system() == "Windows":
+    # configure
+    os.system("cmake .. -G \"Ninja\"")
 
-if options.clean:
-    os.system("make clean")
+    # build
+    os.system("ninja")
+else:
+    # configure
+    os.system("cmake .. -G \"Unix Makefiles\"")
 
-# build
-os.system("make -j 10")
+    if options.clean:
+        os.system("make clean")
+
+    # build
+    os.system("make -j 10")
