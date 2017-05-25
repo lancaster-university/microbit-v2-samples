@@ -67,7 +67,7 @@ endif()
 
 SET(CODAL_DEFINITIONS "")
 
-#extract any definitions specified in the definitions object, and add them
+#extract any definitions specified in the codal.json definitions object, and add them
 foreach(var ${codal})
 
     #if it is not prefixed by codal.definitions, do not consider the key.
@@ -178,7 +178,6 @@ if("${device.libraries}" STRGREATER "")
 endif()
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
-set(CMAKE_CXX_COMPILE_OBJECT        "<CMAKE_CXX_COMPILER> <DEFINES> ${EXPLICIT_INCLUDES}<FLAGS> -o <OBJECT> -c <SOURCE>")
 
 # <LINK_LIBRARIES> is grouped with system libraries so that system library
 # functions (e.g. malloc) can be overridden by symbols in <LINK_LIBRARIES>
@@ -189,27 +188,34 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT        "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 
-MESSAGE("LINKER FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
-
 #finally, find sources and includes of the application, and create a target.
 RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${codal.application}" "*.h")
 RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.c??")
 
-if("${INCLUDE_DIRS}" STRGREATER "")
-    include_directories("${INCLUDE_DIRS}")
-endif()
+add_executable(
+    ${device.device}
+    "${SOURCE_FILES}"
+)
 
-add_executable(ttttt "${SOURCE_FILES}")
+if("${INCLUDE_DIRS}" STRGREATER "")
+    target_include_directories(${device.device} "${INCLUDE_DIRS}")
+endif()
 
 # link the target with supporting libraries.
 message("link ${SOURCE_FILES} ${device.device} with ${CODAL_DEPS}")
-target_link_libraries(ttttt ${CODAL_DEPS})
+
+set_target_properties(${device.device} PROPERTIES SUFFIX "" ENABLE_EXPORTS ON)
+
+target_link_libraries(
+    ${device.device}
+    ${CODAL_DEPS}
+)
 
 # turn our bin to a hex.
 add_custom_command(
     OUTPUT "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
     COMMAND "${ARM_NONE_EABI_OBJCOPY}" -O ihex "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${device.device}" "${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex"
-    DEPENDS ttttt
+    DEPENDS  ${device.device}
     COMMENT "converting to hex file."
 )
 
