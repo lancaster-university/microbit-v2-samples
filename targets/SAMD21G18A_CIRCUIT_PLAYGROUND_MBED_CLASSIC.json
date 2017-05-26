@@ -18,7 +18,7 @@
     "cpu_opts":"-mcpu=cortex-m0plus -mthumb",
     "asm_flags":"-fno-exceptions -fno-unwind-tables --specs=nosys.specs",
     "c_flags":"-std=c99 --specs=nosys.specs",
-    "cpp_flags":"-fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
+    "cpp_flags":"-std=c++11 -fwrapv -fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
     "linker_flags":"-Wl,-wrap,main",
     "pre_build":"",
     "post_build":"",

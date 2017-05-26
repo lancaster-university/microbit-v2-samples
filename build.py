@@ -15,13 +15,13 @@ os.chdir("build")
 
 if platform.system() == "Windows":
     # configure
-    os.system("cmake .. -G \"Ninja\"")
+    os.system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
 
     # build
     os.system("ninja")
 else:
     # configure
-    os.system("cmake .. -G \"Unix Makefiles\"")
+    os.system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
 
     if options.clean:
         os.system("make clean")
