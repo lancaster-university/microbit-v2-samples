@@ -7,6 +7,8 @@ find_program(ARM_NONE_EABI_OBJCOPY arm-none-eabi-objcopy)
 set(CMAKE_OSX_SYSROOT "/")
 set(CMAKE_OSX_DEPLOYMENT_TARGET "")
 
+set(CODAL_TOOLCHAIN "ARM_GCC")
+
 set(LIB_DEST "libraries")
 
 if(CMAKE_VERSION VERSION_LESS "3.5.0")

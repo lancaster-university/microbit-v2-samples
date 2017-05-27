@@ -6,7 +6,9 @@ include(utils/cmake/toolchains/arm-gcc.cmake)
 # required to force settings...
 project(codal)
 
+# a define for cmake if statements to detect if within the CODAL build environment
 set(CODAL_BUILD_SYSTEM TRUE)
+# a define specificying common utils used in codal
 set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
 
 # include additional cmake
