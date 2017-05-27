@@ -99,6 +99,15 @@ for folder in valid_libs:
     header_folder = "./build/" + folder
     header_ext = "includes"
 
+    with open(folder_path + "CMakeLists.txt") as cmake:
+
+        "target_link_libraries\((?:\s*(.+))+\s*\)"
+
+        for line in cmake.lines():
+            if "target_link_libraries" in line
+
+
+
     # get the repo
     try:
         repo = git.Repo('../libraries/' + folder)
