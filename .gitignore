@@ -10,3 +10,4 @@ Makefile
 *.DS_Store
 .vscode
 *.uf2
+*.bin
