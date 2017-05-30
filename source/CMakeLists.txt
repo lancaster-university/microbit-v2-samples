@@ -30,6 +30,7 @@ set(YOTTA_AUTO_CODAL_CPP_FILES
     "device/SAMD21/SAMD21DMAC.cpp"
     "device/SAMD21/SAMD21DAC.cpp"
     "device/SAMD21/SAMD21PDM.cpp"
+    "device/SAMD21/adafruit_ptc.cpp"
 
     "drivers/DynamicPwm.cpp"
     "drivers/AbstractButton.cpp"
