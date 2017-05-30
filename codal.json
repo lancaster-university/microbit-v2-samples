@@ -6,10 +6,7 @@
         "manufacturer":"ATMEL"
     },
     "definitions":{
-        "SCHEDULER_TICK_PERIOD_US":5000,
-        "POOP":10,
-        "TEST":"HELLO",
-        "RET123":"STRING"
+        "SCHEDULER_TICK_PERIOD_US":6000
     },
     "post_process":"python ./utils/uf2conv.py -o <OUTPUT_HEX_DESTINATION>/<OUTPUT_HEX_NAME>.uf2 -c <OUTPUT_BIN_LOCATION>",
     "application":"application",
