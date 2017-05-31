@@ -30,9 +30,15 @@ DEALINGS IN THE SOFTWARE.
  */
 
 #include "DeviceConfig.h"
+#include "CodalDevice.h"
+#include "CodalDmesg.h"
 #include "CapTouchButton.h"
 #include "DeviceSystemTimer.h"
 #include "EventModel.h"
+
+static bool clock_initialized;
+
+#define CAP_TOUCH_BUTTON_UPDATE_NEEDED 0x4242
 
 /**
  * Constructor.
@@ -42,18 +48,58 @@ DEALINGS IN THE SOFTWARE.
  * @param pin The physical pin on the device to sense.
  * @param sensor The touch sensor driver for this touch sensitive pin.
  */
-CapTouchButton::CapTouchButton(DevicePin &pin, TouchSensor &sensor, int threshold) : DeviceButton(pin, pin.id, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW, PullNone), touchSensor(sensor)
+CapTouchButton::CapTouchButton(DevicePin &pin, int threshold)
+    : DeviceButton(pin, pin.id, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW, PullNone)
 {
     // Disable periodic events. These will come from our TouchSensor.
     this->threshold = threshold;
     this->reading = 0;
 
-    // register ourselves with the sensor
-    touchSensor.addCapTouchButton(this);
+    if (!clock_initialized)
+    {
+        /* Setup and enable generic clock source for PTC module. */
+        struct system_gclk_chan_config gclk_chan_conf;
+        system_gclk_chan_get_config_defaults(&gclk_chan_conf);
+        gclk_chan_conf.source_generator = GCLK_GENERATOR_3;
+        system_gclk_chan_set_config(PTC_GCLK_ID, &gclk_chan_conf);
+        system_gclk_chan_enable(PTC_GCLK_ID);
+        system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_PTC);
+
+        // Generate an event every CAP_TOUCH_BUTTON_SAMPLE_PERIOD milliseconds.
+        system_timer_event_every_us(CAP_TOUCH_BUTTON_SAMPLE_PERIOD * 1000, DEVICE_ID_TOUCH_SENSOR,
+                                    CAP_TOUCH_BUTTON_UPDATE_NEEDED);
+    }
+
+    adafruit_ptc_get_config_default(&config);
+    config.pin = pin.name;
+    if (PA02 <= pin.name && pin.name <= PA07)
+        config.yline = pin.name - 2;
+    else if (PB02 <= pin.name && pin.name <= PB09)
+        config.yline = (pin.name - 32) + 6;
+    else
+        device.panic(0);
+
+    adafruit_ptc_init(PTC, &config);
 
     // Perform a calibraiton if necessary
     if (threshold < 0)
         calibrate();
+
+    // Configure a periodic callback event.
+    EventModel::defaultEventBus->listen(DEVICE_ID_TOUCH_SENSOR, CAP_TOUCH_BUTTON_UPDATE_NEEDED,
+                                        this, &CapTouchButton::update,
+                                        MESSAGE_BUS_LISTENER_IMMEDIATE);
+}
+
+void CapTouchButton::update(DeviceEvent)
+{
+    adafruit_ptc_start_conversion(PTC, &config);
+
+    // this takes around 300 cycles - any context switch would be way more
+    while (!adafruit_ptc_is_conversion_finished(PTC))
+        ;
+
+    this->setValue(adafruit_ptc_get_conversion_result(PTC));
 }
 
 /**
@@ -62,7 +108,7 @@ CapTouchButton::CapTouchButton(DevicePin &pin, TouchSensor &sensor, int threshol
  */
 int CapTouchButton::buttonActive()
 {
-    if (status & TOUCH_BUTTON_CALIBRATING)
+    if (status & CAP_TOUCH_BUTTON_CALIBRATING)
         return 0;
 
     return reading >= threshold;
@@ -75,16 +121,17 @@ void CapTouchButton::calibrate()
 {
     // indicate that we're entering a calibration phase.
     // We reuse the threshold variable to track calibration progress, just to save a little memory.
-    this->reading = TOUCH_BUTTON_CALIBRATION_PERIOD;
+    this->reading = CAP_TOUCH_BUTTON_CALIBRATION_PERIOD;
     threshold = 0;
-    status |= TOUCH_BUTTON_CALIBRATING;
+    status |= CAP_TOUCH_BUTTON_CALIBRATING;
 }
 
 /**
- * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater than this value will
+ * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater
+ * than this value will
  * be interpreted as a touch. See getValue().
  *
- * @param threshold The threshold value to use for this touchButton. 
+ * @param threshold The threshold value to use for this touchButton.
  */
 void CapTouchButton::setThreshold(int threshold)
 {
@@ -106,7 +153,7 @@ int CapTouchButton::getValue()
  */
 void CapTouchButton::setValue(int reading)
 {
-    if (status & TOUCH_BUTTON_CALIBRATING)
+    if (status & CAP_TOUCH_BUTTON_CALIBRATING)
     {
         // Record the highest value measured. This is our baseline.
         this->threshold = max(this->threshold, reading);
@@ -115,8 +162,12 @@ void CapTouchButton::setValue(int reading)
         // We've completed calibration, returnt to normal mode of operation.
         if (this->reading == 0)
         {
-            this->threshold += ((this->threshold * 5) / 100) + TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET;
-            status &= ~TOUCH_BUTTON_CALIBRATING;
+            int t0 = this->threshold;
+            this->threshold +=
+                ((this->threshold * CAP_TOUCH_BUTTON_CALIBRATION_PERCENTAGE_OFFSET) / 100) +
+                CAP_TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET;
+            DMESG("CapTouch Calibrated id=%d threshold=%d (max %d)", this->id, this->threshold, t0);
+            status &= ~CAP_TOUCH_BUTTON_CALIBRATING;
         }
 
         return;
@@ -126,12 +177,11 @@ void CapTouchButton::setValue(int reading)
     this->reading = reading;
 }
 
-
 /**
-  * Destructor for CapTouchButton, where we deregister this touch button with our sensor...
+  * Destructor for CapTouchButton, where we deregister our callback
   */
 CapTouchButton::~CapTouchButton()
 {
-    touchSensor.removeCapTouchButton(this);
+    EventModel::defaultEventBus->ignore(DEVICE_ID_TOUCH_SENSOR, CAP_TOUCH_BUTTON_UPDATE_NEEDED,
+                                        this, &CapTouchButton::update);
 }
-

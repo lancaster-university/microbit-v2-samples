@@ -31,6 +31,19 @@ DEALINGS IN THE SOFTWARE.
 #include "DeviceComponent.h"
 #include "DeviceEvent.h"
 #include "DevicePin.h"
+#include "adafruit_ptc.h"
+
+
+// Constants associated with TouchButton
+#define CAP_TOUCH_BUTTON_CALIBRATION_PERIOD                     10          // Number of samples taken during calibraiton phase.
+#define CAP_TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET              100           // Constant value added to sensed baseline to determine threshold.
+#define CAP_TOUCH_BUTTON_CALIBRATION_PERCENTAGE_OFFSET          30           // Proportion (percentage) of baseline reading added to sensed baseline to determine threshold.
+
+#define CAP_TOUCH_BUTTON_SAMPLE_PERIOD      50
+
+// Status flags associated with a touch sensor
+#define CAP_TOUCH_BUTTON_CALIBRATING            0x10
+
 
 /**
   * Class definition for a CapTouchButtonButton.
@@ -44,6 +57,8 @@ class CapTouchButton : public DeviceButton
     int             threshold;              // The calibration threshold of this button
     int             reading;                // The last sample taken of this button.
     bool            active;                 // true if this button is currnelty being sensed, false otherwise.
+
+    struct adafruit_ptc_config config;
 
 
     /**
@@ -78,21 +93,26 @@ class CapTouchButton : public DeviceButton
     int getValue();
 
     /**
-     * Updates the record of the last reading from this button.
-     */
-    void setValue(int reading);
-
-    /**
      * Determines if this button is instantenously active (i.e. pressed).
      * Internal method, use before debouncing.
      */
     int buttonActive();
 
     /**
-      * Destructor for DeviceButton, where we deregister this instance from the array of fiber components.
+      * Destructor for CapTouchButton, where we deregister our callback
       */
     ~CapTouchButton();
 
+private:
+    /**
+      * Sample capacity and store in 'reading' field
+      */
+    void update(DeviceEvent);
+
+    /**
+     * Updates the record of the last reading from this button.
+     */
+    void setValue(int reading);
 };
 
 #endif
