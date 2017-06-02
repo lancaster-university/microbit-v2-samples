@@ -20,8 +20,9 @@
     "c_flags":"-std=c99 --specs=nosys.specs",
     "cpp_flags":"-std=c++11 -fwrapv -fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
     "linker_flags":"-Wl,-wrap,main",
-    "pre_build":"",
-    "post_build":"",
+    "post_process":"python ./utils/uf2conv.py -o <OUTPUT_HEX_DESTINATION>/<OUTPUT_HEX_NAME>.uf2 -c <OUTPUT_BIN_LOCATION>",
+    "generate_bin":true,
+    "generate_hex":true,
     "target":{
         "name":"codal-samd21-mbed",
         "url":"https://github.com/lancaster-university/codal-samd21-mbed",

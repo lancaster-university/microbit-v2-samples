@@ -8,7 +8,6 @@
     "definitions":{
         "SCHEDULER_TICK_PERIOD_US":6000
     },
-    "post_process":"python ./utils/uf2conv.py -o <OUTPUT_HEX_DESTINATION>/<OUTPUT_HEX_NAME>.uf2 -c <OUTPUT_BIN_LOCATION>",
     "application":"application",
     "output_folder":"."
 }
