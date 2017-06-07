@@ -9,8 +9,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "")
 
 set(CODAL_TOOLCHAIN "ARM_GCC")
 
-set(LIB_DEST "libraries")
-
 if(CMAKE_VERSION VERSION_LESS "3.5.0")
     include(CMakeForceCompiler)
     cmake_force_c_compiler("${ARM_NONE_EABI_GCC}" GNU)
@@ -31,8 +29,7 @@ set(CMAKE_C_CREATE_SHARED_LIBRARY "echo 'shared libraries not supported' && 1")
 set(CMAKE_C_CREATE_SHARED_MODULE  "echo 'shared modules not supported' && 1")
 set(CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
 set(CMAKE_C_COMPILE_OBJECT        "<CMAKE_C_COMPILER> <DEFINES> ${EXPLICIT_INCLUDES}<FLAGS> -o <OBJECT> -c <SOURCE>")
-# <LINK_LIBRARIES> is grouped with system libraries so that system library
-# functions (e.g. malloc) can be overridden by symbols in <LINK_LIBRARIES>
+
 set(CMAKE_C_LINK_EXECUTABLE       "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lm -lc -lgcc -lm -lc -lgcc -Wl,--end-group --specs=nano.specs -o <TARGET>")
 
 set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
@@ -55,8 +52,6 @@ set(CMAKE_INCLUDE_SYSTEM_FLAG_ASM  "-isystem ")
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
 
-# <LINK_LIBRARIES> is grouped with system libraries so that system library
-# functions (e.g. malloc) can be overridden by symbols in <LINK_LIBRARIES>
 set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lnosys -lstdc++ -lsupc++ -lm -lc -lgcc -lstdc++ -lsupc++ -lm -lc -lgcc -Wl,--end-group  --specs=nano.specs -o <TARGET>")
 
 set(CMAKE_CXX_FLAGS_DEBUG_INIT          "-g -gdwarf-3")

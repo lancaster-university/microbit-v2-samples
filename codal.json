@@ -1,10 +1,5 @@
 {
-    "target":{
-        "processor":"SAMD21G18A",
-        "device":"CIRCUIT_PLAYGROUND",
-        "platform":"MBED_CLASSIC",
-        "manufacturer":"ATMEL"
-    },
+    "target":"SAMD21G18A_CIRCUIT_PLAYGROUND_MBED_CLASSIC.json",
     "definitions":{
         "SCHEDULER_TICK_PERIOD_US":6000
     },

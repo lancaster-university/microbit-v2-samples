@@ -1,45 +1,22 @@
 cmake_minimum_required(VERSION 3.3)
 
-# required to force settings...
-project(codal)
-
-SET(TOOLCHAIN arm-gcc)
-SET(TOOLCHAIN_FOLDER "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/arm-gcc")
-
-# include toolchain file
-include(${TOOLCHAIN_FOLDER}/toolchain.cmake)
-
-# a define for cmake if statements to detect if within the CODAL build environment
-set(CODAL_BUILD_SYSTEM TRUE)
-# a define specificying common utils used in codal
-set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
-
 # include additional cmake
 include(utils/cmake/JSONParser.cmake)
 include(utils/cmake/util.cmake)
 include(utils/cmake/colours.cmake)
 
-file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
-
-# configure output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/build")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
-
 #read our config file...
-file(READ "${PROJECT_SOURCE_DIR}/codal.json" codal_json)
+file(READ "./codal.json" codal_json)
 sbeParseJson(codal codal_json)
 
-if("${codal.target.platform}" STRGREATER "")
-    message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built on ${codal.target.platform}. ${ColourReset}")
-    file(READ "${PROJECT_SOURCE_DIR}/targets/${codal.target.processor}_${codal.target.device}_${codal.target.platform}.json" device_json)
-else()
-    message("${BoldBlue}Targeting ${codal.target.device} which is a ${codal.target.processor}, built natively. ${ColourReset}")
-    file(READ "${PROJECT_SOURCE_DIR}/targets/${codal.target.processor}_${codal.target.device}.json" device_json)
+if(NOT "${codal.target}" STRGREATER "")
+    exit("${BoldRed}INVALID TARGET.${ColourReset}")
 endif()
 
-sbeParseJson(device device_json)
+file(READ "./targets/${codal.target}" device_json)
+message("${BoldBlue}Targeting ${codal.target}${ColourReset}")
 
-message("${EXPLICIT_INCLUDES}")
+sbeParseJson(device device_json)
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
@@ -49,33 +26,46 @@ endif()
 
 SET(CODAL_DEFINITIONS "")
 
-#extract any definitions specified in the codal.json definitions object, and add them
 foreach(var ${codal})
 
-    #if it is not prefixed by codal.definitions, do not consider the key.
-    if(NOT "${var}" MATCHES "codal\.definitions\.")
+    # extract any cmd line definitions specified in the codal.json object, and add them
+    # if it is not prefixed by codal.definitions, do not consider the key.
+    if("${var}" MATCHES "codal\.definitions\.")
+        string(REGEX MATCH "[^codal\.definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_DEFINITION "${var}")
+
+        #check if string or number
+        if(${${var}} MATCHES "[0-9]+")
+            set(CODAL_DEFINITION_VALUE "${${var}}")
+        else()
+            set(CODAL_DEFINITION_VALUE "\"${${var}}\"")
+        endif()
+
+        set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define ${CODAL_DEFINITION}\t ${CODAL_DEFINITION_VALUE}\n")
+    endif()
+endforeach()
+
+#extract any CMAKE definitions specified in the target.json object, and add set as native cmake vars
+foreach(var ${device})
+    #if it is not prefixed by codal.cmake_definitions, do not consider the key.
+    if(NOT "${var}" MATCHES "device\.cmake_definitions\.")
         continue()
     endif()
 
-    string(REGEX MATCH "[^codal\.definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_DEFINITION "${var}")
+    string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
 
-    #check if string or number
-    if(${${var}} MATCHES "[0-9]+")
-        set(CODAL_DEFINITION_VALUE "${${var}}")
-    else()
-        set(CODAL_DEFINITION_VALUE "\"${${var}}\"")
-    endif()
-
-    set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define ${CODAL_DEFINITION}\t ${CODAL_DEFINITION_VALUE}\n")
+    set(${CODAL_CMAKE_DEFINITION} "${${var}}")
 endforeach()
 
-# create a header file from the definitions specified in JSON
-if("${CODAL_DEFINITIONS}" STRGREATER "")
-    set(EXTRA_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions.h")
-    file(WRITE "${EXTRA_INCLUDES_PATH}" ${CODAL_DEFINITIONS})
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
-endif()
+####################
+
+SET(TOOLCHAIN arm-gcc)
+SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
+
+# include toolchain file
+include(${TOOLCHAIN_FOLDER}/toolchain.cmake)
+
+# required to force TOOLCHAIN settings...
+project(codal)
 
 ####################
 # optional JSON flags for compilation + assembly
@@ -112,15 +102,27 @@ if("${device.linker_flags}" STRGREATER "")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device.linker_flags}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${device.linker_flags}")
 endif()
-####################
 
-# Define any cmake variables the user has requested
-if("${device.cmake_definitions}" STRGREATER "")
-    set(CMAKE_DEFS ${device.cmake_definitions})
-    foreach(i ${CMAKE_DEFS})
-        set(${device.cmake_definitions_${i}.variable} "${device.cmake_definitions_${i}.value}")
-    endforeach()
+set(LIB_DEST "libraries")
+
+# create a header file from the definitions specified in JSON
+if("${CODAL_DEFINITIONS}" STRGREATER "")
+    set(EXTRA_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions.h")
+    file(WRITE "${EXTRA_INCLUDES_PATH}" ${CODAL_DEFINITIONS})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
 endif()
+
+# a define for cmake if statements to detect if within the CODAL build environment
+set(CODAL_BUILD_SYSTEM TRUE)
+# a define specificying common utils used in codal
+set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
+
+file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
+
+# configure output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/build")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
 # this variable is used in the linking step of the final binary.
 set(LIB_FOLDERS "")
