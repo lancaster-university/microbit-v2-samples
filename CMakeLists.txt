@@ -18,11 +18,25 @@ message("${BoldBlue}Targeting ${codal.target}${ColourReset}")
 
 sbeParseJson(device device_json)
 
-#define any additional symbols specified by the target.
-if("${device.definitions}" STRGREATER "")
-    add_definitions("${device.definitions}")
-endif()
+####################
 
+SET(TOOLCHAIN arm-gcc)
+SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
+
+# include toolchain file
+include(${TOOLCHAIN_FOLDER}/toolchain.cmake)
+
+# required to force TOOLCHAIN settings...
+project(codal)
+
+# include compiler flags overrides
+include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
+
+file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
+
+# configure output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/build")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
 SET(CODAL_DEFINITIONS "")
 
@@ -53,19 +67,13 @@ foreach(var ${device})
 
     string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
 
-    set(${CODAL_CMAKE_DEFINITION} "${${var}}")
+    set(${CODAL_CMAKE_DEFINITION} ${${var}})
 endforeach()
 
-####################
-
-SET(TOOLCHAIN arm-gcc)
-SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
-
-# include toolchain file
-include(${TOOLCHAIN_FOLDER}/toolchain.cmake)
-
-# required to force TOOLCHAIN settings...
-project(codal)
+#define any additional symbols specified by the target.
+if("${device.definitions}" STRGREATER "")
+    add_definitions("${device.definitions}")
+endif()
 
 ####################
 # optional JSON flags for compilation + assembly
@@ -94,7 +102,7 @@ endif()
 # cpp
 if("${device.cpp_flags}" STRGREATER "")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${device.cpp_flags}")
-    set(CMAKE_CXX_LINK_FLAGS " ${device.cpp_flags}")
+    set(CMAKE_CXX_LINK_FLAGS "${device.cpp_flags}")
 endif()
 
 # linker opts
@@ -115,14 +123,9 @@ endif()
 
 # a define for cmake if statements to detect if within the CODAL build environment
 set(CODAL_BUILD_SYSTEM TRUE)
+
 # a define specificying common utils used in codal
 set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
-
-file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
-
-# configure output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/build")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
 # this variable is used in the linking step of the final binary.
 set(LIB_FOLDERS "")
