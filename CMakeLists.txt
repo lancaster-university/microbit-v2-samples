@@ -222,3 +222,15 @@ if("${device.post_process}" STRGREATER "")
         COMMENT "Executing post process command"
     )
 endif()
+
+#
+# Supress unecessary (and often inaccurate) validity check of the toolchain
+#
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
+#
+# Supress the addition of implicit linker flags (such as -rdynamic)
+#
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
