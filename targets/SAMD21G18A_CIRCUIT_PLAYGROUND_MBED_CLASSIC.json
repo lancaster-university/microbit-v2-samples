@@ -15,7 +15,7 @@
     "asm_flags":"-fno-exceptions -fno-unwind-tables --specs=nosys.specs",
     "c_flags":"-std=c99 --specs=nosys.specs",
     "cpp_flags":"-std=c++11 -fwrapv -fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
-    "linker_flags":"-Wl,-wrap,main",
+    "linker_flags":"-Wl,--no-wchar-size-warning,-wrap,main",
     "target":{
         "name":"codal-samd21-mbed",
         "url":"https://github.com/lancaster-university/codal-samd21-mbed",
