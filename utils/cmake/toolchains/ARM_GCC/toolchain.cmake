@@ -16,6 +16,7 @@ if(CMAKE_VERSION VERSION_LESS "3.5.0")
 else()
     # from 3.5 the force_compiler macro is deprecated: CMake can detect
     # arm-none-eabi-gcc as being a GNU compiler automatically
+	set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
     set(CMAKE_C_COMPILER "${ARM_NONE_EABI_GCC}")
     set(CMAKE_CXX_COMPILER "${ARM_NONE_EABI_GPP}")
 endif()

@@ -24,7 +24,7 @@ SET(TOOLCHAIN arm-gcc)
 SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
 
 # include toolchain file
-include(${TOOLCHAIN_FOLDER}/toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake")
 
 # required to force TOOLCHAIN settings...
 project(codal)
