@@ -1,0 +1,8 @@
+{
+    "target":"SAMD21G18A_CIRCUIT_PLAYGROUND_MBED_CLASSIC.json",
+    "definitions":{
+        "SCHEDULER_TICK_PERIOD_US":6000
+    },
+    "application":"application",
+    "output_folder":"."
+}
