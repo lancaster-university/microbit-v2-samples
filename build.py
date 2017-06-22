@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 import optparse
 import platform
 
@@ -14,18 +15,22 @@ if not os.path.exists("build"):
 # out of source build!
 os.chdir("build")
 
+def system(cmd):
+    if os.system(cmd) != 0:
+      sys.exit(1)
+
 if platform.system() == "Windows":
     # configure
-    os.system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
+    system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
 
     # build
-    os.system("ninja")
+    system("ninja")
 else:
     # configure
-    os.system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
+    system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
 
     if options.clean:
-        os.system("make clean")
+        system("make clean")
 
     # build
-    os.system("make -j 10")
+    system("make -j 10")
