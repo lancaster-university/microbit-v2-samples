@@ -11,3 +11,5 @@ Makefile
 .vscode
 *.uf2
 *.bin
+pxtapp
+buildcache.json
