@@ -176,7 +176,7 @@ add_executable(
 )
 
 if("${INCLUDE_DIRS}" STRGREATER "")
-    target_include_directories(${device.device} "${INCLUDE_DIRS}")
+    target_include_directories(${device.device} PUBLIC "${INCLUDE_DIRS}")
 endif()
 
 
