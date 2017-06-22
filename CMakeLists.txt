@@ -47,12 +47,8 @@ foreach(var ${codal})
     if("${var}" MATCHES "codal\.definitions\.")
         string(REGEX MATCH "[^codal\.definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_DEFINITION "${var}")
 
-        #check if string or number
-        if(${${var}} MATCHES "[0-9]+")
-            set(CODAL_DEFINITION_VALUE "${${var}}")
-        else()
-            set(CODAL_DEFINITION_VALUE "\"${${var}}\"")
-        endif()
+        # never quote the value - gives more flexibility
+        set(CODAL_DEFINITION_VALUE "${${var}}")
 
         set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define ${CODAL_DEFINITION}\t ${CODAL_DEFINITION_VALUE}\n")
     endif()
