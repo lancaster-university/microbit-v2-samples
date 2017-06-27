@@ -82,7 +82,7 @@ if("${device.cpu_opts}" STRGREATER "")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device.cpu_opts}")
 endif()
 
-set(_C_FAMILY_FLAGS_INIT "-fno-exceptions -fno-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra")
+set(_C_FAMILY_FLAGS_INIT "-fno-exceptions -fno-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-parameter")
 
 # asm
 if("${device.asm_flags}" STRGREATER "")
@@ -91,13 +91,13 @@ endif()
 
 # c
 if("${device.c_flags}" STRGREATER "")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${device.c_flags}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device.c_flags}")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} ${device.c_flags}")
 endif()
 
 # cpp
 if("${device.cpp_flags}" STRGREATER "")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${device.cpp_flags}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device.cpp_flags}")
     set(CMAKE_CXX_LINK_FLAGS "${device.cpp_flags}")
 endif()
 
