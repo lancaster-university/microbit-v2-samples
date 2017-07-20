@@ -141,6 +141,10 @@ INSTALL_DEPENDENCY(${LIB_DEST} ${device.target.name} ${device.target.url} ${devi
 message("${BoldMagenta}Set target: ${device.target.name} ${ColourReset}")
 list(APPEND CODAL_DEPS ${device.target.name})
 
+# Add the root of the libraries folder as a search path. Useful for disambiguating header files with duplicated names.
+MESSAGE (STATUS "Adding library path: (${PROJECT_SOURCE_DIR}/${LIB_DEST})")
+include_directories(${PROJECT_SOURCE_DIR}/${LIB_DEST})
+
 # "import" and add any specified libraries to the build list
 if("${device.libraries}" STRGREATER "")
     message("Installing dependencies...")
@@ -174,7 +178,6 @@ add_executable(
 if("${INCLUDE_DIRS}" STRGREATER "")
     target_include_directories(${device.device} PUBLIC "${INCLUDE_DIRS}")
 endif()
-
 
 set_target_properties(${device.device} PROPERTIES SUFFIX "" ENABLE_EXPORTS ON)
 
