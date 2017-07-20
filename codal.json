@@ -1,5 +1,5 @@
 {
-    "target":"SAMD21G18A_CIRCUIT_PLAYGROUND_MBED_CLASSIC.json",
+    "target":"ATMEGA328P_ARDUINO_UNO.json",
     "definitions":{
         "SCHEDULER_TICK_PERIOD_US":6000
     },
