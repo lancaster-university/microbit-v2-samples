@@ -5,6 +5,13 @@ include(utils/cmake/JSONParser.cmake)
 include(utils/cmake/util.cmake)
 include(utils/cmake/colours.cmake)
 
+#
+# Supress unecessary (and often inaccurate) validity check of the toolchain
+#
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
+
 #read our config file...
 file(READ "./codal.json" codal_json)
 sbeParseJson(codal codal_json)
@@ -32,6 +39,7 @@ enable_language(ASM)
 
 # include compiler flags overrides
 include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
+set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${device.toolchain}")
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
@@ -41,30 +49,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
 SET(CODAL_DEFINITIONS "")
 
-foreach(var ${codal})
-
-    # extract any cmd line definitions specified in the codal.json object, and add them
-    # if it is not prefixed by codal.definitions, do not consider the key.
-    if("${var}" MATCHES "codal\.definitions\.")
-        string(REGEX MATCH "[^codal\.definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_DEFINITION "${var}")
-
-        # never quote the value - gives more flexibility
-        set(CODAL_DEFINITION_VALUE "${${var}}")
-
-        set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define ${CODAL_DEFINITION}\t ${CODAL_DEFINITION_VALUE}\n")
-    endif()
-endforeach()
+EXTRACT_JSON_ARRAY(codal "codal\.config\." CODAL_FIELDS CODAL_VALUES)
+EXTRACT_JSON_ARRAY(device "device\.config\." DEVICE_FIELDS DEVICE_VALUES)
+UNIQUE_JSON_KEYS(CODAL_FIELDS CODAL_VALUES DEVICE_FIELDS DEVICE_VALUES FINAL_FIELDS FINAL_VALUES)
+FORM_DEFINITIONS(FINAL_FIELDS FINAL_VALUES CODAL_DEFINITIONS)
 
 #extract any CMAKE definitions specified in the target.json object, and add set as native cmake vars
-foreach(var ${device})
-    #if it is not prefixed by codal.cmake_definitions, do not consider the key.
-    if(NOT "${var}" MATCHES "device\.cmake_definitions\.")
-        continue()
-    endif()
+EXTRACT_JSON_ARRAY(device "device\.cmake_definitions\." CMAKE_FIELDS CMAKE_VALUES)
 
-    string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
+list(LENGTH CMAKE_FIELDS LEN)
+MATH(EXPR LEN "${LEN}-1")
 
-    set(${CODAL_CMAKE_DEFINITION} ${${var}})
+foreach(i RANGE ${LEN})
+    list(GET CMAKE_FIELDS ${i} CMAKE_DEF)
+    list(GET CMAKE_VALUES ${i} CMAKE_VAL)
+
+    set(${CMAKE_DEF} ${CMAKE_VAL})
 endforeach()
 
 #define any additional symbols specified by the target.
@@ -117,6 +117,9 @@ if("${CODAL_DEFINITIONS}" STRGREATER "")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -imacros ${EXTRA_INCLUDES_PATH}")
 endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${PLATFORM_INCLUDES_PATH}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PLATFORM_INCLUDES_PATH}")
 
 # a define for cmake if statements to detect if within the CODAL build environment
 set(CODAL_BUILD_SYSTEM TRUE)
@@ -222,12 +225,6 @@ if("${device.post_process}" STRGREATER "")
         COMMENT "Executing post process command"
     )
 endif()
-
-#
-# Supress unecessary (and often inaccurate) validity check of the toolchain
-#
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER_WORKS 1)
 
 #
 # Supress the addition of implicit linker flags (such as -rdynamic)

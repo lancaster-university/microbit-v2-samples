@@ -1,7 +1,9 @@
 {
-    "target":"ATMEGA328P_ARDUINO_UNO.json",
-    "definitions":{
-        "SCHEDULER_TICK_PERIOD_US":6000
+    "target":"CIRCUIT_PLAYGROUND.json",
+    "config":{
+        "SCHEDULER_TICK_PERIOD_US":4000,
+        "DMESG_SERIAL_DEBUG":1,
+        "CODAL_DEBUG":0
     },
     "application":"application",
     "output_folder":"."

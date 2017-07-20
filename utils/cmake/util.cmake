@@ -31,6 +31,75 @@ MACRO(SOURCE_FILES return_list dir)
     SET(${return_list} ${dir_list})
 ENDMACRO()
 
+function(EXTRACT_JSON_ARRAY json_file json_field_path fields values)
+
+    set(VALUES "")
+    set(FIELDS "")
+
+    foreach(var ${${json_file}})
+        # extract any cmd line definitions specified in the json object, and add them
+        # if it is not prefixed by json_field_path, do not consider the key.
+        if("${var}" MATCHES "${json_field_path}")
+            string(REGEX MATCH "[^${json_field_path}]([A-Z,a-z,0-9,_,]+)" VALUE "${var}")
+
+            # never quote the value - gives more flexibility
+            list(APPEND FIELDS ${VALUE})
+            list(APPEND VALUES "${${var}}")
+        endif()
+    endforeach()
+
+    set(${fields} ${FIELDS} PARENT_SCOPE)
+    set(${values} ${VALUES} PARENT_SCOPE)
+endfunction()
+
+function(FORM_DEFINITIONS fields values definitions)
+
+    set(DEFINITIONS "")
+    list(LENGTH ${fields} LEN)
+
+    # - 1 for for loop index...
+    MATH(EXPR LEN "${LEN}-1")
+
+    foreach(i RANGE ${LEN})
+        list(GET ${fields} ${i} DEFINITION)
+        list(GET ${values} ${i} VALUE)
+
+        set(DEFINITIONS "${DEFINITIONS} #define ${DEFINITION}\t ${VALUE}\n")
+    endforeach()
+
+    set(${definitions} ${DEFINITIONS} PARENT_SCOPE)
+endfunction()
+
+function(UNIQUE_JSON_KEYS priority_fields priority_values secondary_fields secondary_values merged_fields merged_values)
+
+    # always keep the first fields and values
+    set(MERGED_FIELDS ${${priority_fields}})
+    set(MERGED_VALUES ${${priority_values}})
+
+    # measure the second set...
+    list(LENGTH ${secondary_fields} LEN)
+    # - 1 for for loop index...
+    MATH(EXPR LEN "${LEN}-1")
+
+    # iterate, dropping any duplicate fields regardless of the value
+    foreach(i RANGE ${LEN})
+        list(GET ${secondary_fields} ${i} FIELD)
+        list(GET ${secondary_values} ${i} VALUE)
+
+        list(FIND MERGED_FIELDS ${FIELD} INDEX)
+
+        if (${INDEX} GREATER -1)
+            continue()
+        endif()
+
+        list(APPEND MERGED_FIELDS ${FIELD})
+        list(APPEND MERGED_VALUES ${VALUE})
+    endforeach()
+
+    set(${merged_fields} ${MERGED_FIELDS} PARENT_SCOPE)
+    set(${merged_values} ${MERGED_VALUES} PARENT_SCOPE)
+endfunction()
+
 MACRO(HEADER_FILES return_list dir)
     FILE(GLOB new_list "${dir}/*.h")
     SET(${return_list} ${new_list})
