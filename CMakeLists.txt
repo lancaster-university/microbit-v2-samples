@@ -20,7 +20,7 @@ sbeParseJson(device device_json)
 
 ####################
 
-SET(TOOLCHAIN arm-gcc)
+SET(TOOLCHAIN ${device.toolchain})
 SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
 
 # include toolchain file
@@ -28,6 +28,7 @@ set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake")
 
 # required to force TOOLCHAIN settings...
 project(codal)
+enable_language(ASM)
 
 # include compiler flags overrides
 include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
