@@ -15,15 +15,13 @@ if(CMAKE_VERSION VERSION_LESS "3.5.0")
     cmake_force_c_compiler("${AVR_GCC}" GNU)
     cmake_force_cxx_compiler("${AVR_GPP}" GNU)
 else()
-    #-Wl,-flto -flto -fno-fat-lto-objects 
+    #-Wl,-flto -flto -fno-fat-lto-objects
     # from 3.5 the force_compiler macro is deprecated: CMake can detect
     # arm-none-eabi-gcc as being a GNU compiler automatically
 	set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
     set(CMAKE_C_COMPILER "${AVR_GCC}")
     set(CMAKE_CXX_COMPILER "${AVR_GPP}")
 endif()
-
-message("RANLIB ${AVR_GCC_RANLIB}")
 
 SET(CMAKE_ASM_COMPILER "${AVR_GCC}")
 SET(CMAKE_AR "${AVR_AR}" CACHE FILEPATH "Archiver")
