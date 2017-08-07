@@ -1,16 +1,9 @@
-#include "CircuitPlayground.h"
+#include "ArduinoUno.h"
 
-CircuitPlayground cplay;
+ArduinoUno uno;
 
 int main()
 {
-    int status = 1;
-
     while(1)
-    {
-        cplay.io.led.setDigitalValue(status);
-        cplay.sleep(1000);
-
-        status = !status;
-    }
+        uno.sleep(0);
 }

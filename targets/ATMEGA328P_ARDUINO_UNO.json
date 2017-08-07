@@ -1,0 +1,28 @@
+{
+    "device":"ARDUINO_UNO",
+    "processor":"ATMEGA328P",
+    "architecture":"AVR",
+    "toolchain":"AVR_GCC",
+    "generate_bin":true,
+    "generate_hex":true,
+    "definitions":"",
+    "cpu_opts":"",
+    "asm_flags":"-x assembler-with-cpp -mmcu=atmega328p",
+    "c_flags":"-std=c99 -mmcu=atmega328p",
+    "cpp_flags":"-g -Os -Wall -ffunction-sections -fdata-sections  -mmcu=atmega328p -fno-exceptions -fpermissive -std=c++11 -fno-threadsafe-statics",
+    "linker_flags":"-Os -mmcu=atmega328p -Wl,--gc-sections -flto -fuse-linker-plugin -Wl,-flto",
+    "target":{
+        "name":"codal-atmega328p",
+        "url":"https://github.com/lancaster-university/codal-atmega328p",
+        "branch":"master",
+        "type":"git"
+    },
+    "libraries":[
+        {
+            "name":"codal-core",
+            "url":"https://github.com/lancaster-university/codal-core",
+            "branch":"atmega328p",
+            "type":"git"
+        }
+    ]
+}
