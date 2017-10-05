@@ -46,7 +46,7 @@
         {
             "name":"codal-core",
             "url":"https://github.com/lancaster-university/codal-core",
-            "branch":"atmega328p",
+            "branch":"master",
             "type":"git"
         }
     ]
