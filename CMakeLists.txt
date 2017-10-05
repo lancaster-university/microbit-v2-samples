@@ -54,18 +54,18 @@ EXTRACT_JSON_ARRAY(device "device\.config\." DEVICE_FIELDS DEVICE_VALUES)
 UNIQUE_JSON_KEYS(CODAL_FIELDS CODAL_VALUES DEVICE_FIELDS DEVICE_VALUES FINAL_FIELDS FINAL_VALUES)
 FORM_DEFINITIONS(FINAL_FIELDS FINAL_VALUES CODAL_DEFINITIONS)
 
-#extract any CMAKE definitions specified in the target.json object, and add set as native cmake vars
-EXTRACT_JSON_ARRAY(device "device\.cmake_definitions\." CMAKE_FIELDS CMAKE_VALUES)
+# extract any CMAKE definitions specified in the target.json object, and set as native cmake vars
+# cmake definitions require special handling as types are not safe in cmake, any semi-colon would need escaped, which would be ugly.
+foreach(var ${device})
+    #if it is not prefixed by codal.cmake_definitions, do not consider the key.		 +
+    if(NOT "${var}" MATCHES "device\.cmake_definitions\.")
+        continue()
+    endif()
 
-list(LENGTH CMAKE_FIELDS LEN)
-MATH(EXPR LEN "${LEN}-1")
+    string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
 
-foreach(i RANGE ${LEN})
-    list(GET CMAKE_FIELDS ${i} CMAKE_DEF)
-    list(GET CMAKE_VALUES ${i} CMAKE_VAL)
-
-    set(${CMAKE_DEF} ${CMAKE_VAL})
-endforeach()
+    set(${CODAL_CMAKE_DEFINITION} ${${var}})
+ endforeach()
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
