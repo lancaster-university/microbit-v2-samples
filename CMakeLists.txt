@@ -132,7 +132,7 @@ set(LIB_FOLDERS "")
 set(CODAL_DEPS "")
 
 if(NOT "${device.target.url}" STRGREATER "")
-    message("${BoldRed}Target not correctly specified, exiting.${ColourReset}")
+    message(FATAL_ERROR "${BoldRed}Target not correctly specified, exiting.${ColourReset}")
 endif()
 
 SET(CODAL_TARGET_NAME ${device.target.name})
@@ -173,6 +173,10 @@ endif()
 #finally, find sources and includes of the application, and create a target.
 RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${codal.application}" "*.h")
 RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.c??")
+
+if("${SOURCE_FILES}" STREQUAL "")
+    message(FATAL_ERROR "${BoldRed}No user application to build, please add a main.cpp at: ${PROJECT_SOURCE_DIR}/${codal.application}${ColourReset}")
+endif()
 
 add_executable(
     ${device.device}
