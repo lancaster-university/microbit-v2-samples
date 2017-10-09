@@ -9,5 +9,6 @@
 #include <stdarg.h>
 #include <math.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>
 
 #endif
