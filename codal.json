@@ -1,9 +1,7 @@
 {
     "target":"CIRCUIT_PLAYGROUND.json",
     "config":{
-        "SCHEDULER_TICK_PERIOD_US":4000,
-        "DMESG_SERIAL_DEBUG":1,
-        "CODAL_DEBUG":0
+        "DMESG_SERIAL_DEBUG":1
     },
     "application":"application",
     "output_folder":"."
