@@ -8,11 +8,11 @@
     "post_process":"python ./utils/uf2conv.py -b 0 -o <OUTPUT_HEX_DESTINATION>/<OUTPUT_HEX_NAME>.uf2 -c <OUTPUT_BIN_LOCATION>",
     "config":{
         "F_CPU":"16000000L",
-        "DEVICE_SRAM_BASE":2048,
+        "DEVICE_SRAM_BASE":"RAMEND",
         "DEVICE_SRAM_END":"RAMEND - 2048",
         "DEVICE_STACK_BASE":"DEVICE_SRAM_BASE",
         "AVR_STACK_BASE":"DEVICE_SRAM_BASE",
-        "DEVICE_STACK_SIZE":128,
+        "DEVICE_STACK_SIZE":1024,
         "TARGET_DEBUG_CLASS":"NOT_IMPLEMENTED",
         "DEVICE_HEAP_ALLOCATOR":1,
         "DEVICE_HEAP_BLOCK_SIZE":4,
@@ -26,7 +26,7 @@
         "DEVICE_DEFAULT_PULLMODE":"PullMode::None",
         "DEVICE_PANIC_HEAP_FULL":1,
         "DEVICE_DMESG_BUFFER_SIZE":256,
-        "CODAL_DEBUG":"CODAL_DEBUG_HEAP",
+        "CODAL_DEBUG":0,
         "DEVICE_USB":0,
         "PROCESSOR_WORD_TYPE":"uint16_t"
     },
