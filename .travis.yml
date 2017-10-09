@@ -1,0 +1,10 @@
+language: python
+python:
+  - "2.7"
+before_install:
+  - sudo apt-get update -qq
+install:
+  - sudo apt-get install -qq gcc-avr binutils-avr avr-libc
+  - sudo apt-get install -y gcc-arm-none-eabi
+script:
+  - python build.py --test-platforms
