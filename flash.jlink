@@ -1,3 +1,0 @@
-speed 4000
-erase
-loadbin CIRCUIT_PLAYGROUND.hex 0
