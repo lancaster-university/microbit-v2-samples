@@ -1,4 +1,10 @@
 language: python
+addons:
+    apt:
+      packages:
+        - cmake
+      sources:
+        - kalakris-cmake
 python:
   - "2.7"
 before_install:
