@@ -8,6 +8,8 @@ addons:
 python:
   - "2.7"
 install:
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - sudo apt-get install -qq gcc-avr binutils-avr avr-libc
   - sudo apt-get install -y gcc-arm-none-eabi
   ############################################################################
@@ -21,7 +23,8 @@ install:
     else
       brew install cmake
     fi
-
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
 script:
   - python build.py -t
 notifications:
