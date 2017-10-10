@@ -14,8 +14,7 @@ install:
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       AVR_PCKG = "http://www.wrightflyer.co.uk/?z"
-      mkdir AVR && travis_retry wget --no-check-certificate --quiet -O - ${AVR_PCKG} | sudo dpkg -i "AVR"
-      ls ${DEPS_DIR}/AVR/
+      mkdir AVR && travis_retry wget --no-check-certificate --quiet -O - ${AVR_PCKG} | sudo dpkg -i "AVR" | ls ${DEPS_DIR}/AVR/
       export PATH=${DEPS_DIR}/AVR/bin:${PATH}
     fi
   - sudo apt-get install -y gcc-arm-none-eabi
