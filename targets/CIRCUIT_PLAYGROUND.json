@@ -65,8 +65,8 @@
         },
         {
             "name":"codal-samd21",
-            "url":"https://github.com/lancaster-university/mbed-classic",
-            "branch":"new-build-system",
+            "url":"https://github.com/lancaster-university/codal-samd21",
+            "branch":"master",
             "type":"git"
         },
         {
