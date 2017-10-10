@@ -27,6 +27,7 @@ install:
     fi
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
+  - composer config github-oauth.github.com ${CI_TOKEN}
 script:
   - python build.py -t
 notifications:
