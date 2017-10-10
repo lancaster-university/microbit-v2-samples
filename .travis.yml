@@ -14,7 +14,7 @@ install:
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - sudo apt-get install -y gcc-avr binutils-avr avr-libc
   - sudo apt-get install -y gcc-arm-none-eabi
-  - sudo apt-get apt-get --only-upgrade gcc-avr binutils-avr avr-libc gcc-arm-none-eabi
+  - sudo apt-get install --only-upgrade gcc-avr binutils-avr avr-libc gcc-arm-none-eabi
   ############################################################################
   # Install a recent CMake
   ############################################################################
