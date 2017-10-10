@@ -1,4 +1,4 @@
-language: python
+language: cpp
 os: osx
 before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
