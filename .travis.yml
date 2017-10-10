@@ -5,7 +5,8 @@ python:
   - "2.7"
 before_install:
   - docker pull coolya/gcc-avr
-  - docker run coolya/gcc-avr
+  - docker run -d coolya/gcc-avr /bin/sh
+  - docker ps -a
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
