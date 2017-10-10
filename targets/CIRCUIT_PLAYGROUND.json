@@ -45,8 +45,8 @@
     "cpp_flags":"-std=c++11 -fwrapv -fno-rtti -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment",
     "linker_flags":"-Wl,--no-wchar-size-warning,-wrap,main",
     "target":{
-        "name":"codal-samd21-mbed",
-        "url":"https://github.com/lancaster-university/codal-samd21-mbed",
+        "name":"codal-circuit-playground",
+        "url":"https://github.com/lancaster-university/codal-circuit-playground",
         "branch":"master",
         "type":"git"
     },
@@ -59,6 +59,12 @@
         },
         {
             "name":"mbed-classic",
+            "url":"https://github.com/lancaster-university/mbed-classic",
+            "branch":"new-build-system",
+            "type":"git"
+        },
+        {
+            "name":"codal-samd21",
             "url":"https://github.com/lancaster-university/mbed-classic",
             "branch":"new-build-system",
             "type":"git"
