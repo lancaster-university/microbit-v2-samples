@@ -37,12 +37,18 @@
     "cpp_flags":"-g -Os -Wall -ffunction-sections -fdata-sections  -mmcu=atmega328p -fno-exceptions -fpermissive -std=c++11 -fno-threadsafe-statics",
     "linker_flags":"-Os -mmcu=atmega328p -Wl,--gc-sections -flto -fuse-linker-plugin -Wl,-flto",
     "target":{
-        "name":"codal-atmega328p",
-        "url":"https://github.com/lancaster-university/codal-atmega328p",
+        "name":"codal-arduino-uno",
+        "url":"https://github.com/lancaster-university/codal-arduino-uno",
         "branch":"master",
         "type":"git"
     },
     "libraries":[
+        {
+            "name":"codal-atmega328p",
+            "url":"https://github.com/lancaster-university/codal-atmega328p",
+            "branch":"master",
+            "type":"git"
+        },
         {
             "name":"codal-core",
             "url":"https://github.com/lancaster-university/codal-core",
