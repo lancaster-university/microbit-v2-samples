@@ -8,6 +8,7 @@ addons:
 python:
   - "2.7"
 before_install:
+  - sudo apt-get upgrade
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
