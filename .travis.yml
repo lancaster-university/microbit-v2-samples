@@ -4,7 +4,7 @@ before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
   - brew update
 install:
-  - brew install avr-binutils avr-gcc avr-libc arm-none-eabi-gcc cmake
+  - brew install osx-cross/avr/avr-binutils osx-cross/avr/avr-gcc avr-libc arm-none-eabi-gcc cmake
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
 script:
