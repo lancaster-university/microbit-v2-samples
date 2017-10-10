@@ -12,7 +12,7 @@ before_install:
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-  - sudo apt-get install -qq gcc-avr binutils-avr avr-libc
+  - sudo apt-get install -y gcc-avr binutils-avr avr-libc
   - sudo apt-get install -y gcc-arm-none-eabi
   ############################################################################
   # Install a recent CMake
