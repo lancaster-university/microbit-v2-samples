@@ -2,6 +2,7 @@ language: cpp
 os: osx
 before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
+  - brew update
 install:
   - brew install avr-binutils avr-gcc avr-libc arm-none-eabi-gcc cmake
 before_script:
