@@ -4,7 +4,7 @@ services:
 python:
   - "2.7"
 before_install:
-  - docker build coolya/gcc-avr
+  - docker build -t coolya/gcc-avr .
   - docker run coolya/gcc-avr
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
 install:
