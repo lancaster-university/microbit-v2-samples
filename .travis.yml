@@ -15,7 +15,7 @@ install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       BIN_URL="https://www.archlinux.org/packages/community/x86_64/avr-binutils/download/"
-      mkdir avr-binutils && travis_retry wget --no-check-certificate --quiet -O - ${BIN_URL} | tar --strip-components=1 -xz -C avr-binutils
+      mkdir avr-binutils && travis_retry wget --no-check-certificate --quiet -O - ${BIN_URL} | tar --strip-components=1 -xJf -C avr-binutils
       export PATH=${DEPS_DIR}/avr-binutils/bin:${PATH}
     fi
   - sudo apt-get install -y gcc-avr avr-libc
