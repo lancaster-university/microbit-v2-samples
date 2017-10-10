@@ -1,34 +1,11 @@
 language: python
-addons:
-    apt:
-      packages:
-        - cmake
-      sources:
-        - kalakris-cmake
+os: osx
 python:
   - "2.7"
 before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
 install:
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      AVR_PCKG = "http://www.wrightflyer.co.uk/?z"
-      mkdir AVR && travis_retry wget --no-check-certificate --quiet -O - ${AVR_PCKG} | sudo dpkg -i "AVR" | ls ${DEPS_DIR}/AVR/
-      export PATH=${DEPS_DIR}/AVR/bin:${PATH}
-    fi
-  - sudo apt-get install -y gcc-arm-none-eabi
-  ############################################################################
-  # Install a recent CMake
-  ############################################################################
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      CMAKE_URL="http://www.cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz"
-      mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-    else
-      brew install cmake
-    fi
+  - brew install avr-binutils avr-gcc avr-libc arm-none-eabi-gcc cmake
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
 script:
