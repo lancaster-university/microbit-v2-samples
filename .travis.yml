@@ -3,8 +3,9 @@ python:
   - "2.7"
 before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
-  - docker build --name codal-build  --build-arg AUTH_TOKEN=$CI_TOKEN -t https://github.com/lancaster-university/codal-docker.git .
+  - docker build --build-arg AUTH_TOKEN=$CI_TOKEN -t codal-build https://github.com/lancaster-university/codal-docker.git .
+  - docker run -itd --name codal-running codal-build:latest /bin/bash
 script:
-  - docker run -it codal-build /bin/bash python build.py -t
+  - docker exec codal-running ls && python build.py -t
 notifications:
   email: false
