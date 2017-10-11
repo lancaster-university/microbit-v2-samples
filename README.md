@@ -4,14 +4,6 @@ The main repository for the Component Oriented Device Abstraction Layer (codal).
 
 This repository is an empty shell that provides the tooling needed to produce a hex file for a codal device.
 
-## Supported targets
-- Adafruit Circuitplayground (SAMD21G18A) - [codal-samd21-mbed](https://github.com/lancaster-university/codal-samd21-mbed) Provides mbed drivers & support layer for samd21 based devices.
-
-## Libraries:
-- [codal-core](https://github.com/lancaster-university/codal-core) - A collection of components that form the basis of the codal runtime.
-- [codal-mbed](https://github.com/lancaster-university/codal-mbed) - A collection of drivers that utilise mbed-classic.
-- [mbed-classic](https://github.com/lancaster-university/mbed-classic) - A platform that provides abstraction for a number of different platforms.
-
 ## Installation
 
 ### Automatic installation.
@@ -32,7 +24,6 @@ Then follow the build steps listed below.
     5. If on Windows, install ninja.
 4. Install `Python 2.7` (if you are unfamiliar with CMake), python scripts are used to simplify the build process.
 5. Clone this repository
-
 
 # Building
 - In the root of this repository type `python build.py` the `-c` option cleans before building.
