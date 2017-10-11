@@ -106,12 +106,12 @@ MACRO(HEADER_FILES return_list dir)
 ENDMACRO()
 
 function(INSTALL_DEPENDENCY dir name url branch type)
-    if(NOT EXISTS "./${dir}")
+    if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${dir}")
         message("Creating libraries folder")
-        FILE(MAKE_DIRECTORY "./${dir}")
+        FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${dir}")
     endif()
 
-    if(EXISTS "${PROJECT_SOURCE_DIR}/${dir}/${name}")
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}")
         message("${name} is already installed")
         return()
     endif()
@@ -123,12 +123,12 @@ function(INSTALL_DEPENDENCY dir name url branch type)
             message("Checking out branch: ${branch}")
             execute_process(
                 COMMAND git clone -b ${branch} ${url} ${name}
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
             )
         else()
             execute_process(
                 COMMAND git clone ${url} ${name}
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/${dir}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
             )
         endif()
     else()
