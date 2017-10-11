@@ -1,21 +1,10 @@
 language: python
-services:
-  - docker
 python:
   - "2.7"
 before_install:
-  - docker pull coolya/gcc-avr
-  - docker run -d coolya/gcc-avr /bin/sh
-  - docker ps -a
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
-install:
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-  - docker exec coolya/gcc-avr python ./build.py -t
-  - sudo apt-get install -y gcc-arm-none-eabi
-before_script:
-  - cd ${TRAVIS_BUILD_DIR}
+  - docker build --name codal-build  --build-arg AUTH_TOKEN=$CI_TOKEN -t https://github.com/lancaster-university/codal-docker.git .
 script:
-  - python build.py -t
+  - docker run -it codal-build /bin/bash python build.py -t
 notifications:
   email: false
