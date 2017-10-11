@@ -18,6 +18,12 @@ This repository is an empty shell that provides the tooling needed to produce a 
 
 This software has its grounding on the founding principles of [Yotta](https://www.mbed.com/en/platform/software/mbed-yotta/), the simplest install path would be to install their tools via their handy installer.
 
+### Docker
+
+A [docker image](https://hub.docker.com/r/jamesadevine/codal-toolchains/) is available that contains toolchains used to build codal targets. A wrapper [Dockerfile](https://github.com/lancaster-university/codal-docker) is available that can be used to build your project with ease.
+
+Then follow the build steps listed below.
+
 ### Manual installation
 
 1. Install `git`, ensure it is available on your platforms path.
@@ -26,8 +32,6 @@ This software has its grounding on the founding principles of [Yotta](https://ww
     5. If on Windows, install ninja.
 4. Install `Python 2.7` (if you are unfamiliar with CMake), python scripts are used to simplify the build process.
 5. Clone this repository
-
-
 
 
 # Building
@@ -45,3 +49,33 @@ This software has its grounding on the founding principles of [Yotta](https://ww
             4. `make`
 
 - The hex file will be placed at the location specified by `codal.json`, by default this is the root.
+
+# Targets
+
+## Arduino Uno
+
+This target specifies the arduino uno which is driven by an atmega328p.
+
+### codal.json specification
+```json
+"target":{
+        "name":"codal-arduino-uno",
+        "url":"https://github.com/lancaster-university/codal-arduino-uno",
+        "branch":"master",
+        "type":"git"
+}
+```
+
+## Circuit Playground
+
+This target specifies the circuit playground which is driven by a SAMD21.
+
+### codal.json specification
+```json
+"target":{
+        "name":"codal-arduino-uno",
+        "url":"https://github.com/lancaster-university/codal-arduino-uno",
+        "branch":"master",
+        "type":"git"
+}
+```
