@@ -44,15 +44,15 @@ if not options.test_platform:
     exit(0)
 
 
-tests_directory = "../tests/"
-
 test_json_file = ""
 
-with open(tests_directory + "targets.json") as f:
+with open("../targets.json") as f:
     test_json_file = f.read()
 test_json = json.loads(test_json_file)
 
 for fname in test_json.keys():
+
+    json_obj = test_json[fname]
 
     # ensure we have a clean build tree.
     os.chdir("..")
@@ -66,9 +66,9 @@ for fname in test_json.keys():
 
     # configure the target and tests...
     config = {
-        "target":test_json[fname],
+        "target":json_obj,
         "output":".",
-        "application":"tests/" + fname
+        "application":"libraries/"+json_obj["name"]+"tests/"
     }
 
     with open("../codal.json", 'w') as codal_json:
