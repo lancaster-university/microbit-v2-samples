@@ -38,6 +38,11 @@ SET(CODAL_OUTPUT_NAME ${device.device})
 SET(CODAL_TARGET_PROCESSOR ${device.processor})
 SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
 
+# if this is the first build, lets copy a sample main.cpp from the target if available.
+if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/${codal.application} AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/main.cpp)
+    FILE(COPY ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/main.cpp DESTINATION ${CMAKE_CURRENT_LIST_DIR}/${codal.application})
+endif()
+
 ####################
 
 SET(TOOLCHAIN ${device.toolchain})
