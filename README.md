@@ -71,7 +71,7 @@ For more targets, read the targets section below.
 
 ## Advanced
 
-If you would like to override or define any additional configuration options (`#define's`) that are used by the supporting libraries, the codal build allows the addition of a config field in `codal.json`:
+If you would like to override or define any additional configuration options (`#define's`) that are used by the supporting libraries, the codal build system allows the addition of a config field in `codal.json`:
 
 ```json
 {
@@ -89,7 +89,7 @@ If you would like to override or define any additional configuration options (`#
 }
 ```
 
-This the above example will be translated into: `#define NUMBER_ONE     1` and force included during compilation.
+The above example will be translate `"NUMBER_ONE":1` into: `#define NUMBER_ONE     1` and force include it during compilation.
 
 # Targets
 
