@@ -1,4 +1,4 @@
-# Codal
+# Codal [![Build Status](https://travis-ci.com/lancaster-university/codal.svg?token=npLd3GxcjQ1s3m7yiTdh&branch=master)](https://travis-ci.com/lancaster-university/codal)
 
 The main repository for the Component Oriented Device Abstraction Layer (codal).
 
