@@ -174,6 +174,9 @@ endif()
 RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${codal.application}" "*.h")
 RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.c??")
 
+RECURSIVE_FIND_FILE(S_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.s")
+list(APPEND SOURCE_FILES ${S_FILES})
+
 if("${SOURCE_FILES}" STREQUAL "")
     message(FATAL_ERROR "${BoldRed}No user application to build, please add a main.cpp at: ${PROJECT_SOURCE_DIR}/${codal.application}${ColourReset}")
 endif()
