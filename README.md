@@ -50,6 +50,47 @@ Then follow the build steps listed below.
 
 - The hex file will be placed at the location specified by `codal.json`, by default this is the root.
 
+# Configuration
+
+Below is an example of how to configure codal to build the codal-circuit-playground target against your app, which is contained in the folder `application`:
+
+```json
+{
+    "target":{
+        "name":"codal-circuit-playground",
+        "url":"https://github.com/lancaster-university/codal-circuit-playground",
+        "branch":"master",
+        "type":"git"
+    },
+    "application":"application",
+    "output_folder":"."
+}
+```
+
+For more targets, read the targets section below.
+
+## Advanced
+
+If you would like to override or define any additional configuration options (`#define's`) that are used by the supporting libraries, the codal build allows the addition of a config field in `codal.json`:
+
+```json
+{
+    "target":{
+        "name":"codal-circuit-playground",
+        "url":"https://github.com/lancaster-university/codal-circuit-playground",
+        "branch":"master",
+        "type":"git"
+    },
+    "config":{
+        "NUMBER_ONE":1
+    },
+    "application":"application",
+    "output_folder":"."
+}
+```
+
+This the above example will be translated into: `#define NUMBER_ONE     1` and force included during compilation.
+
 # Targets
 
 ## Arduino Uno
@@ -59,10 +100,10 @@ This target specifies the arduino uno which is driven by an atmega328p.
 ### codal.json specification
 ```json
 "target":{
-        "name":"codal-arduino-uno",
-        "url":"https://github.com/lancaster-university/codal-arduino-uno",
-        "branch":"master",
-        "type":"git"
+    "name":"codal-arduino-uno",
+    "url":"https://github.com/lancaster-university/codal-arduino-uno",
+    "branch":"master",
+    "type":"git"
 }
 ```
 
@@ -73,9 +114,9 @@ This target specifies the circuit playground which is driven by a SAMD21.
 ### codal.json specification
 ```json
 "target":{
-        "name":"codal-arduino-uno",
-        "url":"https://github.com/lancaster-university/codal-arduino-uno",
-        "branch":"master",
-        "type":"git"
+    "name":"codal-circuit-playground",
+    "url":"https://github.com/lancaster-university/codal-circuit-playground",
+    "branch":"master",
+    "type":"git"
 }
 ```
