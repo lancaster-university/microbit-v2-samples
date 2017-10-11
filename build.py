@@ -43,9 +43,16 @@ if not options.test_platform:
     build(options.clean)
     exit(0)
 
-print(platform)
 
-for target_fname in os.listdir("../targets"):
+tests_directory = "../tests/"
+
+test_json_file = ""
+
+with open(tests_directory + "targets.json") as f:
+    test_json_file = f.read()
+test_json = json.loads(test_json_file)
+
+for fname in test_json.keys():
 
     # ensure we have a clean build tree.
     os.chdir("..")
@@ -57,14 +64,11 @@ for target_fname in os.listdir("../targets"):
     if os.path.exists("../libraries"):
         shutil.rmtree('../libraries')
 
-    # remove extension
-    fname = target_fname.split(".")[0]
-
     # configure the target and tests...
     config = {
-        "target":target_fname,
+        "target":test_json[fname],
         "output":".",
-        "application":"travis_tests/" + fname
+        "application":"tests/" + fname
     }
 
     with open("../codal.json", 'w') as codal_json:
