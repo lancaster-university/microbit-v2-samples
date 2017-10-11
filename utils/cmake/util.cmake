@@ -106,9 +106,9 @@ MACRO(HEADER_FILES return_list dir)
 ENDMACRO()
 
 function(INSTALL_DEPENDENCY dir name url branch type)
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/${dir}")
+    if(NOT EXISTS "./${dir}")
         message("Creating libraries folder")
-        FILE(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/${dir}")
+        FILE(MAKE_DIRECTORY "./${dir}")
     endif()
 
     if(EXISTS "${PROJECT_SOURCE_DIR}/${dir}/${name}")

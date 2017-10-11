@@ -16,14 +16,27 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 file(READ "./codal.json" codal_json)
 sbeParseJson(codal codal_json)
 
-if(NOT "${codal.target}" STRGREATER "")
-    exit("${BoldRed}INVALID TARGET.${ColourReset}")
+if(NOT "${codal.target.name}" STRGREATER "")
+    message(FATAL_ERROR "${BoldRed}INVALID TARGET.${ColourReset}")
 endif()
 
-file(READ "./targets/${codal.target}" device_json)
-message("${BoldBlue}Targeting ${codal.target}${ColourReset}")
+set(CODAL_DEPS "")
+set(LIB_DEST "libraries")
+
+#install the target
+INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.target.branch} ${codal.target.type})
+message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
+list(APPEND CODAL_DEPS ${codal.target.name})
+
+file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
+message("${BoldBlue}Targeting ${codal.target.name}${ColourReset}")
 
 sbeParseJson(device device_json)
+
+SET(CODAL_TARGET_NAME ${device.target.name})
+SET(CODAL_OUTPUT_NAME ${device.device})
+SET(CODAL_TARGET_PROCESSOR ${device.processor})
+SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
 
 ####################
 
@@ -108,8 +121,6 @@ if("${device.linker_flags}" STRGREATER "")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${device.linker_flags}")
 endif()
 
-set(LIB_DEST "libraries")
-
 # create a header file from the definitions specified in JSON
 if("${CODAL_DEFINITIONS}" STRGREATER "")
     set(EXTRA_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions.h")
@@ -129,25 +140,14 @@ set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
 
 # this variable is used in the linking step of the final binary.
 set(LIB_FOLDERS "")
-set(CODAL_DEPS "")
-
-if(NOT "${device.target.url}" STRGREATER "")
-    message(FATAL_ERROR "${BoldRed}Target not correctly specified, exiting.${ColourReset}")
-endif()
-
-SET(CODAL_TARGET_NAME ${device.target.name})
-SET(CODAL_OUTPUT_NAME ${device.device})
-SET(CODAL_TARGET_PROCESSOR ${device.processor})
-SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
-
-#install the target
-INSTALL_DEPENDENCY(${LIB_DEST} ${device.target.name} ${device.target.url} ${device.target.branch} ${device.target.type})
-message("${BoldMagenta}Set target: ${device.target.name} ${ColourReset}")
-list(APPEND CODAL_DEPS ${device.target.name})
 
 # Add the root of the libraries folder as a search path. Useful for disambiguating header files with duplicated names.
 MESSAGE (STATUS "Adding library path: (${PROJECT_SOURCE_DIR}/${LIB_DEST})")
 include_directories(${PROJECT_SOURCE_DIR}/${LIB_DEST})
+
+message("DEPS ${CODAL_DEPS}")
+
+#add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
 
 # "import" and add any specified libraries to the build list
 if("${device.libraries}" STRGREATER "")
