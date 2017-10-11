@@ -46,7 +46,7 @@ if not options.test_platform:
 
 test_json_file = ""
 
-with open("../targets.json") as f:
+with open("../utils/targets.json") as f:
     test_json_file = f.read()
 test_json = json.loads(test_json_file)
 
