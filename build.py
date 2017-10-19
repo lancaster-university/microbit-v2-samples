@@ -80,6 +80,8 @@ def lock():
         system("git commit -am 'Target snapshot.'")
     sha = os.popen('git rev-parse HEAD').read().strip()
     print "\nNew snapshot: " + sha + "\n"
+    system("git pull")
+    system("git push")
     os.chdir(dirname)
     
 
