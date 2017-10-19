@@ -26,6 +26,7 @@ Then follow the build steps listed below.
 5. Clone this repository
 
 # Building
+- Create `codal.json` file, as explained in the Configuration section below
 - In the root of this repository type `python build.py` the `-c` option cleans before building.
     - If you are not using python:
         - Windows:
