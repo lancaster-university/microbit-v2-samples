@@ -51,6 +51,7 @@ def update():
     dirname = os.getcwd()
     for ln in target['libraries']:
         os.chdir(dirname + "/libraries/" + ln['name'])
+        system("git checkout " + ln['branch'])
         system("git pull")
     os.chdir(dirname + "/libraries/" + targetdir)
     system("git pull")
