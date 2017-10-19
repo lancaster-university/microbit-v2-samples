@@ -28,8 +28,9 @@ INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.
 message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
 list(APPEND CODAL_DEPS ${codal.target.name})
 
-if(NOT "${codal.target.locked}" STRGREATER "")
+if("${codal.target.locked}" STRGREATER "")
     file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
+    message("${BoldMagenta}Using target-locked.json ${ColourReset}")
 else()
     file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
 endif()
