@@ -28,7 +28,12 @@ INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.
 message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
 list(APPEND CODAL_DEPS ${codal.target.name})
 
-file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
+if(NOT "${codal.target.locked}" STRGREATER "")
+    file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
+else()
+    file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
+endif()
+
 message("${BoldBlue}Targeting ${codal.target.name}${ColourReset}")
 
 sbeParseJson(device device_json)
