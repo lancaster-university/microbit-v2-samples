@@ -151,6 +151,14 @@ if len(args) == 1:
     target_name = args[0]
     target_found = False
 
+    if target_name == "ls":
+        for json_obj in test_json:
+            print "%s: %s" % (json_obj["name"], json_obj["info"]),
+            if "device_url" in json_obj.keys():
+                print "(%s)" % json_obj["device_url"],
+            print ""
+        exit(0)
+
     # cycle through out targets and check for a match
     for json_obj in test_json:
         if json_obj["name"] != target_name:
