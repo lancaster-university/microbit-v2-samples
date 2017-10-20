@@ -44,7 +44,7 @@ Then follow the build steps listed below.
 
 # Configuration
 
-Below is an example of how to configure codal to build the codal-circuit-playground target against your app, which is contained in the folder `application`:
+Below is an example of how to configure codal to build the codal-circuit-playground target, example applications will automatically be loaded into the "source" folder:
 
 ```json
 {
@@ -53,9 +53,7 @@ Below is an example of how to configure codal to build the codal-circuit-playgro
         "url":"https://github.com/lancaster-university/codal-circuit-playground",
         "branch":"master",
         "type":"git"
-    },
-    "application":"application",
-    "output_folder":"."
+    }
 }
 ```
 
@@ -76,14 +74,28 @@ If you would like to override or define any additional configuration options (`#
     "config":{
         "NUMBER_ONE":1
     },
-    "application":"application",
+    "application":"source",
     "output_folder":"."
 }
 ```
 
-The above example will be translate `"NUMBER_ONE":1` into: `#define NUMBER_ONE     1` and force include it during compilation.
+The above example will be translate `"NUMBER_ONE":1` into: `#define NUMBER_ONE     1` and force include it during compilation. You can also specify alternate application or output folders.
 
 # Targets
+
+To obtain a full list of targets type:
+
+```
+python build.py ls
+```
+
+To generate the `codal.json` for a target listed by the ls command, please run:
+
+```
+python build.py <target-name>
+```
+
+Please note you may need to remove the libraries folder if your previous build relied on similar dependencies.
 
 ## Arduino Uno
 
