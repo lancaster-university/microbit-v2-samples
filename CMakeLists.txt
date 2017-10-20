@@ -16,6 +16,17 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 file(READ "./codal.json" codal_json)
 sbeParseJson(codal codal_json)
 
+set(CODAL_APP_OUTPUT_DIR ".")
+set(CODAL_APP_SOURCE_DIR "source")
+
+if("${codal.application}" STRGREATER "")
+    set(CODAL_APP_SOURCE_DIR "${codal.application}")
+endif()
+
+if("${codal.output_folder}" STRGREATER "")
+    set(CODAL_APP_OUTPUT_DIR "${codal.output_folder}")
+endif()
+
 if(NOT "${codal.target.name}" STRGREATER "")
     message(FATAL_ERROR "${BoldRed}INVALID TARGET.${ColourReset}")
 endif()
@@ -46,8 +57,8 @@ SET(CODAL_TARGET_PROCESSOR ${device.processor})
 SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
 
 # if this is the first build, lets copy a sample main.cpp from the target if available.
-if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/${codal.application} AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/main.cpp)
-    FILE(COPY ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/main.cpp DESTINATION ${CMAKE_CURRENT_LIST_DIR}/${codal.application})
+if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CODAL_APP_SOURCE_DIR} AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/example-application)
+    FILE(COPY ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/example-application/ DESTINATION ${CMAKE_CURRENT_LIST_DIR}/${CODAL_APP_SOURCE_DIR})
 endif()
 
 ####################
@@ -157,8 +168,6 @@ set(LIB_FOLDERS "")
 MESSAGE (STATUS "Adding library path: (${PROJECT_SOURCE_DIR}/${LIB_DEST})")
 include_directories(${PROJECT_SOURCE_DIR}/${LIB_DEST})
 
-message("DEPS ${CODAL_DEPS}")
-
 #add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
 
 # "import" and add any specified libraries to the build list
@@ -183,14 +192,14 @@ if("${device.libraries}" STRGREATER "")
 endif()
 
 #finally, find sources and includes of the application, and create a target.
-RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${codal.application}" "*.h")
-RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.c??")
+RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${CODAL_APP_SOURCE_DIR}" "*.h")
+RECURSIVE_FIND_FILE(SOURCE_FILES "${PROJECT_SOURCE_DIR}/${CODAL_APP_SOURCE_DIR}" "*.c??")
 
-RECURSIVE_FIND_FILE(S_FILES "${PROJECT_SOURCE_DIR}/${codal.application}" "*.s")
+RECURSIVE_FIND_FILE(S_FILES "${PROJECT_SOURCE_DIR}/${CODAL_APP_SOURCE_DIR}" "*.s")
 list(APPEND SOURCE_FILES ${S_FILES})
 
 if("${SOURCE_FILES}" STREQUAL "")
-    message(FATAL_ERROR "${BoldRed}No user application to build, please add a main.cpp at: ${PROJECT_SOURCE_DIR}/${codal.application}${ColourReset}")
+    message(FATAL_ERROR "${BoldRed}No user application to build, please add a main.cpp at: ${PROJECT_SOURCE_DIR}/${CODAL_APP_SOURCE_DIR}${ColourReset}")
 endif()
 
 add_executable(
@@ -224,12 +233,12 @@ endif()
 if("${device.post_process}" STRGREATER "")
 
     # replace specific strings in the command, this gives users flexibility, they don't have to manually specify the location of files
-    string(REPLACE "<OUTPUT_HEX_LOCATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.hex  CODAL_POSTPROCESS_COMMAND ${device.post_process})
-    string(REPLACE "<OUTPUT_HEX_DESTINATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    string(REPLACE "<OUTPUT_HEX_LOCATION>" ${PROJECT_SOURCE_DIR}/${CODAL_APP_OUTPUT_DIR}/${device.device}.hex  CODAL_POSTPROCESS_COMMAND ${device.post_process})
+    string(REPLACE "<OUTPUT_HEX_DESTINATION>" ${PROJECT_SOURCE_DIR}/${CODAL_APP_OUTPUT_DIR} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
     string(REPLACE "<OUTPUT_HEX_NAME>" ${device.device} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
 
-    string(REPLACE "<OUTPUT_BIN_LOCATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder}/${device.device}.bin  CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
-    string(REPLACE "<OUTPUT_BIN_DESTINATION>" ${PROJECT_SOURCE_DIR}/${codal.output_folder} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    string(REPLACE "<OUTPUT_BIN_LOCATION>" ${PROJECT_SOURCE_DIR}/${CODAL_APP_OUTPUT_DIR}/${device.device}.bin  CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
+    string(REPLACE "<OUTPUT_BIN_DESTINATION>" ${PROJECT_SOURCE_DIR}/${CODAL_APP_OUTPUT_DIR} CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
     string(REPLACE "<OUTPUT_BIN_NAME>" ${device.device}.bin CODAL_POSTPROCESS_COMMAND ${CODAL_POSTPROCESS_COMMAND})
 
     #convert to a command
