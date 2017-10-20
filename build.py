@@ -164,13 +164,16 @@ if len(args) == 1:
         if json_obj["name"] != target_name:
             continue
 
-        config = {
-            "target":json_obj,
-        }
+        del json_obj["device_url"]
+        del json_obj["info"]
 
         # developer mode is for users who wish to contribute, it will clone and checkout commitable branches.
         if options.dev:
-            config["dev"] = True
+            json_obj["dev"] = True
+
+        config = {
+            "target":json_obj,
+        }
 
         with open("../codal.json", 'w') as codal_json:
             json.dump(config, codal_json, indent=4)
@@ -182,7 +185,7 @@ if len(args) == 1:
         break
 
     if not target_found:
-        print("No target specified")
+        print("'" + target_name + "'"+" is not a valid target.")
         exit(1)
 elif len(args) > 1:
     print("Too many arguments supplied, only one target can be specified.")
