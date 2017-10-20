@@ -19,7 +19,7 @@ Then follow the build steps listed below.
 ### Manual installation
 
 1. Install `git`, ensure it is available on your platforms path.
-2. Install the `arm-none-eabi-*` command line utilities, ensure it is available on your platforms path.
+2. Install the `arm-none-eabi-*` command line utilities for ARM based devices and/or `avr-gcc`, `avr-binutils`, `avr-libc` for AVR based devices, ensure they are available on your platforms path.
 3. Install [CMake](https://cmake.org)(Cross platform make), this is the entirety of the build system.
     5. If on Windows, install ninja.
 4. Install `Python 2.7` (if you are unfamiliar with CMake), python scripts are used to simplify the build process.
