@@ -118,17 +118,17 @@ function(INSTALL_DEPENDENCY dir name url branch type)
 
     if(${type} STREQUAL "git")
         message("Cloning into: ${url}")
+	    # git clone -b doesn't work with SHAs
+        execute_process(
+            COMMAND git clone ${url} ${name}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
+        )
 
         if(NOT "${branch}" STREQUAL "")
             message("Checking out branch: ${branch}")
             execute_process(
-                COMMAND git clone -b ${branch} ${url} ${name}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
-            )
-        else()
-            execute_process(
-                COMMAND git clone ${url} ${name}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
+                COMMAND git checkout ${branch}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
         endif()
     else()
