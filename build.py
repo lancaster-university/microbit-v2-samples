@@ -46,7 +46,7 @@ def read_config():
     targetdir = codal['target']['name']
     target = read_json("libraries/" + targetdir + "/target.json")
     return (codal, targetdir, target)
-    
+
 def update():
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
@@ -77,9 +77,9 @@ def get_next_version():
     else:
         v2 += 1
     return "v%d.%d.%d" % (v0, v1, v2)
-        
 
- 
+
+
 def lock():
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
@@ -109,7 +109,7 @@ def lock():
     system("git push --tags")
     os.chdir(dirname)
     print "\nNew snapshot: %s [%s]" % (ver, sha)
-    
+
 
 parser = optparse.OptionParser()
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -143,9 +143,7 @@ if not options.test_platform:
 
 test_json = read_json("../utils/targets.json")
 
-for fname in test_json.keys():
-
-    json_obj = test_json[fname]
+for json_obj in test_json:
 
     # ensure we have a clean build tree.
     os.chdir("..")
@@ -168,4 +166,3 @@ for fname in test_json.keys():
         json.dump(config, codal_json)
 
     build(True)
-

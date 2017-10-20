@@ -1,14 +1,14 @@
-{
-    "ARDUINO_UNO": {
+[
+    {
         "name":"codal-arduino-uno",
         "url":"https://github.com/lancaster-university/codal-arduino-uno",
         "branch":"master",
         "type":"git"
     },
-    "CIRCUIT_PLAYGROUND":{
+    {
         "name":"codal-circuit-playground",
         "url":"https://github.com/lancaster-university/codal-circuit-playground",
         "branch":"master",
         "type":"git"
     }
-}
+]
