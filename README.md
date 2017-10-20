@@ -26,7 +26,9 @@ Then follow the build steps listed below.
 5. Clone this repository
 
 # Building
-- Create `codal.json` file, as explained in the Configuration section below
+- Generate or create a `codal.json` file
+    - `python build.py ls` lists all available targets
+    - `python build.py <target-name>` generates a codal.json file for a given target
 - In the root of this repository type `python build.py` the `-c` option cleans before building.
     - If you are not using python:
         - Windows:
