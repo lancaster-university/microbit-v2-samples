@@ -127,7 +127,7 @@ function(INSTALL_DEPENDENCY dir name url branch type)
         if(NOT "${branch}" STREQUAL "")
             message("Checking out branch: ${branch}")
             execute_process(
-                COMMAND git checkout ${branch}
+                COMMAND git -c advice.detachedHead=false checkout ${branch}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
         endif()
