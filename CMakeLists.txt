@@ -28,11 +28,12 @@ INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.
 message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
 list(APPEND CODAL_DEPS ${codal.target.name})
 
-if("${codal.target.locked}" STRGREATER "")
-    file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
-    message("${BoldMagenta}Using target-locked.json ${ColourReset}")
-else()
+if("${codal.target.dev}" STRGREATER "")
     file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
+    message("${BoldMagenta}Using target.json (dev version) ${ColourReset}")
+else()
+    file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
+    message("Using target-locked.json")
 endif()
 
 message("${BoldBlue}Targeting ${codal.target.name}${ColourReset}")
