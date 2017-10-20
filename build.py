@@ -78,8 +78,6 @@ def get_next_version():
         v2 += 1
     return "v%d.%d.%d" % (v0, v1, v2)
 
-
-
 def lock():
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
@@ -110,6 +108,15 @@ def lock():
     os.chdir(dirname)
     print "\nNew snapshot: %s [%s]" % (ver, sha)
 
+def delete_build_folder(in_folder = True):
+    if in_folder:
+        os.chdir("..")
+
+    shutil.rmtree('./build')
+    os.mkdir("./build")
+
+    if in_folder:
+        os.chdir("./build")
 
 parser = optparse.OptionParser()
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -118,6 +125,7 @@ parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help=
 parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
+parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 
 (options, args) = parser.parse_args()
 
@@ -135,21 +143,56 @@ if options.update:
 # out of source build!
 os.chdir("build")
 
+test_json = read_json("../utils/targets.json")
 
+# configure the target a user has specified:
+if len(args) == 1:
+
+    target_name = args[0]
+    target_found = False
+
+    # cycle through out targets and check for a match
+    for json_obj in test_json:
+        if json_obj["name"] != target_name:
+            continue
+
+        config = {
+            "target":json_obj,
+        }
+
+        # developer mode is for users who wish to contribute, it will clone and checkout commitable branches.
+        if options.dev:
+            config["dev"] = True
+
+        with open("../codal.json", 'w') as codal_json:
+            json.dump(config, codal_json, indent=4)
+
+        target_found = True
+
+        # remove the build folder, a user could be swapping targets.
+        delete_build_folder()
+        break
+
+    if not target_found:
+        print("No target specified")
+        exit(1)
+elif len(args) > 1:
+    print("Too many arguments supplied, only one target can be specified.")
+    exit(1)
 
 if not options.test_platform:
+
+    if not os.path.exists("../codal.json"):
+        print("No target specified in codal.json, does codal.json exist?")
+        exit(1)
+
     build(options.clean)
     exit(0)
-
-test_json = read_json("../utils/targets.json")
 
 for json_obj in test_json:
 
     # ensure we have a clean build tree.
-    os.chdir("..")
-    shutil.rmtree('./build')
-    os.mkdir("./build")
-    os.chdir("./build")
+    delete_build_folder()
 
     # clean libs
     if os.path.exists("../libraries"):
@@ -159,10 +202,10 @@ for json_obj in test_json:
     config = {
         "target":json_obj,
         "output":".",
-        "application":"libraries/"+json_obj["name"]+"tests/"
+        "application":"libraries/"+json_obj["name"]+"/tests/"
     }
 
     with open("../codal.json", 'w') as codal_json:
-        json.dump(config, codal_json)
+        json.dump(config, codal_json, indent=4)
 
     build(True)
