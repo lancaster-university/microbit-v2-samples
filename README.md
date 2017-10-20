@@ -1,8 +1,8 @@
 # Codal [![Build Status](https://travis-ci.com/lancaster-university/codal.svg?token=npLd3GxcjQ1s3m7yiTdh&branch=master)](https://travis-ci.com/lancaster-university/codal)
 
-The main repository for the Component Oriented Device Abstraction Layer (codal).
+The main repository for the Component Oriented Device Abstraction Layer (CODAL).
 
-This repository is an empty shell that provides the tooling needed to produce a hex file for a codal device.
+This repository is an empty shell that provides the tooling needed to produce a bin/hex/uf2 file for a CODAL device.
 
 ## Installation
 
