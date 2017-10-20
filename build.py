@@ -5,6 +5,7 @@ import optparse
 import platform
 import json
 import shutil
+import re
 
 
 def system(cmd):
@@ -57,6 +58,28 @@ def update():
     system("git pull")
     os.chdir(dirname)
 
+def get_next_version():
+    log = os.popen('git log -n 100').read().strip()
+    m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)', log)
+    if m is None:
+        print "Cannot determine next version from git log"
+        exit(1)
+    v0 = int(m.group(1))
+    v1 = int(m.group(2))
+    v2 = int(m.group(3))
+    if options.update_major:
+        v0 += 1
+        v1 = 0
+        v2 = 0
+    elif options.update_minor:
+        v1 += 1
+        v2 = 0
+    else:
+        v2 += 1
+    return "v%d.%d.%d" % (v0, v1, v2)
+        
+
+ 
 def lock():
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
@@ -71,25 +94,29 @@ def lock():
         ln['branch'] = sha
         print ln['name'], sha
     os.chdir(dirname + "/libraries/" + targetdir)
+    ver = get_next_version()
+    print "Creating snaphot", ver
     system("git checkout target-locked.json")
     checkgit()
+    target["snapshot_version"] = ver
     with open("target-locked.json", "w") as f:
-        f.write(json.dumps(target, indent=4))
-    if os.popen('git status --porcelain').read().strip() == "":
-        print "Was already locked here."
-    else:
-        system("git commit -am 'Target snapshot.'")
+        f.write(json.dumps(target, indent=4, sort_keys=True))
+    system("git commit -am 'Snapshot %s'" % ver)  # must match get_next_version() regex
     sha = os.popen('git rev-parse HEAD').read().strip()
-    print "\nNew snapshot: " + sha + "\n"
+    system("git tag %s" % ver)
     system("git pull")
     system("git push")
+    system("git push --tags")
     os.chdir(dirname)
+    print "\nNew snapshot: %s [%s]" % (ver, sha)
     
 
 parser = optparse.OptionParser()
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-t', '--test-platforms', dest='test_platform', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
-parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json', default=False)
+parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json, updating patch version', default=False)
+parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
+parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
 
 (options, args) = parser.parse_args()
