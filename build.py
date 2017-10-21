@@ -81,6 +81,21 @@ def update():
     system("git pull")
     os.chdir(dirname)
 
+def printstatus():
+    print "\n***%s" % os.getcwd()
+    system("git status -s")
+
+def status():
+    (codal, targetdir, target) = read_config()
+    dirname = os.getcwd()
+    for ln in target['libraries']:
+        os.chdir(dirname + "/libraries/" + ln['name'])
+        printstatus()
+    os.chdir(dirname + "/libraries/" + targetdir)
+    printstatus()
+    os.chdir(dirname)
+    printstatus()
+
 def get_next_version():
     log = os.popen('git log -n 100').read().strip()
     m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)', log)
@@ -148,6 +163,7 @@ parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help=
 parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
+parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 
 (options, args) = parser.parse_args()
@@ -161,6 +177,10 @@ if options.lock_target:
 
 if options.update:
     update()
+    exit(0)
+
+if options.status:
+    status()
     exit(0)
 
 # out of source build!
