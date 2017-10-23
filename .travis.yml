@@ -9,5 +9,8 @@ script:
   - docker exec codal-running python build.py -t
 notifications:
   email:
+    recipients:
+      - j.devine@lancaster.ac.uk
+      - j.finney@lancaster.ac.uk
     on_success: never
     on_failure: always

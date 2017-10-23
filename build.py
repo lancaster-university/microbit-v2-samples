@@ -156,7 +156,7 @@ def delete_build_folder(in_folder = True):
     if in_folder:
         os.chdir("./build")
 
-parser = optparse.OptionParser()
+parser = optparse.OptionParser(usage="usage: %prog target-name [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-t', '--test-platforms', dest='test_platform', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json, updating patch version', default=False)
