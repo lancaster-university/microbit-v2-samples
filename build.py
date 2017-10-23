@@ -137,7 +137,7 @@ def lock():
     target["snapshot_version"] = ver
     with open("target-locked.json", "w") as f:
         f.write(json.dumps(target, indent=4, sort_keys=True))
-    system("git commit -am 'Snapshot %s'" % ver)  # must match get_next_version() regex
+    system("git commit -am \"Snapshot %s\"" % ver)  # must match get_next_version() regex
     sha = os.popen('git rev-parse HEAD').read().strip()
     system("git tag %s" % ver)
     system("git pull")
