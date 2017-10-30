@@ -65,7 +65,7 @@ if("${codal.target.dev}" STRGREATER "")
     message("${BoldMagenta}Using target.json (dev version) ${ColourReset}")
 else()
     file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
-    message("Using target-locked.json")
+    message("${BoldMagenta}Using target-locked.json${ColourReset}")
 endif()
 
 message("${BoldBlue}Targeting ${codal.target.name}${ColourReset}")
@@ -94,7 +94,7 @@ SET(TOOLCHAIN ${device.toolchain})
 SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
 
 # include toolchain file
-set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake")
+set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake" CACHE PATH "toolchain file")
 
 # required to force TOOLCHAIN settings...
 project(codal)
