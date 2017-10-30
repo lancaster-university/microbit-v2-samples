@@ -19,7 +19,7 @@ MACRO(RECURSIVE_FIND_FILE return_list dir pattern)
     SET(${return_list} ${dir_list})
 ENDMACRO()
 
-MACRO(FIND_FILE return_list dir pattern)
+MACRO(SOURCE_FILES return_list dir pattern)
     FILE(GLOB new_list "${dir}/${pattern}")
     SET(dir_list "")
     FOREACH(file_path ${new_list})
