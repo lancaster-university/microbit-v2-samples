@@ -194,6 +194,7 @@ if len(args) == 1:
     target_name = args[0]
     target_found = False
 
+    # list all targets
     if target_name == "ls":
         for json_obj in test_json:
             print "%s: %s" % (json_obj["name"], json_obj["info"]),
@@ -228,14 +229,14 @@ if len(args) == 1:
         break
 
     if not target_found:
-        print("'" + target_name + "'"+" is not a valid target.")
+        print("'" + target_name + "'" + " is not a valid target.")
         exit(1)
+
 elif len(args) > 1:
     print("Too many arguments supplied, only one target can be specified.")
     exit(1)
 
 if not options.test_platform:
-
     if not os.path.exists("../codal.json"):
         print("No target specified in codal.json, does codal.json exist?")
         exit(1)
