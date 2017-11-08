@@ -83,7 +83,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CODAL_APP_SOURCE_DIR} AND EXISTS ${CMA
 endif()
 
 #copy samples and remove main.cpp
-if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/samples)
+if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/samples AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/samples/)
     FILE(COPY ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/samples DESTINATION ${CMAKE_CURRENT_LIST_DIR})
     FILE(REMOVE ${CMAKE_CURRENT_LIST_DIR}/samples/main.cpp)
 endif()
