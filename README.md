@@ -117,6 +117,9 @@ This target specifies the arduino uno which is driven by an atmega328p.
     "type":"git"
 }
 ```
+This target uses
+* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
+* [codal-atmega328p](https://github.com/lancaster-university/codal-atmega328p) implements basic CODAL components (I2C, Pin, Serial, Timer)
 
 ## Circuit Playground
 
