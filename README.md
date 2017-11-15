@@ -58,11 +58,6 @@ Below is an example of how to configure codal to build the [codal-circuit-playgr
     }
 }
 ```
-In the above repo, you will find other repos used for this target:
-* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
-* [codal-mbed](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
-* [codal-samd21](https://github.com/lancaster-university/codal-samd21) implements SAMD21-specific components (such as USB)
-* [mbed-classic](https://github.com/lancaster-university/mbed-classic) is a fork of mbed, used by codal-mbed
 
 For more targets, read the targets section below.
 
@@ -117,7 +112,7 @@ This target specifies the arduino uno which is driven by an atmega328p.
     "type":"git"
 }
 ```
-This target uses
+This target depends on:
 * [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
 * [codal-atmega328p](https://github.com/lancaster-university/codal-atmega328p) implements basic CODAL components (I2C, Pin, Serial, Timer)
 
@@ -134,3 +129,8 @@ This target specifies the circuit playground which is driven by a SAMD21.
     "type":"git"
 }
 ```
+This target depends on:
+* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
+* [codal-mbed](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
+* [codal-samd21](https://github.com/lancaster-university/codal-samd21) implements SAMD21-specific components (such as USB)
+* [mbed-classic](https://github.com/lancaster-university/mbed-classic) is a fork of mbed, used by codal-mbed
