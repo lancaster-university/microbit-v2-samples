@@ -46,7 +46,7 @@ Then follow the build steps listed below.
 
 # Configuration
 
-Below is an example of how to configure codal to build the codal-circuit-playground target, example applications will automatically be loaded into the "source" folder:
+Below is an example of how to configure codal to build the [codal-circuit-playground](https://github.com/lancaster-university/codal-circuit-playground) target, example applications will automatically be loaded into the "source" folder:
 
 ```json
 {
@@ -58,6 +58,11 @@ Below is an example of how to configure codal to build the codal-circuit-playgro
     }
 }
 ```
+In the above repo, you will find other repos used for this target:
+* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
+* [codal-mbed](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
+* [codal-samd21](https://github.com/lancaster-university/codal-samd21) implements SAMD21-specific components (such as USB)
+* [mbed-classic](https://github.com/lancaster-university/mbed-classic) is a fork of mbed, used by codal-mbed
 
 For more targets, read the targets section below.
 
