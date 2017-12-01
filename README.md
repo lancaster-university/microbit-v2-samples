@@ -118,7 +118,7 @@ This target depends on:
 
 ## BrainPad
 
-This target specifies the circuit playground which is driven by a STM32f.
+This target specifies the BrainPad which is driven by a STM32F.
 
 ### codal.json specification
 ```json
