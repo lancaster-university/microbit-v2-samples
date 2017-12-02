@@ -22,5 +22,13 @@
         "url":"https://github.com/lancaster-university/codal-huzzah",
         "branch":"master",
         "type":"git"
+    },
+    {
+        "name":"codal-brainpad",
+        "info":"This target specifies the circuit playground which is driven by a STM32f.",
+        "device_url":"",
+        "url":"https://github.com/lancaster-university/codal-brainpad",
+        "branch":"master",
+        "type":"git"
     }
 ]

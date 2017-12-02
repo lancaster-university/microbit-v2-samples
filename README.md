@@ -116,6 +116,23 @@ This target depends on:
 * [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
 * [codal-atmega328p](https://github.com/lancaster-university/codal-atmega328p) implements basic CODAL components (I2C, Pin, Serial, Timer)
 
+## BrainPad
+
+This target specifies the BrainPad which is driven by a STM32F.
+
+### codal.json specification
+```json
+"target":{
+    "name":"codal-brainpad",
+    "url":"https://github.com/lancaster-university/codal-brainpad",
+    "branch":"master",
+    "type":"git"
+}
+```
+This target depends on:
+* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
+* [codal-mbedos](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
+
 ## Circuit Playground
 
 This target specifies the circuit playground which is driven by a SAMD21.
