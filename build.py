@@ -247,7 +247,7 @@ if not options.test_platform:
 for json_obj in test_json:
 
     # some platforms aren't supported by travis, ignore them when testing.
-    if json_obj.has_key("test_ignore"):
+    if "test_ignore" in json_obj:
         print "ignoring: " + json_obj["name"]
         continue
 
