@@ -246,6 +246,10 @@ if not options.test_platform:
 
 for json_obj in test_json:
 
+    # some platforms aren't supported by travis, ignore them when testing.
+    if json_obj["test_ignore"] == True:
+        continue
+
     # ensure we have a clean build tree.
     delete_build_folder()
 
