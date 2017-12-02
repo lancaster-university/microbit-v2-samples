@@ -14,5 +14,13 @@
         "url":"https://github.com/lancaster-university/codal-circuit-playground",
         "branch":"master",
         "type":"git"
+    },
+    {
+        "name":"codal-huzzah",
+        "info":"This target specifies the circuit playground which is driven by a ESP8266.",
+        "device_url":"https://www.adafruit.com/product/3405",
+        "url":"https://github.com/lancaster-university/codal-huzzah",
+        "branch":"master",
+        "type":"git"
     }
 ]
