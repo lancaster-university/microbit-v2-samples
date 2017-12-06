@@ -12,7 +12,7 @@ set(CMAKE_C_CREATE_SHARED_MODULE  "echo 'shared modules not supported' && 1")
 set(CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
 set(CMAKE_C_COMPILE_OBJECT        "<CMAKE_C_COMPILER> <DEFINES> ${EXPLICIT_INCLUDES}<FLAGS> -o <OBJECT> -c <SOURCE>")
 
-set(CMAKE_C_LINK_EXECUTABLE       "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> -nostdlib -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lmesh -lwpa2 -lsmartconfig -lespnow -lpp -lmain -lwpa -llwip -lnet80211 -lwps -lcrypto -lphy -lhal -lgcc -lm -lc -lstdc++ -Wl,--end-group -lgcc -o <TARGET>")
+set(CMAKE_C_LINK_EXECUTABLE       "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> -nostdlib -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lupgrade -lssl -lmesh -lwpa2 -lsmartconfig -lespnow -lpp -lmain -lwpa -llwip -lnet80211 -lwps -lcrypto -lphy -lhal -lgcc -ldriver -lm -lat -lc -lstdc++ -Wl,--end-group -lgcc -o <TARGET>")
 
 set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
 set(CMAKE_DEPFILE_FLAGS_CXX "-MMD -MT <OBJECT> -MF <DEPFILE>")
@@ -33,7 +33,7 @@ set(CMAKE_ASM_FLAGS_RELWITHDEBINFO_INIT "-Os -g -gdwarf-3 -DNDEBUG")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_ASM  "-isystem ")
 
 set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJECTS>")
-set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> -nostdlib -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES>  -lmesh -lwpa2 -lsmartconfig -lespnow -lpp -lmain -lwpa -llwip -lnet80211 -lwps -lcrypto -lphy -lhal -lgcc -lm -lc -lstdc++ -o <TARGET>")
+set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> -nostdlib -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lupgrade -lssl -lmesh -lwpa2 -lsmartconfig -lespnow -lpp -lmain -lwpa -llwip -lnet80211 -lwps -lcrypto -ldriver -lat -lphy -lhal -lgcc -lm -lc -lstdc++ -o <TARGET>")
 #set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> -nostdlib -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES>  -lpwm -lupgrade -lssl -lgcc -lhal -lphy -lpp -lnet80211 -lwpa -lmain -llwip -lcrypto -lm -lc -o <TARGET>")
 
 set(CMAKE_CXX_FLAGS_DEBUG_INIT          "-g -gdwarf-3")
