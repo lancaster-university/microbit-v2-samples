@@ -31,5 +31,14 @@
         "url":"https://github.com/lancaster-university/codal-brainpad",
         "branch":"master",
         "type":"git"
+    },
+    {
+        "name":"codal-microbit-next",
+        "info":"version 1.4 revision of the BC micro:bit.",
+        "device_url":"https://www.microbit.org",
+        "url":"https://github.com/microbit-foundation/codal-microbit-next",
+        "test_ignore":true,
+        "branch":"master",
+        "type":"git"
     }
 ]
