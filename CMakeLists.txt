@@ -173,8 +173,11 @@ endif()
 
 # create a header file from the definitions specified in JSON
 if("${CODAL_DEFINITIONS}" STRGREATER "")
+    set(EXTRA_INCLUDES_NEW_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions_new.h")
     set(EXTRA_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/build/codal_extra_definitions.h")
-    file(WRITE "${EXTRA_INCLUDES_PATH}" ${CODAL_DEFINITIONS})
+    file(WRITE "${EXTRA_INCLUDES_NEW_PATH}" ${CODAL_DEFINITIONS})
+    configure_file(${EXTRA_INCLUDES_NEW_PATH} ${EXTRA_INCLUDES_PATH} COPYONLY)
+
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include ${EXTRA_INCLUDES_PATH}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include ${EXTRA_INCLUDES_PATH}")
 endif()
