@@ -98,14 +98,24 @@ def status():
 
 def get_next_version():
     log = os.popen('git log -n 100').read().strip()
-    m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)', log)
+    m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:
         print "Cannot determine next version from git log"
         exit(1)
     v0 = int(m.group(1))
     v1 = int(m.group(2))
     v2 = int(m.group(3))
-    if options.update_major:
+    vB = -1
+    branchName = os.popen('git rev-parse --abbrev-ref HEAD').read().strip()
+    if not options.branch and branchName != "master":
+        print "On non-master branch use -l -b"
+        exit(1)
+    suff = ""
+    if options.branch:
+        if m.group(4) and branchName == m.group(5):
+            vB = int(m.group(6))
+        suff = "-%s.%d" % (branchName, vB + 1)
+    elif options.update_major:
         v0 += 1
         v1 = 0
         v2 = 0
@@ -114,7 +124,7 @@ def get_next_version():
         v2 = 0
     else:
         v2 += 1
-    return "v%d.%d.%d" % (v0, v1, v2)
+    return "v%d.%d.%d%s" % (v0, v1, v2, suff)
 
 def lock():
     (codal, targetdir, target) = read_config()
@@ -160,6 +170,7 @@ parser = optparse.OptionParser(usage="usage: %prog target-name [options]", descr
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-t', '--test-platforms', dest='test_platform', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json, updating patch version', default=False)
+parser.add_option('-b', '--branch', dest='branch', action="store_true", help='With -l, use vX.X.X-BRANCH.Y', default=False)
 parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
