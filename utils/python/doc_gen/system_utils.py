@@ -1,4 +1,4 @@
-import json, shutil, yaml, zipfile, urllib, os, fnmatch
+import json, shutil, zipfile, urllib, os, fnmatch
 
 class SystemUtils:
 
@@ -37,6 +37,7 @@ class SystemUtils:
     #http://stackoverflow.com/questions/2186525/use-a-glob-to-find-files-recursively-in-python
     def find_files(self, directory, pattern):
 
+        print("DIR:")
         for root, dirs, files in os.walk(directory):
             if any(dir in root for dir in self.folder_filter):
                 continue
@@ -93,6 +94,8 @@ class SystemUtils:
         self.write(content_path, lines)
 
     def validate_version(self, working_dir, module_paths, extract_location):
+        import yaml
+
         module_string = "/module.json"
         mkdocs_yml = yaml.load(self.read("./mkdocs.yml", plain=True))
 
