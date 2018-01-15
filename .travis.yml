@@ -5,10 +5,8 @@ before_install:
   - echo -e "machine github.com\n  login $CI_TOKEN" >> ~/.netrc
   - docker build -t codal-build --build-arg AUTH_TOKEN=$CI_TOKEN https://github.com/lancaster-university/codal-docker.git
   - docker run -itd -w /home/codal/codal --name codal-running codal-build:latest /bin/bash
-install:
-  - pip install pyyaml
 script:
-  - docker exec codal-running python build.py -t
+  - docker exec codal-running pip install pyyaml && python build.py -t
 notifications:
   email:
     recipients:
