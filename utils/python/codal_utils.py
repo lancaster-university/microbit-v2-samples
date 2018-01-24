@@ -80,7 +80,7 @@ def status():
     os.chdir(dirname)
     printstatus()
 
-def get_next_version():
+def get_next_version(options):
     log = os.popen('git log -n 100').read().strip()
     m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:
@@ -110,7 +110,7 @@ def get_next_version():
         v2 += 1
     return "v%d.%d.%d%s" % (v0, v1, v2, suff)
 
-def lock():
+def lock(options):
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
     for ln in target['libraries']:
@@ -124,7 +124,7 @@ def lock():
         ln['branch'] = sha
         print ln['name'], sha
     os.chdir(dirname + "/libraries/" + targetdir)
-    ver = get_next_version()
+    ver = get_next_version(options)
     print "Creating snaphot", ver
     system("git checkout target-locked.json")
     checkgit()

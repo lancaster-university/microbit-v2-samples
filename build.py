@@ -49,7 +49,7 @@ if not os.path.exists("build"):
     os.mkdir("build")
 
 if options.lock_target:
-    lock()
+    lock(options)
     exit(0)
 
 if options.update:
