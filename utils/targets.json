@@ -39,5 +39,13 @@
         "url":"https://github.com/lancaster-university/codal-ble-nano",
         "branch":"master",
         "type":"git"
+    },
+    {
+        "name":"codal-stm32-iot-node",
+        "info":"This target specifies the STM32 IoT Node board which is driven by a STM32L475.",
+        "device_url":"http://www.st.com/en/evaluation-tools/b-l475e-iot01a.html",
+        "url":"https://github.com/LabAixBidouille-STM32/codal-stm32-iot-node",
+        "branch":"master",
+        "type":"git"
     }
 ]
