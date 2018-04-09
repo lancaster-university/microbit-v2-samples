@@ -31,7 +31,7 @@ import shutil
 import re
 from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
 
-parser = optparse.OptionParser(usage="usage: %prog target-name [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
+parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-t', '--test-platforms', dest='test_platform', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
 parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json, updating patch version', default=False)
@@ -69,7 +69,7 @@ test_json = read_json("../utils/targets.json")
 if len(args) == 1:
 
     target_name = args[0]
-    target_found = False
+    target_config = None
 
     # list all targets
     if target_name == "ls":
@@ -88,26 +88,35 @@ if len(args) == 1:
         del json_obj["device_url"]
         del json_obj["info"]
 
-        # developer mode is for users who wish to contribute, it will clone and checkout commitable branches.
-        if options.dev:
-            json_obj["dev"] = True
-
-        config = {
-            "target":json_obj,
-        }
-
-        with open("../codal.json", 'w') as codal_json:
-            json.dump(config, codal_json, indent=4)
-
-        target_found = True
-
-        # remove the build folder, a user could be swapping targets.
-        delete_build_folder()
+        target_config = json_obj
         break
 
-    if not target_found:
+    if target_config == None and target_name.startswith("http"):
+        target_config = {
+            "name": re.sub("^.*/", "", target_name),
+            "url": target_name,
+            "branch": "master",
+            "type": "git"
+        }
+
+    if target_config == None:
         print("'" + target_name + "'" + " is not a valid target.")
         exit(1)
+
+    # developer mode is for users who wish to contribute, it will clone and checkout commitable branches.
+    if options.dev:
+        target_config["dev"] = True
+
+    config = {
+        "target":target_config
+    }
+
+    with open("../codal.json", 'w') as codal_json:
+        json.dump(config, codal_json, indent=4)
+
+    # remove the build folder, a user could be swapping targets.
+    delete_build_folder()
+
 
 elif len(args) > 1:
     print("Too many arguments supplied, only one target can be specified.")
