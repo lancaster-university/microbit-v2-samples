@@ -62,6 +62,8 @@ def update():
         system("git checkout " + ln['branch'])
         system("git pull")
     os.chdir(dirname + "/libraries/" + targetdir)
+    if "HEAD detached" in os.popen('git branch').read().strip():
+        system("git checkout master")
     system("git pull")
     os.chdir(dirname)
 
