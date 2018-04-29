@@ -83,6 +83,8 @@ def status():
     printstatus()
 
 def get_next_version(options):
+    if options.version:
+        return options.version
     log = os.popen('git log -n 100').read().strip()
     m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:

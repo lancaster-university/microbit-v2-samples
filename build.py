@@ -38,6 +38,7 @@ parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help=
 parser.add_option('-b', '--branch', dest='branch', action="store_true", help='With -l, use vX.X.X-BRANCH.Y', default=False)
 parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
+parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
