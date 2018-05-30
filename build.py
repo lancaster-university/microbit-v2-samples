@@ -75,10 +75,10 @@ if len(args) == 1:
     # list all targets
     if target_name == "ls":
         for json_obj in test_json:
-            print "%s: %s" % (json_obj["name"], json_obj["info"]),
+            s = "%s: %s" % (json_obj["name"], json_obj["info"])
             if "device_url" in json_obj.keys():
-                print "(%s)" % json_obj["device_url"],
-            print ""
+                s += "(%s)" % json_obj["device_url"]
+            print(s)
         exit(0)
 
     # cycle through out targets and check for a match
@@ -140,7 +140,7 @@ for json_obj in test_json:
 
     # some platforms aren't supported by travis, ignore them when testing.
     if "test_ignore" in json_obj:
-        print "ignoring: " + json_obj["name"]
+        print("ignoring: " + json_obj["name"])
         continue
 
     # ensure we have a clean build tree.

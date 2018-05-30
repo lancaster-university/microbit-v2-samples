@@ -9,11 +9,6 @@ import re
 import os, re, json, xml.etree.ElementTree
 from optparse import OptionParser
 
-from doc_gen.doxygen_extractor import DoxygenExtractor
-from doc_gen.md_converter import MarkdownConverter
-from doc_gen.system_utils import SystemUtils
-from doc_gen.doc_gen import generate_mkdocs
-
 
 def system(cmd):
     if os.system(cmd) != 0:
@@ -45,7 +40,7 @@ def read_json(fn):
 def checkgit():
     stat = os.popen('git status --porcelain').read().strip()
     if stat != "":
-        print "Missing checkin in", os.getcwd(), "\n" + stat
+        print("Missing checkin in", os.getcwd(), "\n" + stat)
         exit(1)
 
 def read_config():
@@ -68,7 +63,7 @@ def update():
     os.chdir(dirname)
 
 def printstatus():
-    print "\n***%s" % os.getcwd()
+    print("\n***%s" % os.getcwd())
     system("git status -s")
 
 def status():
@@ -88,7 +83,7 @@ def get_next_version(options):
     log = os.popen('git log -n 100').read().strip()
     m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:
-        print "Cannot determine next version from git log"
+        print("Cannot determine next version from git log")
         exit(1)
     v0 = int(m.group(1))
     v1 = int(m.group(2))
@@ -96,7 +91,7 @@ def get_next_version(options):
     vB = -1
     branchName = os.popen('git rev-parse --abbrev-ref HEAD').read().strip()
     if not options.branch and branchName != "master":
-        print "On non-master branch use -l -b"
+        print("On non-master branch use -l -b")
         exit(1)
     suff = ""
     if options.branch:
@@ -122,14 +117,14 @@ def lock(options):
         checkgit()
         stat = os.popen('git status --porcelain -b').read().strip()
         if "ahead" in stat:
-            print "Missing push in", os.getcwd()
+            print("Missing push in", os.getcwd())
             exit(1)
         sha = os.popen('git rev-parse HEAD').read().strip()
         ln['branch'] = sha
-        print ln['name'], sha
+        print(ln['name'], sha)
     os.chdir(dirname + "/libraries/" + targetdir)
     ver = get_next_version(options)
-    print "Creating snaphot", ver
+    print("Creating snaphot", ver)
     system("git checkout target-locked.json")
     checkgit()
     target["snapshot_version"] = ver
@@ -142,7 +137,7 @@ def lock(options):
     system("git push")
     system("git push --tags")
     os.chdir(dirname)
-    print "\nNew snapshot: %s [%s]" % (ver, sha)
+    print("\nNew snapshot: %s [%s]" % (ver, sha))
 
 def delete_build_folder(in_folder = True):
     if in_folder:
@@ -155,6 +150,11 @@ def delete_build_folder(in_folder = True):
         os.chdir("./build")
 
 def generate_docs():
+    from doc_gen.doxygen_extractor import DoxygenExtractor
+    from doc_gen.md_converter import MarkdownConverter
+    from doc_gen.system_utils import SystemUtils
+    from doc_gen.doc_gen import generate_mkdocs
+
     os.chdir("..")
     (codal, targetdir, target) = read_config()
 
