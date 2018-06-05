@@ -48,5 +48,14 @@
         "test_ignore":true,
         "branch":"master",
         "type":"git"
+    },
+    {
+        "name":"codal-stm32f401re",
+        "info":"This target specifies the stm32f401re (The big brain pad).",
+        "device_url":"",
+        "url":"https://github.com/lancaster-university/codal-stm32f401re",
+        "test_ignore":true,
+        "branch":"master",
+        "type":"git"
     }
 ]
