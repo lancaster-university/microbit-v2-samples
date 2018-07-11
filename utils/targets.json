@@ -21,7 +21,7 @@
         "device_url":"https://microbit.org",
         "url":"https://github.com/lancaster-university/codal-microbit",
         "test_ignore":true,
-        "branch":"master",
+        "branch":"codal-microbit-mbed",
         "type":"git"
     },
     {
