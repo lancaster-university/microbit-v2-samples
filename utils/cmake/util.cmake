@@ -118,7 +118,7 @@ function(INSTALL_DEPENDENCY dir name url branch type)
         message("Cloning into: ${url}")
 	    # git clone -b doesn't work with SHAs
         execute_process(
-            COMMAND git clone ${url} ${name}
+            COMMAND git clone --recurse-submodules ${url} ${name}
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
         )
 
