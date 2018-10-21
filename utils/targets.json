@@ -71,7 +71,7 @@
         "name":"codal-mkr1300",
         "info":"This target specifies the arduino mkr1300 variant.",
         "device_url":"",
-        "url":"https://github.com/lancaster-university/codal-mkr1300",
+        "url":"https://github.com/ElectronicCats/codal-mkr1300",
         "branch":"master",
         "type":"git",
         "test_ignore":true
