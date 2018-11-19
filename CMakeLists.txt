@@ -207,11 +207,16 @@ if("${device.libraries}" STRGREATER "")
 
     foreach(i ${DEVICE_LIBS})
         SET(BRANCH "NONE")
+        SET(URL "${device.libraries_${i}.url}")
         if("${device.libraries_${i}.branch}" STRGREATER "")
             SET(BRANCH "${device.libraries_${i}.branch}")
         endif()
+        if("${codal.target.branches.${URL}}" STRGREATER "")
+            SET(BRANCH "${codal.target.branches.${URL}}")
+            MESSAGE (STATUS "Override branch: ${BRANCH}")
+        endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${device.libraries_${i}.url} ${BRANCH} ${device.libraries_${i}.type})
+        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${URL} ${BRANCH} ${device.libraries_${i}.type})
         list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
     endforeach()
 
