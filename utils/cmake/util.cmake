@@ -128,6 +128,10 @@ function(INSTALL_DEPENDENCY dir name url branch type)
                 COMMAND git -c advice.detachedHead=false checkout ${branch}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
+            execute_process(
+                COMMAND git submodule update
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
+            )
         endif()
     else()
         message("No mechanism exists to install this library.")
