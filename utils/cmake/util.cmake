@@ -129,7 +129,7 @@ function(INSTALL_DEPENDENCY dir name url branch type)
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
             execute_process(
-                COMMAND git submodule update
+                COMMAND git submodule update --init
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
         endif()
