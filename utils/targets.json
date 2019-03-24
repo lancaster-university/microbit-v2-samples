@@ -77,6 +77,15 @@
         "test_ignore":true
     },
     {
+        "name":"codal-jacdac-feather",
+        "info":"This target specifies the jacdac-feather board based on the stmf103",
+        "device_url":"",
+        "url":"https://github.com/lancaster-university/codal-jacdac-feather",
+        "branch":"master",
+        "type":"git",
+        "test_ignore":true
+    },
+    {
         "name":"codal-itsybitsy-m4",
         "info":"This target specifies the adafruit itsybitsy board.",
         "device_url":"",
