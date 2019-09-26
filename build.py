@@ -160,4 +160,4 @@ for json_obj in test_json:
     with open("../codal.json", 'w') as codal_json:
         json.dump(config, codal_json, indent=4)
 
-    build(True)
+    build(True, True)
