@@ -40,19 +40,19 @@ button_test2()
 }
 
 void
-onButtonA(Event)
+onButtonA(MicroBitEvent)
 {
     uBit.display.print("Aa");
 }
 
 void
-onButtonB(Event)
+onButtonB(MicroBitEvent)
 {
     uBit.display.print("Bb");
 }
 
 void
-onButtonAB(Event)
+onButtonAB(MicroBitEvent)
 {
     uBit.display.print("C");
 }

@@ -12,7 +12,7 @@ StreamNormalizer *normalizer = NULL;
 int claps = 0;
 
 void
-onLoud(Event)
+onLoud(MicroBitEvent)
 {
     DMESG("LOUD");
     claps++;
@@ -23,7 +23,7 @@ onLoud(Event)
 }
 
 void
-onQuiet(Event)
+onQuiet(MicroBitEvent)
 {
 }
 

@@ -15,8 +15,8 @@ extern MicroBit uBit;
 enum modes {
     WAKE = 0,
     INTRO,
-    BUTTONA,
-    BUTTONB,
+    BUTTON_A,
+    BUTTON_B,
     TURN,
     DOTCHASER,
     NEXT,
@@ -605,11 +605,11 @@ out_of_box_experience()
                 intro();
                 break;
                 
-            case BUTTONA:
+            case BUTTON_A:
                 pressButtonA();
                 break;
                 
-            case BUTTONB:
+            case BUTTON_B:
                 pressButtonB();
                 break;
             

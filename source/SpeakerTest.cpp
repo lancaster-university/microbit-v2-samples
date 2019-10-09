@@ -1,7 +1,7 @@
 #include "MicroBit.h"
 #include "DataStream.h"
-#include "nrf52.h"
-#include "nrf52_bitfields.h"
+#include "nrf52840.h"
+#include "nrf52840_bitfields.h"
 #include "NRF52PWM.h"
 
 #define MEMORY_SOURCE_MAX_BUFFER        256

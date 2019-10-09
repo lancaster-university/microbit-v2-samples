@@ -94,7 +94,7 @@ void setCol(int col, int mode)
 }
 
 
-static void onButtonA(Event)
+static void onButtonA(MicroBitEvent)
 {
     if (clickmode != 1)
         clicks++;
@@ -104,7 +104,7 @@ static void onButtonA(Event)
     setDisplay(1);
 }
 
-static void onButtonB(Event)
+static void onButtonB(MicroBitEvent)
 {
     if (clickmode != 2)
         clicks++;
