@@ -18,7 +18,6 @@ void red_power_test()
     uBit.io.col3.getDigitalValue();
     uBit.io.col4.getDigitalValue();
     uBit.io.col5.getDigitalValue();
-    uBit.io.col6.getDigitalValue();
 
 }
 
@@ -35,7 +34,6 @@ void green_power_test()
     uBit.io.col3.getDigitalValue();
     uBit.io.col4.getDigitalValue();
     uBit.io.col5.getDigitalValue();
-    uBit.io.col6.getDigitalValue();
 
 }
 
@@ -52,7 +50,6 @@ void off_power_test()
     uBit.io.col3.getDigitalValue();
     uBit.io.col4.getDigitalValue();
     uBit.io.col5.getDigitalValue();
-    uBit.io.col6.getDigitalValue();
 
 }
 
@@ -72,7 +69,6 @@ void setDisplay(int mode)
     uBit.io.col3.setDigitalValue(!mode);
     uBit.io.col4.setDigitalValue(!mode);
     uBit.io.col5.setDigitalValue(!mode);
-    uBit.io.col6.setDigitalValue(!mode);
 }
 
 void setCol(int col, int mode)
