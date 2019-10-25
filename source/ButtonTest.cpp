@@ -54,7 +54,7 @@ onButtonB(MicroBitEvent)
 void
 onButtonAB(MicroBitEvent)
 {
-    uBit.display.print("C");
+    uBit.display.print("Cc");
 }
 
 void
