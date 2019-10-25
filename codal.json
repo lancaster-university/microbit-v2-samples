@@ -1,0 +1,15 @@
+{
+    "target": {
+        "name": "codal-microbit-next", 
+        "url": "https://github.com/microbit-foundation/codal-microbit-next", 
+        "branch": "nrf52833-mbedos", 
+        "type": "git", 
+        "test_ignore": true,
+        "dev": true
+    } ,
+    "config":{
+        "NO_BLE": 1,
+        "MICROBIT_BLE_ENABLED" : 0,
+        "MICROBIT_BLE_PAIRING_MODE": 0
+    }
+}

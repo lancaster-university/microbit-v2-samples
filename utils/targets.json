@@ -34,11 +34,11 @@
     },
     {
         "name":"codal-microbit-next",
-        "info":"version 1.4 revision of the BC micro:bit.",
+        "info":"version 1.4 revision of the BBC micro:bit.",
         "device_url":"https://www.microbit.org",
         "url":"https://github.com/microbit-foundation/codal-microbit-next",
         "test_ignore":true,
-        "branch":"master",
+        "branch":"nrf52833-mbedos",
         "type":"git"
     }
 ]
