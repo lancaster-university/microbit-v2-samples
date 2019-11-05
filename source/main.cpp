@@ -34,39 +34,28 @@ demo()
     out_of_box_experience();
 }
 
-
+#endif
 void 
 factory_test()
 {
-    int piezo =  isPiezoMic2();
-    DMESG("MIC: %s", piezo ? "PIEZO" : "MEMS");
-
     if (!hasPassedFactoryTests() || uBit.buttonB.isPressed())
     {
-        display_wink();
+      display_wink();
 
-        spirit_level2();
+      spirit_level2();
 
-        display_arrows();
-        button_blinky_test2();
+      display_arrows();
+      button_blinky_test2();
 
-        display_radio();
-        radio_rx_test2();
-        uBit.display.clear();
-
-        if (piezo)
-            piezo_clap_test(1);
-        else
-            mems_clap_test(1);
-
-        display_tick();
-        speaker_test2(3);
-
-        record_factory_pass();
-
-        uBit.sleep(2000);
+      display_radio();
+      radio_rx_test2();
+      uBit.display.clear();
+      mems_clap_test(1);
+      display_tick();
+      speaker_test2(3);
+      uBit.sleep(2000);
+      record_factory_pass();
     }
-
     out_of_box_experience();
 }
 
@@ -89,7 +78,6 @@ test_read(uint8_t base, bool repeated_start)
     }
 }
 
-#endif
 
 #ifdef DISPLAY_ON
 void
@@ -138,10 +126,10 @@ raw_blinky_test()
 int 
 main()
 {
-    uBit.sleep(1000);
+    uBit.sleep(100);
 
     uBit.init();
-
+/*
 #ifdef HIGH_DRIVE_TEST
     uBit.display.print(6);
     while(1){
@@ -183,31 +171,31 @@ main()
 
         uBit.sleep(1000);
     }
-
+*/
 
     //
     // SMOKETESTS: uncomment the ONE that you want.
     //
 
     //mems_mic_test();
-
-    //display_test2();
-    //spirit_level();
-    //speaker_test();
-    //edge_connector_test();
-    //analog_test();
-    //piezo_mic_test();
-    //piezo_clap_test();
-    //mems_mic_test();
-    //mems_clap_test();
-    //fade_test();
-    //showSerialNumber();
-    //square_wave_test();
-    //button_test3();
-
-
+/*    while(1) {
+	    //display_test2();
+            button_blinky_test2();
+	    speaker_test2(2);
+	    mems_clap_test(3);
+	    spirit_level2();
+	    //edge_connector_test();
+	    //analog_test();
+	    //piezo_mic_test();
+	    //piezo_clap_test();
+	    //mems_mic_test();
+	    //fade_test();
+	    //showSerialNumber();
+	    //square_wave_test();
+    }
+*/
     //factory_radio_transmitter();
-    //factory_test(); 
+    factory_test(); 
     //demo();
 
     //display_wink();
