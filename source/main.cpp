@@ -38,8 +38,10 @@ demo()
 void 
 factory_test()
 {
+    DMESG("Checking tests...");
     if (!hasPassedFactoryTests() || uBit.buttonB.isPressed())
     {
+      DMESG("Running tests...");
       display_wink();
 
       spirit_level2();
@@ -56,6 +58,7 @@ factory_test()
       uBit.sleep(2000);
       record_factory_pass();
     }
+    DMESG("Running OOB");
     out_of_box_experience();
 }
 
