@@ -1,9 +1,11 @@
 # Instructions for building
 
+```
 git clone https://www.github.com/microbit-foundation/codal
 cd codal
 git checkout nrf52833-mbedos
 python build.py
+```
 
 If this fails, for example because you're using GH 2FA and https, then you need to manually fetch all repos:
 
