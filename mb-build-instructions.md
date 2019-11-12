@@ -2,7 +2,8 @@
 
 The entry point for micro:bit at this stage is the branch `master`
 
-## System setup
+## System setup
+
 You should have followed the setup required for CODAL in the main readme
 
 For the CODAL build tools to work, you have to have setup GitHub's two-factor authentication to work with git, and generated an access token (this is because the repositories are private.
@@ -63,14 +64,17 @@ cd ../../
 ```
 
 If your build failed the first time
-    rm -rf ./build
+    `rm -rf ./build`
 
 Verify you are where you think you are and everything's at the right branch
+
+```bash
 python build.py -s #s is for status
 
 python build.py 
+```
 
-# Troubleshooting
+# Troubleshooting
 
 If your build fails with missing toolchain, remove the build dir and try again. This usually happens if the first attempt to run build.py fails and we don't check out all the relevant libraries (often due to GH permissions)
 
