@@ -118,7 +118,7 @@ function(INSTALL_DEPENDENCY dir name url branch type)
         message("Cloning into: ${url}")
 	    # git clone -b doesn't work with SHAs
         execute_process(
-            COMMAND git clone ${url} ${name}
+            COMMAND git clone --recurse-submodules ${url} ${name}
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}
         )
 
@@ -126,6 +126,18 @@ function(INSTALL_DEPENDENCY dir name url branch type)
             message("Checking out branch: ${branch}")
             execute_process(
                 COMMAND git -c advice.detachedHead=false checkout ${branch}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
+            )
+            execute_process(
+                COMMAND git submodule update --init
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
+            )
+            execute_process(
+                COMMAND git submodule sync
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
+            )
+            execute_process(
+                COMMAND git submodule update
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}
             )
         endif()

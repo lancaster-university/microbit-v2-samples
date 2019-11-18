@@ -13,3 +13,4 @@ Makefile
 *.bin
 pxtapp
 buildcache.json
+*.pyc
