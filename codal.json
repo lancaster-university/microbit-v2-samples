@@ -1,9 +1,9 @@
 {
     "target": {
-        "name": "codal-microbit-next", 
-        "url": "https://github.com/microbit-foundation/codal-microbit-next", 
-        "branch": "nrf52833-mbedos", 
-        "type": "git", 
+        "name": "codal-microbit-next",
+        "url": "https://github.com/microbit-foundation/codal-microbit-next",
+        "branch": "master",
+        "type": "git",
         "test_ignore": true,
         "dev": true
     } ,
