@@ -3,11 +3,10 @@
 ```
 git clone https://www.github.com/microbit-foundation/codal
 cd codal
-git checkout nrf52833-mbedos
 python build.py
 ```
 
-If this fails, for example because you're using GH 2FA and https, then you need to manually fetch all repos:
+If this fails, for example because you're using SSH, then you need to manually fetch all repos:
 
 ```bash
 cd libraries/
@@ -16,19 +15,7 @@ git clone git@github.com:microbit-foundation/codal-core.git
 git clone git@github.com:microbit-foundation/codal-microbit-next.git
 git clone git@github.com:microbit-foundation/codal-mbedos.git
 git clone git@github.com:microbit-foundation/codal-nrf52.git
-ls # You should have the four directories now
-cd codal-core/
-git checkout nrf52833-mbedos
 cd ../
-cd codal-mbedos/
-git checkout nrf52833-bringup-includes #NOTE THIS IS DIFFERENT TO JOE'S INSTRUCTIONS on 29th OCT as it fixes a Mac build issue found since
-cd ../
-cd codal-nrf52/
-git checkout nrf52833-mbedos
-cd ../
-cd codal-microbit-next/
-git checkout nrf52833-mbedos
-cd ../../
 ```
 
 If your build failed the first time
