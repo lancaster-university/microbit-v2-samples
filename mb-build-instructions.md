@@ -26,7 +26,7 @@ python build.py -s #s is for status
 
 python build.py 
 
-# Troubleshooting
+# Troubleshooting
 
 If your build fails with missing toolchain, remove the build dir and try again. This usually happens if the first attempt to run build.py fails and we don't check out all the relevant libraries (often due to GH permissions)
 
