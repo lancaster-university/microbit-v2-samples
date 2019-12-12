@@ -53,6 +53,36 @@ Image happy(happy_emoji);
 Image sad(sad_emoji);
 
 void
+concurrent_display_test_t1()
+{
+    while(1)
+    {
+        uBit.display.print("JJ");
+        uBit.sleep(1000);
+    }
+}
+
+void
+concurrent_display_test_t2()
+{
+    uBit.sleep(500);
+    while(1)
+    {
+        uBit.display.print("FF");
+        uBit.sleep(1000);
+    }
+}
+
+void
+concurrent_display_test()
+{
+    DMESG("CONCURRENT_DISPLAY_TEST1:");
+
+    create_fiber(concurrent_display_test_t1);
+    create_fiber(concurrent_display_test_t2);
+}
+
+void
 display_test1()
 {
     DMESG("DISPLAY_TEST1:");

@@ -1,7 +1,6 @@
 #ifndef MB_NEXT_TESTS_H
 #define MB_NEXT_TESTS_H
 
-void fxos_test();
 void blinky();
 void mbed_blinky();
 void button_test1();
@@ -9,6 +8,7 @@ void button_test2();
 void button_test3();
 void display_test1();
 void display_test2();
+void concurrent_display_test();
 void fade_test();
 void mems_mic_test();
 void piezo_mic_test();
@@ -44,6 +44,8 @@ void square_wave_test();
 void red_power_test();
 void green_power_test();
 void off_power_test();
-
+void shake_test();
 int read_light_level();
+void compass_accelerometer_test();
+
 #endif

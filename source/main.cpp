@@ -130,9 +130,10 @@ int
 main()
 {
     uBit.sleep(100);
-
+    
     uBit.init();
-/*
+
+
 #ifdef HIGH_DRIVE_TEST
     uBit.display.print(6);
     while(1){
@@ -154,39 +155,30 @@ main()
         uBit.sleep(1000);
     }
 #endif
- 
+
+#ifdef STARTUP_COUNTDOWN
     for (int i=9; i>0; i--)
     {
         uBit.display.print(i);
         uBit.sleep(1000);
     }
+#endif
 
     uBit.serial.printf("---- START ----\n");
-    int i=0;
-
-    while(1)
-    {
-        i++;
-        uBit.serial.printf("FXOS:  ACC [X:%d][Y:%d][Z:%d]\n", uBit.fxosAccelerometer.getX(), uBit.fxosAccelerometer.getY(), uBit.fxosAccelerometer.getZ());
-        uBit.serial.printf("LSM303 ACC [X:%d][Y:%d][Z:%d]\n", uBit.lsmAccelerometer.getX(), uBit.lsmAccelerometer.getY(), uBit.lsmAccelerometer.getZ());
-        uBit.serial.printf("FXOS:  MAG [X:%d][Y:%d][Z:%d]\n", uBit.fxosCompass.getX(), uBit.fxosCompass.getY(), uBit.fxosCompass.getZ());
-        uBit.serial.printf("LSM303 MAG [X:%d][Y:%d][Z:%d]\n", uBit.lsmCompass.getX(), uBit.lsmCompass.getY(), uBit.lsmCompass.getZ());
-
-        uBit.sleep(1000);
-    }
-*/
 
     //
     // SMOKETESTS: uncomment the ONE that you want.
     //
 
     //mems_mic_test();
-/*    while(1) {
-	    //display_test2();
-            button_blinky_test2();
-	    speaker_test2(2);
-	    mems_clap_test(3);
-	    spirit_level2();
+    //while(1) {
+        //concurrent_display_test();
+        //button_test3();
+	    //display_test1();
+        //button_blinky_test2();
+	    //speaker_test2(2);
+	    //mems_clap_test(3);
+	    //spirit_level2();
 	    //edge_connector_test();
 	    //analog_test();
 	    //piezo_mic_test();
@@ -195,10 +187,10 @@ main()
 	    //fade_test();
 	    //showSerialNumber();
 	    //square_wave_test();
-    }
-*/
+    //}
+
     //factory_radio_transmitter();
-    factory_test(); 
+    //factory_test(); 
     //demo();
 
     //display_wink();
@@ -208,7 +200,10 @@ main()
 
     while(1)
     {
-        uBit.sleep(10000);
+        display_wink();
+        uBit.sleep(500);
+        uBit.display.clear();
+        uBit.sleep(500);
     }
 
 }

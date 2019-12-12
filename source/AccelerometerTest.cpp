@@ -2,18 +2,28 @@
 
 extern MicroBit uBit;
 
-void 
-fxos_test()
+void
+onCompassData(MicroBitEvent)
 {
-    int result;
-
-    while(1)
-    {
-        result = uBit.fxos.whoAmI();
-        DMESG("WHOAMI: %d\n", result);
-        uBit.sleep(1000);
-    }
+    DMESGN("C");
 }
+
+void
+onAccelerometerData(MicroBitEvent)
+{
+    DMESGN("A");
+}
+
+void
+onShake(MicroBitEvent)
+{
+    DMESG(" *** SHAKE ***");
+    uBit.display.print("S");
+    uBit.sleep(500);
+    uBit.display.clear();
+}
+
+
 
 void
 accelerometer_test1()
@@ -110,4 +120,30 @@ compass_test2()
         DMESG("Heading [%d]", uBit.compass.heading());
         uBit.sleep(1000);
     }
+}
+
+void
+compass_accelerometer_test()
+{
+    while(1)
+    {
+        uBit.serial.printf("ACC [X:%d][Y:%d][Z:%d]\n", uBit.accelerometer.getX(), uBit.accelerometer.getY(), uBit.accelerometer.getZ());
+        uBit.serial.printf("MAG [X:%d][Y:%d][Z:%d]\n", uBit.compass.getX(), uBit.compass.getY(), uBit.compass.getZ());
+
+        uBit.sleep(1000);
+    }    
+}
+
+void
+shake_test()
+{
+    //uBit.messageBus.listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, onAccelerometerData);
+    //uBit.messageBus.listen(MICROBIT_ID_COMPASS, MICROBIT_COMPASS_EVT_DATA_UPDATE, onCompassData);
+    uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_ACCELEROMETER_EVT_SHAKE, onShake);
+
+    while(1)
+    {
+        uBit.sleep(10000);
+    }
+
 }
