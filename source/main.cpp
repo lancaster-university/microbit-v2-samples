@@ -1,7 +1,11 @@
 #include "MicroBit.h"
 #include "Tests.h"
+#include "rtx_lib.h"
 
-MicroBit uBit;
+MicroBit *uBitPointer = new MicroBit();
+MicroBit &uBit = *uBitPointer;
+
+//MicroBit uBit;
 
 #ifdef FULL_TEST
 void 
@@ -126,12 +130,49 @@ raw_blinky_test()
     }
 }
 
+void doSomething(int i);
+void doSomething2(int i);
+void doSomethingElse(int i);
+
+void doSomethingElse(int i)
+{
+    DMESG("SP:ELSE:%d: %p", i, get_current_sp());
+}
+
+
+void doSomething2(int i)
+{
+    DMESG("SP:B:%d: %p", i, get_current_sp());
+    doSomethingElse(i);
+}
+
+void doSomething(int i)
+{
+    while (i<10){
+        DMESG("SP:A:%d: %p", i, get_current_sp());
+        doSomething2(i);
+        i++;
+    }
+}
+
+extern void device_heap_print();
+
+#ifdef POOP
 int 
 main()
 {
     uBit.sleep(100);
     
     uBit.init();
+
+    osThreadId_t id = osThreadGetId();
+    osRtxThread_t *thread = osRtxThreadId(id);
+
+    DMESG("STACK_MEM: %p, STACK_SIZE: %d", (uint32_t)thread->stack_mem, (uint32_t)thread->stack_size);
+    DMESG("SP0: %p", get_current_sp());
+    doSomething(0);
+
+    device_heap_print();
 
 
 #ifdef HIGH_DRIVE_TEST
@@ -198,14 +239,126 @@ main()
     //test_read(0x0B, false);
     //test_read(0x00, true);
 
+const char * const happy_emoji ="\
+    000,255,000,255,000\n\
+    000,000,000,000,000\n\
+    255,000,000,000,255\n\
+    000,255,255,255,000\n\
+    000,000,000,000,000\n";
+
+const char * const wink_emoji ="\
+    000,255,000,000,000\n\
+    000,000,000,000,000\n\
+    255,000,000,000,255\n\
+    000,255,255,255,000\n\
+    000,000,000,000,000\n";
+
+    MicroBitImage smile(happy_emoji);
+    MicroBitImage wink(wink_emoji);
+
     while(1)
     {
-        display_wink();
+        //display_wink();
+
+        DMESGN("ON...");
+        //uBit.display.print.setPixelValue(0,0,255);
+        uBit.display.print(smile);
+
         uBit.sleep(500);
-        uBit.display.clear();
+
+        DMESG("OFF");
+        //uBit.display.image.setPixelValue(0,0,0);
+        uBit.display.print(wink);
+        
         uBit.sleep(500);
     }
+}
+#endif
 
+void
+onButtonAPressed(MicroBitEvent)
+{
+    const char * const a_emoji ="\
+        255,000,000,000,255\n\
+        000,000,000,000,000\n\
+        255,255,255,255,255\n\
+        000,000,000,255,255\n\
+        000,000,000,255,255\n";
+
+    MicroBitImage img_a(a_emoji);
+    uBit.display.print(img_a);
+}
+
+void
+onButtonBPressed(MicroBitEvent)
+{
+    const char * const b_emoji ="\
+        000,255,000,000,255\n\
+        000,000,255,255,000\n\
+        000,000,255,255,000\n\
+        000,000,255,255,000\n\
+        000,255,000,000,255\n";
+    MicroBitImage img_b(b_emoji);
+    uBit.display.print(img_b);    
+}
+
+void
+onButtonABPressed(MicroBitEvent)
+{
+    const char * const c_emoji ="\
+        000,000,000,255,255\n\
+        000,000,000,255,255\n\
+        255,255,255,255,255\n\
+        255,255,255,255,255\n\
+        000,255,000,255,000\n";
+    MicroBitImage img_c(c_emoji);
+    uBit.display.print(img_c);    
+
+}
+
+void
+onShakePressed(MicroBitEvent)
+{
+    const char * const d_emoji ="\
+        255,000,000,000,255\n\
+        000,255,000,255,000\n\
+        000,000,000,000,000\n\
+        255,255,255,255,255\n\
+        255,000,255,000,255\n";
+    MicroBitImage img_d(d_emoji);
+    uBit.display.print(img_d);    
+
+}
+
+void
+do_something_forever()
+{
+    uBit.sleep(10);
+}
+
+int 
+main()
+{
+    uBit.sleep(100);    
+    uBit.init();
+
+    const char * const heart_emoji ="\
+    000,255,000,255,000\n\
+    255,255,255,255,255\n\
+    255,255,255,255,255\n\
+    000,255,255,255,000\n\
+    000,000,255,000,000\n";
+
+    MicroBitImage img_heart(heart_emoji);
+    uBit.display.print(img_heart);
+
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, onButtonAPressed);
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBPressed);
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_BUTTON_EVT_CLICK, onButtonABPressed);
+    uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_ACCELEROMETER_EVT_SHAKE, onShakePressed);
+
+    create_fiber(do_something_forever);
+    release_fiber();
 }
 
 
