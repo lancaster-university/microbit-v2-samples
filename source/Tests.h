@@ -15,6 +15,7 @@ void piezo_mic_test();
 void speaker_test(int plays);
 void speaker_test2(int plays);
 void gpio_test();
+void highDriveTest();
 void radio_rx_test();
 void radio_rx_test2();
 void radio_tx_test();
@@ -47,5 +48,8 @@ void off_power_test();
 void shake_test();
 int read_light_level();
 void compass_accelerometer_test();
+void display_countdown();
+void raw_blinky_test();
+void display_button_icon_test();
 
 #endif

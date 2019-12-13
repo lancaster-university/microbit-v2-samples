@@ -43,6 +43,7 @@ edge_connector_test()
             p->setDigitalValue(1);
             uBit.sleep(500);
             p->setDigitalValue(0);
+            uBit.sleep(500);
         }
     }
 }
@@ -104,3 +105,25 @@ gpio_test()
     }
 }
 
+void
+highDriveTest()
+{
+    while(1){
+
+        for (NRF52Pin *p : uBit.ledRowPins)
+            p->setHighDrive(true);
+
+        for (NRF52Pin *p : uBit.ledColPins)
+            p->setHighDrive(true);
+ 
+        uBit.sleep(1000);
+
+        for (NRF52Pin *p : uBit.ledRowPins)
+            p->setHighDrive(false);
+
+        for (NRF52Pin *p : uBit.ledColPins)
+            p->setHighDrive(false);
+
+        uBit.sleep(1000);
+    }
+}

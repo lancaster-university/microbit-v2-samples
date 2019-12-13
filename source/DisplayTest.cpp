@@ -171,3 +171,131 @@ display_radio()
     MicroBitImage radio(radio_emoji);
     uBit.display.print(radio);
 }
+
+void
+display_countdown()
+{
+    for (int i=9; i>0; i--)
+    {
+        uBit.display.print(i);
+        uBit.sleep(1000);
+    }
+}
+
+void
+raw_blinky_test()
+{
+    uBit.io.row1.setDigitalValue(0);
+    uBit.io.row2.setDigitalValue(0);
+    uBit.io.row3.setDigitalValue(0);
+    uBit.io.row4.setDigitalValue(0);
+    uBit.io.row5.setDigitalValue(0);
+
+    uBit.io.col1.setDigitalValue(0);
+    uBit.io.col2.setDigitalValue(0);
+    uBit.io.col3.setDigitalValue(0);
+    uBit.io.col4.setDigitalValue(0);
+    uBit.io.col5.setDigitalValue(0);
+
+    while(1)
+    {
+        uBit.io.row1.setDigitalValue(1);
+        uBit.io.row2.setDigitalValue(1);
+        uBit.io.row3.setDigitalValue(1);
+        uBit.io.row4.setDigitalValue(1);
+        uBit.io.row5.setDigitalValue(1);
+        uBit.serial.printf("LED: ON...\n");
+        uBit.sleep(500);
+
+        uBit.io.row1.setDigitalValue(0);
+        uBit.io.row2.setDigitalValue(0);
+        uBit.io.row3.setDigitalValue(0);
+        uBit.io.row4.setDigitalValue(0);
+        uBit.io.row5.setDigitalValue(0);
+        uBit.serial.printf("LED: OFF...\n");
+        uBit.sleep(500);
+    }
+}
+
+
+void
+onButtonAPressed(MicroBitEvent)
+{
+    const char * const a_emoji ="\
+        255,000,000,000,255\n\
+        000,000,000,000,000\n\
+        255,255,255,255,255\n\
+        000,000,000,255,255\n\
+        000,000,000,255,255\n";
+
+    MicroBitImage img_a(a_emoji);
+    uBit.display.print(img_a);
+}
+
+void
+onButtonBPressed(MicroBitEvent)
+{
+    const char * const b_emoji ="\
+        000,255,000,000,255\n\
+        000,000,255,255,000\n\
+        000,000,255,255,000\n\
+        000,000,255,255,000\n\
+        000,255,000,000,255\n";
+    MicroBitImage img_b(b_emoji);
+    uBit.display.print(img_b);    
+}
+
+void
+onButtonABPressed(MicroBitEvent)
+{
+    const char * const c_emoji ="\
+        000,000,000,255,255\n\
+        000,000,000,255,255\n\
+        255,255,255,255,255\n\
+        255,255,255,255,255\n\
+        000,255,000,255,000\n";
+    MicroBitImage img_c(c_emoji);
+    uBit.display.print(img_c);    
+}
+
+void
+onShakePressed(MicroBitEvent)
+{
+    const char * const d_emoji ="\
+        255,000,000,000,255\n\
+        000,255,000,255,000\n\
+        000,000,000,000,000\n\
+        255,255,255,255,255\n\
+        255,000,255,000,255\n";
+    MicroBitImage img_d(d_emoji);
+    uBit.display.print(img_d);    
+}
+
+void
+do_something_forever()
+{
+    uBit.sleep(10);
+}
+
+void 
+display_button_icon_test()
+{
+    const char * const heart_emoji ="\
+    000,255,000,255,000\n\
+    255,255,255,255,255\n\
+    255,255,255,255,255\n\
+    000,255,255,255,000\n\
+    000,000,255,000,000\n";
+
+    MicroBitImage img_heart(heart_emoji);
+    uBit.display.print(img_heart);
+
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, onButtonAPressed);
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonBPressed);
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_BUTTON_EVT_CLICK, onButtonABPressed);
+    uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_ACCELEROMETER_EVT_SHAKE, onShakePressed);
+
+    create_fiber(do_something_forever);
+    release_fiber();
+}
+
