@@ -24,8 +24,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "MicroBit.h"
-
-extern MicroBit uBit;
+#include "Tests.h"
 
 const char * const radio1_emoji ="\
     000,000,000,000,000\n\

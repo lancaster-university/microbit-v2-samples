@@ -1,6 +1,5 @@
 #include "MicroBit.h"
-
-extern MicroBit uBit;
+#include "Tests.h"
 
 int clicks;
 int clickmode;

@@ -1,5 +1,5 @@
 #include "MicroBit.h"
-extern MicroBit uBit;
+#include "Tests.h"
 
 Pin *edgeConnector[] = {
     &uBit.io.P0, 

@@ -3,8 +3,8 @@
 #include "SerialStreamer.h"
 #include "StreamNormalizer.h"
 #include "LevelDetector.h"
+#include "Tests.h"
 
-extern MicroBit uBit;
 NRF52Microphone *mic = NULL;
 SerialStreamer *streamer = NULL;
 LevelDetector *level = NULL;

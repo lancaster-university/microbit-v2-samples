@@ -1,6 +1,5 @@
 #include "MicroBit.h"
-
-extern MicroBit uBit;
+#include "Tests.h"
 
 const char * const arrow_left_emoji ="\
     000,000,255,000,000\n\

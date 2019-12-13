@@ -5,16 +5,16 @@
 // Create a global instance of the MicroBit model called uBit.
 // Allows this singleton to be accessed consistently by tests/programs.
 
+#ifdef MICROBIT_UBIT_AS_STATIC_OBJECT
 // A statically allocated model can be simply created using the code below.
 // This is the simplest, and ideal for C/C++ programs.
-//MicroBit uBit;
+MicroBit uBit;
 
+#else
 // Alternatively, we can dynamically allocated the model on te heap.
 // This is better for testing builds for environments that do this (such as MakeCode) 
-MicroBit* uBitPointer = new MicroBit();
-MicroBit &uBit = *uBitPointer;         
-
-//MicroBit &uBit = *(new MicroBit());         
+MicroBit &uBit = *(new MicroBit());
+#endif
 
 void 
 factory_test()

@@ -3,6 +3,7 @@
 #include "nrf52840.h"
 #include "nrf52840_bitfields.h"
 #include "NRF52PWM.h"
+#include "Tests.h"
 
 #define MEMORY_SOURCE_MAX_BUFFER        256
 
@@ -135,8 +136,6 @@ void MemorySource::play(const uint8_t *data, int length, int loop)
     DMESG("PLAY: DONE");
 
 } 
-
-extern MicroBit uBit;
 
 const uint8_t square[] = {128};
 const uint8_t middleC[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

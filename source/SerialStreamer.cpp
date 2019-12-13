@@ -23,8 +23,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "SerialStreamer.h"
-
-extern MicroBit uBit;
+#include "Tests.h"
 
 SerialStreamer::SerialStreamer(DataSource &source) : upstream(source)
 {

@@ -1,10 +1,9 @@
 #include "MicroBit.h"
+#include "Tests.h"
 
 #define OOB_SHAKE_OVERSAMPLING                  5
 #define OOB_SHAKE_OVERSAMPLING_THRESHOLD        4
 #define OOB_SHAKE_THRESHOLD                     4000 
-
-extern MicroBit uBit;
 
  /*
  * This is the program that will be shipped with the 550 micro:bits

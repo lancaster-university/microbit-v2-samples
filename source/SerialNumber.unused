@@ -1,6 +1,5 @@
 #include "MicroBit.h"
-
-extern MicroBit uBit;
+#include "Tests.h"
 
 #define MEMS_MIC                1
 #define PIEZO_MIC               2

@@ -1,5 +1,5 @@
 #include "MicroBit.h"
-extern MicroBit uBit;
+#include "Tests.h"
 
 void
 button_test1()
