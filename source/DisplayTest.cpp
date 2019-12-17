@@ -79,6 +79,8 @@ concurrent_display_test()
 
     create_fiber(concurrent_display_test_t1);
     create_fiber(concurrent_display_test_t2);
+
+    release_fiber();
 }
 
 void
@@ -123,6 +125,30 @@ display_wink()
 
     uBit.display.clear();
 }
+
+void
+display_brightness_test()
+{
+    MicroBitImage smile(happy_emoji);
+    uBit.display.print(smile);
+    uBit.display.setBrightness(50);
+
+    while(1)
+    {
+        for (int i=0; i<=255; i++)
+        {
+            uBit.display.setBrightness(i);
+            uBit.sleep(10);
+        }
+
+        for (int i=255; i>=0; i--)
+        {
+            uBit.display.setBrightness(i);
+            uBit.sleep(10);
+        }
+    }
+}
+
 
 void
 display_tick()
