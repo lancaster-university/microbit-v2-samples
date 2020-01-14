@@ -6,7 +6,7 @@ temperature_test()
 {
     while(1)
     {
-        uBit.sleep(1000);
+        DMESG("TEMPERATURE: %d", uBit.thermometer.getTemperature());
         uBit.display.scroll(uBit.thermometer.getTemperature());
     }
 }
