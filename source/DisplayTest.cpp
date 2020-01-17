@@ -229,7 +229,7 @@ raw_blinky_test()
         uBit.io.row3.setDigitalValue(1);
         uBit.io.row4.setDigitalValue(1);
         uBit.io.row5.setDigitalValue(1);
-        uBit.serial.printf("LED: ON...\n");
+        DMESG("LED: ON...\n");
         uBit.sleep(500);
 
         uBit.io.row1.setDigitalValue(0);
@@ -237,7 +237,7 @@ raw_blinky_test()
         uBit.io.row3.setDigitalValue(0);
         uBit.io.row4.setDigitalValue(0);
         uBit.io.row5.setDigitalValue(0);
-        uBit.serial.printf("LED: OFF...\n");
+        DMESG("LED: OFF...\n");
         uBit.sleep(500);
     }
 }

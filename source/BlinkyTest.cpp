@@ -155,11 +155,11 @@ void fade_test()
         {
             //green
             setCol(c==2?5:c,0);
-            wait_us(period * brightness[c]) ;
+            target_wait_us(period * brightness[c]) ;
 
             //red
             setCol(c,1);
-            wait_us(period * (((100-brightness[c])*compression)/100));
+            target_wait_us(period * (((100-brightness[c])*compression)/100));
         }
 
         for (int c=0; c<5; c++)
@@ -185,42 +185,14 @@ void blinky()
         uBit.io.col2.setDigitalValue(0);
 
         DMESG("ON");
-        wait_ms(10);
         uBit.sleep(500);
 
         uBit.io.col1.setDigitalValue(1);
         uBit.io.col2.setDigitalValue(1);
 
         DMESG("OFF");
-        wait_ms(10);
         uBit.sleep(500);
     }
 }
 
-void mbed_blinky() 
-{
-    DigitalOut col1(P0_1,0);
-    DigitalOut col2(P0_11,0);
-
-    DigitalOut row1(P0_21,1);
-    DigitalOut row2(P0_22,1);
-    
-    int led = 0;
-
-    row1 = 1;
-    row2 = 1;
-    col1 = 1;
-    col2 = 1;
-
-    while (1) {
-
-        col1 = led;
-        wait_ms(500);
-
-        col2 = led;
-        wait_ms(500);
-
-        led = !led;
-    }
-}
 

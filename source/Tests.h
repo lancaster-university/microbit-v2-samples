@@ -12,7 +12,6 @@ extern MicroBit& uBit;
 #endif
 
 void blinky();
-void mbed_blinky();
 void button_test1();
 void button_test2();
 void button_test3();

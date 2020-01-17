@@ -60,7 +60,7 @@ spirit_level2()
         int y = uBit.accelerometer.getY();
         int z = uBit.accelerometer.getZ();
 
-        uBit.serial.printf("Acc [X:%d][Y:%d][Z:%d]\r\n", x, y, z);
+        DMESG("Acc [X:%d][Y:%d][Z:%d]\r\n", x, y, z);
 
         int px = g_to_pix(x);
         int py = g_to_pix(y);
@@ -126,8 +126,8 @@ compass_accelerometer_test()
 {
     while(1)
     {
-        uBit.serial.printf("ACC [X:%d][Y:%d][Z:%d]\n", uBit.accelerometer.getX(), uBit.accelerometer.getY(), uBit.accelerometer.getZ());
-        uBit.serial.printf("MAG [X:%d][Y:%d][Z:%d]\n", uBit.compass.getX(), uBit.compass.getY(), uBit.compass.getZ());
+        DMESG("ACC [X:%d][Y:%d][Z:%d]\n", uBit.accelerometer.getX(), uBit.accelerometer.getY(), uBit.accelerometer.getZ());
+        DMESG("MAG [X:%d][Y:%d][Z:%d]\n", uBit.compass.getX(), uBit.compass.getY(), uBit.compass.getZ());
 
         uBit.sleep(1000);
     }    

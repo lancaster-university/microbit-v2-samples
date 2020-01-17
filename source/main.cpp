@@ -1,6 +1,6 @@
 #include "MicroBit.h"
 #include "Tests.h"
-#include "rtx_lib.h"
+
 
 // Create a global instance of the MicroBit model called uBit.
 // Allows this singleton to be accessed consistently by tests/programs.
@@ -58,12 +58,12 @@ main()
     //mems_mic_test();
     //while(1) {
         //concurrent_display_test();
-        //button_test3();
+        button_test3();
 	    //display_test1();
         //button_blinky_test2();
 	    //speaker_test2(2);
 	    //mems_clap_test(3);
-	    //spirit_level2();
+	    //spirit_level();
 	    //edge_connector_test();
 	    //analog_test();
 	    //piezo_mic_test();
@@ -72,6 +72,7 @@ main()
 	    //fade_test();
 	    //showSerialNumber();
 	    //square_wave_test();
+        //temperature_test();
     //}
 
     //factory_radio_transmitter();

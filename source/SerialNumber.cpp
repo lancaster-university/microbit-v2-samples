@@ -43,16 +43,16 @@ int isPiezoMic2()
     uBit.sleep(100);
 
     uBit.io.speaker.setDigitalValue(1);
-    wait_us(SETTLE_DELAY);
+    target_wait_us(SETTLE_DELAY);
 
     sense1 = uBit.io.microphone.getAnalogValue();
     {
         uBit.io.speaker.setDigitalValue(0);
-        wait_us(SETTLE_DELAY);
+        target_wait_us(SETTLE_DELAY);
         sense2 = uBit.io.microphone.getAnalogValue();
     }
 
-    DMESG("[SENSE1: %d] [SENS2: %d]", sense1, sense2);
+    DMESG("[SENSE1: %d] [SENSE2: %d]", sense1, sense2);
 
     if (abs(sense1 - sense2) > 40)
         return 1;

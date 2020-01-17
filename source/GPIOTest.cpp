@@ -89,7 +89,7 @@ gpio_test()
     int value = 0;
 
     uBit.io.P2.getDigitalValue();
-    uBit.io.P2.setPull(PullUp);
+    uBit.io.P2.setPull(PullMode::Up);
 
     while(1)
     {

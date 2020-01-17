@@ -79,7 +79,7 @@ piezo_mic_test()
     init_streaming();
 
     // Ensure the other side of the piezo is high impedance
-    uBit.io.speaker.setPull(PullNone);
+    uBit.io.speaker.setPull(PullMode::None);
     uBit.io.speaker.getDigitalValue();
 
     // Enable RUN_MIC
@@ -101,7 +101,7 @@ piezo_clap_test(int wait_for_clap)
     DMESG("PIEZO_INIT COMPLETE"); uBit.sleep(100);
 
     // Ensure the other side of the piezo is high impedance
-    uBit.io.speaker.setPull(PullNone);
+    uBit.io.speaker.setPull(PullMode::None);
     uBit.io.speaker.getDigitalValue();
 
     // Enable RUN_MIC
