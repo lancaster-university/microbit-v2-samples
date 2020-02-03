@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include "Microbit.h"
+#include "MicroBit.h"
 #include "CodalConfig.h"
 #include "DataStream.h"
 
