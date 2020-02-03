@@ -29,7 +29,7 @@ import platform
 import json
 import shutil
 import re
-from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
+from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
 
 parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -41,6 +41,7 @@ parser.add_option('-M', '--major', dest='update_major', action="store_true", hel
 parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
+parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
 
@@ -59,6 +60,10 @@ if options.update:
 
 if options.status:
     status()
+    exit(0)
+
+if options.revision:
+    revision(options.revision)
     exit(0)
 
 # out of source build!
