@@ -1,146 +1,18 @@
 #include "MicroBit.h"
 #include "DataStream.h"
+#include "MemorySource.h"
 #include "nrf.h"
 #include "NRF52PWM.h"
 #include "Tests.h"
 
-#define MEMORY_SOURCE_MAX_BUFFER        256
-
 //#define SPEAKER_TEST_DIFFERENTIAL
 
-/**
- * Simple, buffer class for streaming bytes from memory across the Stream APIs.
- */
-class MemorySource : public DataSource
-{
-    private:
-    int bytesSent;
-    ManagedBuffer buffer;
-    bool loop;
 
-    int maximumValue;
-    int scalar;
-
-    public:
-    DataStream output;
-
-    /**
-     * Default Constructor.
-     */
-    MemorySource();
-
-    /**
-     * Provide the next available ManagedBuffer to our downstream caller, if available.
-     */
-    virtual ManagedBuffer pull();
-
-    /**
-     * Perform a blocking playout of the data buffer. Returns when all the data has been queued.
-     * (or never if loop is set).
-     * @param data pointer to memory location to playout
-     * @param length number of bytes to stream
-     * @param loop if repeat playback of buffer when completed the given number of times
-     */
-    void play(const uint8_t *data, int length, int loop = 1);
-
-    /**
-     * Define the upper bound for samples in the 16 bit stream
-     */
-    void setMaximumSampleValue(int maximum);
-
-};
-
-/**
- * Default Constructor.
- *
- * @param data pointer to memory location to playout
- * @param length number of bytes to stream
- */
-MemorySource::MemorySource() : output(*this)
-{
-    this->bytesSent = 0;
-    this->maximumValue = 256;
-    this->scalar = 1;
-} 
-
-/**
- * Define the upper bound for samples in the 16 bit stream
- */
-void MemorySource::setMaximumSampleValue(int maximum)
-{
-    maximumValue = maximum;
-    scalar = (maximumValue << 8) / 256;
-}
-
-/**
- * Provide the next available ManagedBuffer to our downstream caller, if available.
- */
-ManagedBuffer MemorySource::pull()
-{
-    return buffer;
-} 
-
-/**
- * Perform a blocking playout of the data buffer. Returns when all the data has been queued.
- * (or never if loop is set).
- * @param data pointer to memory location to playout
- * @param length number of bytes to stream
- * @param loop if repeat playback of buffer when completed the given number of times
- */
-void MemorySource::play(const uint8_t *data, int length, int loop)
-{
-    int sample;
-    uint16_t *out;
-
-    do
-    {
-        while (bytesSent < length)
-        {
-            int size = min(length - bytesSent, MEMORY_SOURCE_MAX_BUFFER);
-            buffer = ManagedBuffer(size*4);
-            out = (uint16_t *) &buffer[0];
-
-            for (int i=0; i<size; i++)
-            {
-                sample = data[bytesSent];
-                bytesSent++;
-
-                if (sample == 255)
-                    sample = maximumValue;
-                else
-                    sample = (sample * scalar) >> 8;
-
-                *out = sample; 
-                out++;
-
-#ifdef SPEAKER_TEST_DIFFERENTIAL
-                *out = sample | 0x8000; 
-#else
-                *out = 0x0000;
-#endif
-                out++;
-
-            }
-
-            DMESG("PR");
-            output.pullRequest();
-            DMESG("PR:DONE");
-        }
-
-        bytesSent = 0;
-        if (loop > 0)
-            loop--;
-
-    } while (loop);
-    DMESG("PLAY: DONE");
-
-} 
-
-const uint8_t square[] = {128};
-const uint8_t middleC[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const uint8_t middleD[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const uint8_t middleE[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const uint8_t hello[] = {
+static const uint8_t square[] = {128};
+static const uint8_t middleC[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const uint8_t middleD[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const uint8_t middleE[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const uint8_t hello[] = {
 	0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x80, 0x80, 0x80, 0x7F, 0x7F, 0x7F, 0x80, 0x7F, 0x7F, 0x7F, 0x80, 
 	0x80, 0x80, 0x80, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x80, 0x7F, 0x7F, 0x7F, 
 	0x7F, 0x7F, 0x80, 0x80, 0x7F, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 
@@ -712,8 +584,8 @@ const uint8_t hello[] = {
 	0x7F, 0x7F, 0x7F, 0x80, 0x7F, 0x7F, 0x80, 0x80, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F
 };
 
-MemorySource *sampleSource = NULL;
-NRF52PWM *speaker = NULL;
+static MemorySource *sampleSource = NULL;
+static NRF52PWM *speaker = NULL;
 
 void
 speaker_test(int plays)
@@ -726,18 +598,11 @@ speaker_test(int plays)
     if (speaker == NULL)
         speaker = new NRF52PWM(NRF_PWM0, sampleSource->output, 16000);
 
-    // Disable RUN_MIC
-    uBit.io.runmic.setDigitalValue(0);
-
     // Uncomment for piezo
     speaker->connectPin(uBit.io.speaker, 0);
-    speaker->connectPin(uBit.io.runmic, 2);
+    speaker->connectPin(uBit.io.P0, 1);
    
     uBit.io.speaker.setHighDrive(true);
-
-    // uncomment for edge connector P1 and P2
-    //speaker.connectPin(uBit.io.P1, 0);
-    //speaker.connectPin(uBit.io.P2, 2);
 
     DMESG("SPEAKER TEST: WOBBLING... [max: %d]", speaker->getSampleRange());
     sampleSource->setMaximumSampleValue(speaker->getSampleRange());
@@ -766,10 +631,10 @@ square_wave_test()
     while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 
     uint16_t pwm_seq[4] = {8000, 0x8000 | 8000, 8000, 0x8000 | 8000};
-    NRF_PWM0->PSEL.OUT[0] = (uBit.io.P1.name << PWM_PSEL_OUT_PIN_Pos) |
+    NRF_PWM0->PSEL.OUT[0] = (uBit.io.speaker.name << PWM_PSEL_OUT_PIN_Pos) |
         (PWM_PSEL_OUT_CONNECT_Connected <<
          PWM_PSEL_OUT_CONNECT_Pos);
-    NRF_PWM0->PSEL.OUT[1] = (uBit.io.P2.name << PWM_PSEL_OUT_PIN_Pos) |
+    NRF_PWM0->PSEL.OUT[1] = (uBit.io.P0.name << PWM_PSEL_OUT_PIN_Pos) |
         (PWM_PSEL_OUT_CONNECT_Connected <<
          PWM_PSEL_OUT_CONNECT_Pos);
     NRF_PWM0->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);

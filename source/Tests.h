@@ -61,5 +61,6 @@ void display_countdown();
 void raw_blinky_test();
 void display_button_icon_test();
 void display_brightness_test();
+void pwm_test();
 
 #endif

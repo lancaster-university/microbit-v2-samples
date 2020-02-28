@@ -1,5 +1,7 @@
 #include "MicroBit.h"
 #include "Tests.h"
+#include "NRF52PWM.h"
+#include "MemorySource.h"
 
 Pin *edgeConnector[] = {
     &uBit.io.P0, 
@@ -24,7 +26,11 @@ Pin *edgeConnector[] = {
 };
 
 //Pin *analogPins[] = {&uBit.io.P1, &uBit.io.P2};
-Pin *analogPins[] = {&uBit.io.P1};
+static Pin *analogPins[] = {&uBit.io.P1};
+static NRF52PWM *pwm = NULL;
+static MemorySource *pwmSource = NULL;
+
+static uint16_t square[4];
 
 void
 edge_connector_test()
@@ -126,4 +132,43 @@ highDriveTest()
 
         uBit.sleep(1000);
     }
+}
+
+void
+pwm_test()
+{
+    DMESG("PWM TEST: STARTING...");
+
+    if (pwmSource == NULL)
+        pwmSource = new MemorySource();
+
+    if (pwm == NULL)
+        pwm = new NRF52PWM(NRF_PWM0, pwmSource->output, 1600);
+   
+    uBit.io.speaker.setHighDrive(true);
+
+    pwm->connectPin(uBit.io.speaker, 0);
+    pwm->connectPin(uBit.io.P0, 1);
+
+    DMESG("SPEAKER TEST: WOBBLING... [max: %d]", pwm->getSampleRange());
+
+    int freq = 1600;
+
+    while(1)
+    {
+        pwm->setSampleRate(freq);
+        pwmSource->setMaximumSampleValue(pwm->getSampleRange());
+        for (int i=0; i<4; i++)
+            square[i] = pwm->getSampleRange()/2;
+
+        pwmSource->play(square, 4, 0); 
+
+        DMESG("SPEAKER TEST: %d Hz", freq);
+        uBit.sleep(3000);
+
+        freq = freq - 100;
+    }
+
+    // Should never get here...
+    DMESG("SPEAKER TEST: EXITING...");
 }
