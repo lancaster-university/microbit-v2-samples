@@ -135,6 +135,26 @@ highDriveTest()
 }
 
 void
+pwm_pin_test()
+{
+    int freq = 200;
+    uBit.display.print('c');
+    uBit.sleep(500);
+    DMESG("PWM_PIN_TEST: STARTING...");
+    uBit.io.speaker.setAnalogValue(512);
+    DMESG("PWM_PIN_TEST: setAnalogValue...");
+
+    while(1)
+    {
+        uBit.io.speaker.setAnalogPeriodUs(1000000/freq);
+        DMESG("PWM_PIN_TEST: setAnalogPeriodUs...");
+
+        uBit.sleep(1000);
+        freq += 100;
+    }
+}
+
+void
 pwm_test()
 {
     DMESG("PWM TEST: STARTING...");
@@ -143,7 +163,7 @@ pwm_test()
         pwmSource = new MemorySource();
 
     if (pwm == NULL)
-        pwm = new NRF52PWM(NRF_PWM0, pwmSource->output, 1600);
+        pwm = new NRF52PWM(NRF_PWM0, pwmSource->output, 200);
    
     uBit.io.speaker.setHighDrive(true);
 
@@ -152,7 +172,7 @@ pwm_test()
 
     DMESG("SPEAKER TEST: WOBBLING... [max: %d]", pwm->getSampleRange());
 
-    int freq = 1600;
+    int freq = 200;
 
     while(1)
     {
@@ -166,7 +186,7 @@ pwm_test()
         DMESG("SPEAKER TEST: %d Hz", freq);
         uBit.sleep(3000);
 
-        freq = freq - 100;
+        freq = freq + 100;
     }
 
     // Should never get here...
