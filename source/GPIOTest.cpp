@@ -150,6 +150,10 @@ pwm_pin_test()
         DMESG("PWM_PIN_TEST: setAnalogPeriodUs...");
 
         uBit.sleep(1000);
+        uBit.io.speaker.setAnalogValue(0);
+        uBit.sleep(1000);
+        uBit.io.speaker.setAnalogValue(512);
+        
         freq += 100;
     }
 }
