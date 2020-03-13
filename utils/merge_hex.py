@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This script will merge two hex files and write the output to a hex file.
-   USAGE: merge_hex.py input_file1 input_file2 output_file.
+"""This script will merge N hex files and write the output to a hex file.
+   USAGE: merge_hex.py input_file1 input_file2 [....] -o output_file
 """
 
 from optparse import OptionParser
@@ -29,7 +29,7 @@ parser.add_option("-o", "--output",
 	              type="string",
                   dest="output",
                   default="",
-                  help="The relative path to the headers for the microbit-dal.")
+                  help="The output path for the combined hex")
 
 (options, args) = parser.parse_args()
 
@@ -76,7 +76,7 @@ def main(options, args):
         return fail('Only one file was provided to merge.')
         exit(0)
 
-    # Get the two hex files, merge them, and save the result
+    # Get the first hex file, merge the remainder and save the result
     orig = IntelHex(args[0])
     convert_start_addr(orig)
 
