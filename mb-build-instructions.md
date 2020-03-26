@@ -4,7 +4,7 @@ The entry point for micro:bit at this stage is the branch `master`
 
 ## System setup
 
-You should have followed the setup required for CODAL in the main readme
+You should have followed the setup required for CODAL in the main readme. One majore difference is that for mb we ship a codal.json that is hardcoded to our target.
 
 For the CODAL build tools to work, you have to have setup GitHub's two-factor authentication to work with git, and generated an access token (this is because the repositories are private.
 
@@ -17,6 +17,8 @@ https://github.com/settings/tokens
 You should tick the 'repo' and 'admin:repo_hook' permissions. Save this access token somewhere secure (if on a Mac you can use keychain access if you don't have an existing password manager)
 
 ### Tell git to use your credentials for GitHub
+
+(If you really need to skip this step, you can just have github let you login on the command line)
 
 Because the repositories are private, if you don't do this, git will get 404s whenever we try to access the private repos
 
@@ -39,7 +41,7 @@ cd codal
 python build.py
 ```
 
-If this fails, for example because you're using GH 2FA and https, then you need to manually fetch all repos:
+If this fails, for example because you're using GH 2FA and https and don't have a personal access token (as per instructions above), then you need to manually fetch all repos:
 
 ```bash
 cd libraries/
