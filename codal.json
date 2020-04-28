@@ -1,7 +1,7 @@
 {
     "target": {
-        "name": "codal-microbit-next",
-        "url": "https://github.com/microbit-foundation/codal-microbit-next",
+        "name": "codal-microbit",
+        "url": "https://github.com/microbit-foundation/codal-microbit",
         "branch": "master",
         "type": "git",
         "test_ignore": true,
