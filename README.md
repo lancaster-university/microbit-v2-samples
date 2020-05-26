@@ -4,6 +4,10 @@ The main repository for the Component Oriented Device Abstraction Layer (CODAL).
 
 This repository is an empty shell that provides the tooling needed to produce a bin/hex/uf2 file for a CODAL device.
 
+## Raising Issues
+
+Any issues regarding the micro:bit are gathered on the [microbit-foundation/codal-microbit](https://github.com/microbit-foundation/codal-microbit) repository. Please raise yours on that repository as well.
+
 ## Installation
 
 ### Automatic installation.

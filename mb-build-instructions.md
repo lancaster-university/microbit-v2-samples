@@ -82,4 +82,6 @@ If your build fails with missing toolchain, remove the build dir and try again. 
 
 If you get include issues, ensure you're on the right branch for codal-mbedos (listed above)
 
+# Raising Issues
 
+Any issues regarding the Micro:Bit should be raised on the [microbit-foundation/codal-microbit](https://github.com/microbit-foundation/codal-microbit) repository.
