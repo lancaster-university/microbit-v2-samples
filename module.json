@@ -1,0 +1,18 @@
+{
+  "name": "codal",
+  "version": "0.0.1",
+  "description": "Component Oriented Device Abstraction Layer (CODAL) - root",
+  "license": "MIT",
+  "dependencies": {
+    "codal-microbit": "git@github.com:microbit-foundation/codal-microbit.git"
+  },
+  "targetDependencies": {},
+  "extraIncludes": [
+    "yotta_modules/"
+  ],
+  "bin": "./source",
+  "scripts": {
+    "preGenerate": "mv CMakeLists.txt unused.cmake",
+    "postBuild": "cp build/codal-yotta-target/source/codal.hex ./"
+  }
+}
