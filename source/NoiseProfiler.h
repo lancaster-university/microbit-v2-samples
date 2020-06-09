@@ -26,26 +26,27 @@ DEALINGS IN THE SOFTWARE.
 #include "CodalConfig.h"
 #include "DataStream.h"
 
-#ifndef SERIAL_STREAMER_H
-#define SERIAL_STREAMER_H
+#ifndef NOISE_PROFILER_H
+#define NOISE_PROFILER_H
 
-#define SERIAL_STREAM_MODE_BINARY               1
-#define SERIAL_STREAM_MODE_DECIMAL              2
-#define SERIAL_STREAM_MODE_HEX                  3
+#define NOISE_PROFILE_RANGE 10
+#define NOISE_PROFILE_SIZE (2*NOISE_PROFILE_RANGE+1)
+#define NOISE_PROFILE_TOTAL_SAMPLES 110000
 
-class SerialStreamer : public DataSink
+
+class NoiseProfiler : public DataSink
 {
-    DataSource      &upstream; 
-    ManagedBuffer   lastBuffer;         
-    int             mode;
+    DataSource      &upstream;          
+    int             noiseProfile[NOISE_PROFILE_SIZE];
+    int             variance;
+    int             samples;
 
     public:
     /**
-     * Creates a simple component that logs a stream of signed 16 bit data as signed 8-bit data over serial.
-     * @param source a DataSource to measure the level of.
-     * @param mode the format of the serialised data. Valid options are SERIAL_STREAM_MODE_BINARY (default), SERIAL_STREAM_MODE_DECIMAL, SERIAL_STREAM_MODE_HEX.
+     * Creates a simple component that generates a noise profile of an 8 bit data stream provided
+     * @param source a DataSource to measure.
      */
-    SerialStreamer(DataSource &source, int mode = SERIAL_STREAM_MODE_BINARY);
+    NoiseProfiler(DataSource &source);
 
     /**
      * Callback provided when data is ready.
@@ -53,16 +54,20 @@ class SerialStreamer : public DataSink
     virtual int pullRequest();
 
     /**
-     * Stream the last buffer received to the serial port.
-     * n.b. this occurs automatically upon the buffer is made available by our upstream component.
-     * Call this method explicitly only if your wish to send the buffer again.
-     */
-    void streamBuffer(ManagedBuffer buffer);
+    * reset gathered data
+    */
+    void reset();
 
     /**
-     * returns the last buffer processed by this component
-     */
-    ManagedBuffer getLastBuffer();
+    * Output the results gathered to the DMESG buffer
+    */
+    void printResults();
+
+    /**
+    * Determines the state of the test
+    * @return true if the test is complete, fasle otherwise
+    */
+    bool isDone();
 };
 
 #endif
