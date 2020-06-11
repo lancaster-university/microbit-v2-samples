@@ -1,0 +1,41 @@
+name: Build CODAL
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+  schedule:
+    # Runs every day at 9 am
+    - cron: '0 9 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install GCC ARM
+        run: |
+          sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc-arm-embedded
+          arm-none-eabi-gcc --version
+      - name: Install a new-ish version of CMake
+        run: |
+          sudo add-apt-repository ppa:adrozdoff/cmake
+          sudo apt-get update -qq
+          sudo apt-get install -y cmake
+          cmake --version
+      - name: Configure git to access repos via GH Token URL
+        run: git config --global url."https://x-access-token:${{ secrets.GH_TOKEN_MICROBIT_MACHINE }}@github".insteadOf https://github
+      - name: Build using build.py
+        run: python build.py
+      - name: Echo the folder structure for debugging
+        run: |
+          sudo apt-get install -y tree
+          tree
+      - name: Upload hex file
+        uses: actions/upload-artifact@v1
+        with:
+          name: MICROBIT.hex
+          path: MICROBIT.hex
