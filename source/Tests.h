@@ -63,6 +63,10 @@ void display_button_icon_test();
 void display_brightness_test();
 void pwm_test();
 void pwm_pin_test();
+void cap_touch_test();
+void cap_touch_test_raw();
+void light_level_test_raw();
+
 
 
 #endif
