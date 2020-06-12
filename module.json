@@ -12,7 +12,6 @@
   ],
   "bin": "./source",
   "scripts": {
-    "preGenerate": "mv CMakeLists.txt unused.cmake",
     "postBuild": "cp build/codal-yotta-target/source/codal.hex ./"
   }
 }
