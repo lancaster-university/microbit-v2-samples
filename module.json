@@ -11,7 +11,5 @@
     "yotta_modules/"
   ],
   "bin": "./source",
-  "scripts": {
-    "postBuild": "cp build/codal-yotta-target/source/codal.hex ./"
-  }
+  "scripts": {}
 }
