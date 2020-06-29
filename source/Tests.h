@@ -66,7 +66,8 @@ void pwm_pin_test();
 void cap_touch_test();
 void cap_touch_test_raw();
 void light_level_test_raw();
-
-
+void display_brightness_AB_test();
+void display_lightlevel_test();
+void display_lightlevel_test2();
 
 #endif

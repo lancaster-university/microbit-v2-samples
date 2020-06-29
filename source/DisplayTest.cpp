@@ -7,12 +7,14 @@ const char * const arrow_left_emoji ="\
     255,255,255,255,255\n\
     000,255,000,000,000\n\
     000,000,255,000,000\n";
+
 const char * const arrow_right_emoji ="\
     000,000,255,000,000\n\
     000,000,000,255,000\n\
     255,255,255,255,255\n\
     000,000,000,255,000\n\
     000,000,255,000,000\n";
+
 const char * const tick_emoji ="\
     000,000,000,000,000\n\
     000,000,000,000,255\n\
@@ -324,3 +326,70 @@ display_button_icon_test()
     release_fiber();
 }
 
+void 
+display_brightness_AB_test()
+{
+    for (int i=0; i<25; i++)
+        uBit.display.image.setPixelValue(i / 5, i % 5, (i+1)*4);
+
+    int b = 255;
+
+    while(1)
+    {
+        if (uBit.buttonA.isPressed())
+            b--;
+
+        if (uBit.buttonB.isPressed())
+            b++;
+
+        if (b < 0)
+            b = 0;
+        
+        if (b > 255)
+            b = 255;
+
+        uBit.display.setBrightness(b);
+
+        uBit.sleep(100);
+    }
+}
+
+void 
+display_lightlevel_test()
+{
+    for (int i=0; i<25; i++)
+        uBit.display.image.setPixelValue(i / 5, i % 5, 255);
+
+    while(1)
+    {
+        uBit.display.setBrightness(uBit.display.getLightLevel());
+        uBit.sleep(100);
+    }
+}
+
+void 
+display_lightlevel_test2()
+{
+    for (int i=0; i<25; i++)
+        uBit.display.image.setPixelValue(i / 5, i % 5, 255);
+
+    int i = 0;
+
+    while(1)
+    {
+        uBit.sleep(500);
+
+        if (i >= 10)
+        {
+            uBit.serial.printf("LIGHT: %d\n", uBit.display.getLightLevel());
+        }
+        
+        if (i == 20)
+        {
+            uBit.display.setDisplayMode(DisplayMode::DISPLAY_MODE_GREYSCALE);
+            i = 0;
+        }
+
+        i++;
+    }
+}
