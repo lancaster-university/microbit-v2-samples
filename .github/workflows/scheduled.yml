@@ -1,29 +1,30 @@
-# Ubuntu run on every commit, PR, and once a day
-name: Build CODAL (Ubuntu)
+# Windows & macOS run once a week
+name: Weekly CODAL Build (Windows & macOS)
 
 on:
-  push:
-    branches: '*'
-  pull_request:
-    branches: '*'
   schedule:
-    # Runs every working day at 8 am
-    - cron: '0 8 * * 1-5'
+    # Runs every Wednesday at 7 am
+    - cron: '0 7 * * WED'
 
 jobs:
   build-py-script:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-16.04]
+        os: [macos-10.15, windows-2016]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: build.py ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install toolchain (Ubuntu)
-        if: runner.os == 'Linux'
-        run: sh ./.github/workflows/scripts/install-toolchain-ubuntu.sh
+      - name: Install toolchain (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\.github\workflows\scripts\install-toolchain-win.ps1
+          echo "::add-path::${env:GITHUB_WORKSPACE}"
+      - name: Install toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: sh ./.github/workflows/scripts/install-toolchain-mac.sh
       - name: Check Versions
         run: |
           arm-none-eabi-gcc --version
@@ -44,16 +45,29 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-16.04]
+        os: [macos-10.15, windows-2016]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Yotta ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install toolchain (Ubuntu)
-        if: runner.os == 'Linux'
-        run: sh ./.github/workflows/scripts/install-toolchain-ubuntu.sh
-      - name: Set up Python 3.8
+      - name: Install toolchain (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\.github\workflows\scripts\install-toolchain-win.ps1
+          echo "::add-path::${env:GITHUB_WORKSPACE}"
+      - name: Install toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: sh ./.github/workflows/scripts/install-toolchain-mac.sh
+      # There is an issue with Yotta and macOS Python 3.8 https://github.com/ARMmbed/yotta/issues/863
+      - name: Set up Python 3.6 (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+      # There is an issue parsing the git insteadOf on Windows when Python < 3.8
+      - name: Set up Python 3.8 (Windows)
+        if: runner.os == 'Windows'
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
@@ -75,9 +89,9 @@ jobs:
       - name: Clone codal-yotta-target inside a yotta_targets folder
         run: git clone --recurse-submodules https://github.com/microbit-foundation/codal-yotta-target.git yotta_targets/codal-yotta-target
       - name: Set Yotta target
-        run: yotta target codal-yotta-target
+        run: yotta --verbose --noninteractive target codal-yotta-target
       - name: Build with Yotta
-        run: yotta build
+        run: yotta --verbose --noninteractive build
       - name: Upload hex file
         uses: actions/upload-artifact@v1
         with:
