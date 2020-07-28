@@ -1,0 +1,15 @@
+{
+  "name": "codal",
+  "version": "0.0.1",
+  "description": "Component Oriented Device Abstraction Layer (CODAL) - root",
+  "license": "MIT",
+  "dependencies": {
+    "codal-microbit": "git@github.com:microbit-foundation/codal-microbit.git#master"
+  },
+  "targetDependencies": {},
+  "extraIncludes": [
+    "yotta_modules/"
+  ],
+  "bin": "./source",
+  "scripts": {}
+}
