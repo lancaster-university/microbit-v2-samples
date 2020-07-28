@@ -181,7 +181,6 @@ pwm_test()
     while(1)
     {
         pwm->setSampleRate(freq);
-        pwmSource->setMaximumSampleValue(pwm->getSampleRange());
         for (int i=0; i<4; i++)
             square[i] = pwm->getSampleRange()/2;
 

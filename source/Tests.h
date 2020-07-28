@@ -69,5 +69,6 @@ void light_level_test_raw();
 void display_brightness_AB_test();
 void display_lightlevel_test();
 void display_lightlevel_test2();
-
+void mems_mic_drift_test();
+void synthesizer_test();
 #endif

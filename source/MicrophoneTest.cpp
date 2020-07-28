@@ -4,11 +4,12 @@
 #include "LevelDetector.h"
 #include "Tests.h"
 
-NRF52ADCChannel *mic = NULL;
-SerialStreamer *streamer = NULL;
-LevelDetector *level = NULL;
-StreamNormalizer *processor = NULL;
-int claps = 0;
+static NRF52ADCChannel *mic = NULL;
+static SerialStreamer *streamer = NULL;
+static StreamNormalizer *processor = NULL;
+static LevelDetector *level = NULL;
+static int claps = 0;
+static volatile int sample;
 
 void
 onLoud(MicroBitEvent)
@@ -26,11 +27,30 @@ onQuiet(MicroBitEvent)
 {
 }
 
-void init_streaming()
+void mems_mic_drift_test()
+{
+    uBit.io.runmic.setDigitalValue(1);
+    uBit.io.runmic.setHighDrive(true);
+
+    while(true)
+    {
+        sample = uBit.io.P0.getAnalogValue();
+        uBit.sleep(250);
+
+        sample = uBit.io.microphone.getAnalogValue();
+        uBit.sleep(250);
+
+        uBit.display.scroll(sample);
+    }
+}
+
+void
+mems_mic_test()
 {
     if (mic == NULL){
         mic = uBit.adc.getChannel(uBit.io.microphone);
-        mic->setGain(7,1);
+        mic->setGain(7,0);          // Uncomment for v1.47.2
+        //mic->setGain(7,1);        // Uncomment for v1.46.2
     }
 
     if (processor == NULL)
@@ -41,9 +61,13 @@ void init_streaming()
 
     uBit.io.runmic.setDigitalValue(1);
     uBit.io.runmic.setHighDrive(true);
+
+    while(1)
+        uBit.sleep(1000);
 }
 
-void init_clap_detect()
+void
+mems_clap_test(int wait_for_clap)
 {
     claps = -1;
 
@@ -60,22 +84,6 @@ void init_clap_detect()
 
     uBit.io.runmic.setDigitalValue(1);
     uBit.io.runmic.setHighDrive(true);
-}
-
-
-void
-mems_mic_test()
-{
-    init_streaming();
-
-    while(1)
-        uBit.sleep(1000);
-}
-
-void
-mems_clap_test(int wait_for_clap)
-{
-    init_clap_detect();
 
     uBit.messageBus.listen(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_HIGH, onLoud);
     uBit.messageBus.listen(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_LOW, onQuiet);
@@ -86,4 +94,8 @@ mems_clap_test(int wait_for_clap)
     uBit.messageBus.ignore(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_HIGH, onLoud);
     uBit.messageBus.ignore(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_LOW, onQuiet);
 }
+
+
+
+
 
