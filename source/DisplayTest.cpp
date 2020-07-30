@@ -362,7 +362,7 @@ display_lightlevel_test()
 
     while(1)
     {
-        uBit.display.setBrightness(uBit.display.getLightLevel());
+        uBit.display.setBrightness(uBit.display.readLightLevel());
         uBit.sleep(100);
     }
 }
@@ -371,7 +371,7 @@ void
 display_lightlevel_test2()
 {
     for (int i=0; i<25; i++)
-        uBit.display.image.setPixelValue(i / 5, i % 5, 255);
+        uBit.display.image.setPixelValue(i / 5, i % 5, i*10+1);
 
     int i = 0;
 
@@ -381,7 +381,7 @@ display_lightlevel_test2()
 
         if (i >= 10)
         {
-            uBit.serial.printf("LIGHT: %d\n", uBit.display.getLightLevel());
+            uBit.serial.printf("LIGHT: %d\n", uBit.display.readLightLevel());
         }
         
         if (i == 20)
