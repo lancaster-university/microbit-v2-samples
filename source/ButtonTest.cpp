@@ -57,12 +57,34 @@ onButtonAB(MicroBitEvent)
     uBit.display.print("Cc");
 }
 
+void listenerRemoved(MicroBitListener *)
+{
+    DMESG("Listener deleted");
+}
+
 void
 button_test3()
 {
     uBit.messageBus.listen(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, onButtonA);
     uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonB);
     uBit.messageBus.listen(DEVICE_ID_BUTTON_AB, DEVICE_BUTTON_EVT_CLICK, onButtonAB);
+
+    while(1)
+        uBit.sleep(1000);
+}
+
+void
+button_test4()
+{
+    uBit.messageBus.setListenerDeletionCallback(listenerRemoved);
+    
+    uBit.messageBus.listen(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, onButtonA);
+    uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onButtonB);
+    uBit.messageBus.listen(DEVICE_ID_BUTTON_AB, DEVICE_BUTTON_EVT_CLICK, onButtonAB);
+
+    uBit.sleep(10000);
+
+    uBit.messageBus.ignore(DEVICE_ID_BUTTON_AB, DEVICE_BUTTON_EVT_CLICK, onButtonAB);
 
     while(1)
         uBit.sleep(1000);

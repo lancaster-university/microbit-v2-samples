@@ -1,4 +1,5 @@
 #include "MicroBit.h"
+#include "CodalDmesg.h"
 
 #ifndef MB_NEXT_TESTS_H
 #define MB_NEXT_TESTS_H
@@ -15,6 +16,7 @@ void blinky();
 void button_test1();
 void button_test2();
 void button_test3();
+void button_test4();
 void display_test1();
 void display_test2();
 void concurrent_display_test();
