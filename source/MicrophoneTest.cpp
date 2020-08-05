@@ -2,6 +2,7 @@
 #include "SerialStreamer.h"
 #include "StreamNormalizer.h"
 #include "LevelDetector.h"
+#include "LevelDetectorSPL.h"
 #include "Tests.h"
 
 static NRF52ADCChannel *mic = NULL;
@@ -25,6 +26,7 @@ onLoud(MicroBitEvent)
 void
 onQuiet(MicroBitEvent)
 {
+    DMESG("QUIET");
 }
 
 void mems_mic_drift_test()
@@ -73,7 +75,7 @@ mems_clap_test(int wait_for_clap)
 
     if (mic == NULL){
         mic = uBit.adc.getChannel(uBit.io.microphone);
-        mic->setGain(7,1);
+        mic->setGain(7,0);
     }
 
     if (processor == NULL)
@@ -95,7 +97,21 @@ mems_clap_test(int wait_for_clap)
     uBit.messageBus.ignore(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_LOW, onQuiet);
 }
 
+class MakeCodeMicrophoneTemplate {
+  public:
+    MIC_DEVICE microphone;
+    LevelDetectorSPL level;
+    MakeCodeMicrophoneTemplate() MIC_INIT { MIC_ENABLE; }
+};
 
+void
+mc_clap_test()
+{
+    new MakeCodeMicrophoneTemplate();
 
+    uBit.messageBus.listen(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, onLoud);
+    uBit.messageBus.listen(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_LOW, onQuiet);
 
-
+    while(1)
+        uBit.sleep(10000);
+}
