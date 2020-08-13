@@ -204,7 +204,7 @@ include_directories(${PROJECT_SOURCE_DIR}/${LIB_DEST})
 
 #add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
 
-# "import" and add any specified libraries to the build list
+# "import" and add any libraries from target.json to the build list
 if("${device.libraries}" STRGREATER "")
     message("Installing dependencies...")
     set(DEVICE_LIBS ${device.libraries})
@@ -223,12 +223,33 @@ if("${device.libraries}" STRGREATER "")
         INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${URL} ${BRANCH} ${device.libraries_${i}.type})
         list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
     endforeach()
+endif()
 
-    foreach(dep ${CODAL_DEPS})
-        message("${BoldGreen}Using library: ${dep}${ColourReset}")
-        add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
+# and also from codal.json
+if("${codal.libraries}" STRGREATER "")
+    message("Installing app dependencies...")
+    set(CODAL_LIBS ${codal.libraries})
+
+    foreach(i ${CODAL_LIBS})
+        SET(BRANCH "NONE")
+        SET(URL "${codal.libraries_${i}.url}")
+        if("${codal.libraries_${i}.branch}" STRGREATER "")
+            SET(BRANCH "${codal.libraries_${i}.branch}")
+        endif()
+        if("${codal.target.branches.${URL}}" STRGREATER "")
+            SET(BRANCH "${codal.target.branches.${URL}}")
+            MESSAGE (STATUS "Override branch: ${BRANCH}")
+        endif()
+
+        INSTALL_DEPENDENCY(${LIB_DEST} ${codal.libraries_${i}.name} ${URL} ${BRANCH} ${codal.libraries_${i}.type})
+        list(APPEND CODAL_DEPS "${codal.libraries_${i}.name}")
     endforeach()
 endif()
+
+foreach(dep ${CODAL_DEPS})
+    message("${BoldGreen}Using library: ${dep}${ColourReset}")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
+endforeach()
 
 #finally, find sources and includes of the application, and create a target.
 RECURSIVE_FIND_DIR(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${CODAL_APP_SOURCE_DIR}" "*.h")
