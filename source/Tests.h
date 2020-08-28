@@ -74,4 +74,11 @@ void display_lightlevel_test2();
 void mems_mic_drift_test();
 void mc_clap_test();
 void synthesizer_test();
+void version_test();
+void power_consumption_test();
+void power_source_test();
+void standby_test();
+void sound_emoji_test();
+
+
 #endif

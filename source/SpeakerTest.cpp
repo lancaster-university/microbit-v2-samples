@@ -6,6 +6,7 @@
 #include "StreamNormalizer.h"
 #include "SerialStreamer.h"
 #include "Synthesizer.h"
+#include "SoundEmojiSynthesizer.h"
 #include "Tests.h"
 
 //#define SPEAKER_TEST_DIFFERENTIAL
@@ -592,6 +593,7 @@ static NRF52PWM *speaker = NULL;
 static StreamNormalizer *normalizer = NULL;
 //static SerialStreamer *streamer = NULL;
 static Synthesizer* synth = NULL;
+static SoundEmojiSynthesizer* emojiSynth = NULL;
 
 void
 synthesizer_test()
@@ -639,6 +641,51 @@ synthesizer_test()
 
     // Should never get here...
     DMESG("SYNTHESIZER TEST: EXITING...");
+}
+
+void
+sound_emoji_test()
+{
+    DMESG("SOUND_EMOJI TEST: STARTING...");
+
+    if (speaker == NULL)
+        speaker = new NRF52PWM(NRF_PWM1, normalizer->output, 44100);
+
+    if (emojiSynth == NULL)
+    {
+        emojiSynth = new SoundEmojiSynthesizer(44100);
+        emojiSynth->setSampleRange(speaker->getSampleRange());
+        emojiSynth->setOrMask(0x8000);
+    }
+
+    speaker->setDecoderMode(PWM_DECODER_LOAD_Common);
+    speaker->connectPin(uBit.io.speaker, 0);
+    speaker->connectPin(uBit.io.P0, 1);
+   
+    uBit.io.speaker.setHighDrive(true);
+
+    DMESG("SOUND_EMOJI TEST: RUNNING... ");
+
+    ManagedBuffer b(sizeof(SoundEffect));
+    SoundEffect *fx = (SoundEffect *)&b[0];
+
+    fx->duration = 2000;
+    fx->tone = 3;                   // Square Wave
+    fx->effect = 3;                 // Slow Vibrato
+    fx->effectParameter1 = 0;
+    fx->startFrequency = 261.626f;
+    fx->endFrequency = 523.251f;
+    fx->startvolume = 1.0f;
+    fx->endVolume = 0.5f;
+
+    while(1)
+    {
+        emojiSynth->play(b);
+        uBit.sleep(5000);
+    }
+
+    // Should never get here...
+    DMESG("SOUND_EMOJI TEST: EXITING...");
 }
 
 
