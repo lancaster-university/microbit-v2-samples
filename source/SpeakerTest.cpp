@@ -718,17 +718,18 @@ sound_emoji_test()
     ManagedBuffer b(sizeof(SoundEffect));
     SoundEffect *fx = (SoundEffect *)&b[0];
 
-    for (int i=0; i<4; i++)
-    {
-        fx->duration = 1000;
-        fx->tone.tonePrint = Synthesizer::SquareWaveTone;
-        fx->frequency = 261.626f;
-        fx->volume = 1.0f;
+    fx->duration = 1000;
+    fx->tone.tonePrint = Synthesizer::SquareWaveTone;
+    fx->frequency = 261.626f;
+    fx->volume = 0.0f;
 
-        fx->effects[0].effect = SoundSynthesizerEffects::logarithmicInterpolation;
-        fx->effects[0].parameter[0] = 1500.0f;
-        fx->steps = 10;
-    }
+    fx->effects[0].effect = SoundSynthesizerEffects::linearInterpolation;
+    fx->effects[0].parameter[0] = 1500.0f;
+    fx->effects[0].steps = 10;
+
+    fx->effects[1].effect = SoundSynthesizerEffects::volumeRampEffect;
+    fx->effects[1].parameter[0] = 1.0f;
+    fx->effects[1].steps = 10;
 
     while(1)
     {
