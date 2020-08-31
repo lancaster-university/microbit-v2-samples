@@ -13,51 +13,6 @@
 
 //#define SPEAKER_TEST_DIFFERENTIAL
 
-static const KeyValueTableEntry soundEmojiTonePrintData[] = {
-    {0, (const uint32_t) Synthesizer::SineTone},
-    {1, (const uint32_t) Synthesizer::SawtoothTone},
-    {2, (const uint32_t) Synthesizer::TriangleTone},
-    {3, (const uint32_t) Synthesizer::SquareWaveTone},
-    {4, (const uint32_t) Synthesizer::NoiseTone},
-    {5, (const uint32_t) Synthesizer::SquareWaveToneExt}
-};
-CREATE_KEY_VALUE_TABLE(soundEmojiTonePrint, soundEmojiTonePrintData);
-
-static const KeyValueTableEntry soundEmojiInterpolatorsData[] = {
-    {0, (const uint32_t) SoundSynthesizerEffects::noInterpolation},
-    {1, (const uint32_t) SoundSynthesizerEffects::linearInterpolation},
-    {2, (const uint32_t) SoundSynthesizerEffects::curveInterpolation},
-    {3, (const uint32_t) SoundSynthesizerEffects::slowVibratoEffect},
-    {4, (const uint32_t) SoundSynthesizerEffects::warbleInterpolation},
-    {5, (const uint32_t) SoundSynthesizerEffects::exponentialRisingInterpolation},
-    {6, (const uint32_t) SoundSynthesizerEffects::exponentialFallingInterpolation},
-    {7, (const uint32_t) SoundSynthesizerEffects::vibratoEffect},
-    {8, (const uint32_t) SoundSynthesizerEffects::majAppregrioAscendInterpolation},
-    {9, (const uint32_t) SoundSynthesizerEffects::majAppregrioDescendInterpolation},
-    {10, (const uint32_t) SoundSynthesizerEffects::minAppregrioAscendInterpolation},
-    {11, (const uint32_t) SoundSynthesizerEffects::minAppregrioDescendInterpolation},
-    {12, (const uint32_t) SoundSynthesizerEffects::dimAppregrioAscendInterpolation},
-    {13, (const uint32_t) SoundSynthesizerEffects::dimAppregrioDescendInterpolation},
-    {14, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioAscendInterpolation},
-    {15, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioDescendInterpolation},
-    {16, (const uint32_t) SoundSynthesizerEffects::toneAppregrioAscendInterpolation},
-    {17, (const uint32_t) SoundSynthesizerEffects::toneAppregrioDescendInterpolation},
-    {20, (const uint32_t) SoundSynthesizerEffects::logarithmicInterpolation}
-
-};
-CREATE_KEY_VALUE_TABLE(soundEmojiInterpolators, soundEmojiInterpolatorsData);
-
-static const KeyValueTableEntry soundEmojiStepsData[] = {
-    {500, 9},
-    {1150, 15},
-    {1800, 20},
-    {2070, 50},
-    {2100, 90}
-};
-CREATE_KEY_VALUE_TABLE(soundEmojiSteps, soundEmojiStepsData);
-
-
-
 static const uint8_t square[] = {128};
 static const uint8_t middleC[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static const uint8_t middleD[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -720,16 +675,12 @@ sound_emoji_test()
 
     fx->duration = 1000;
     fx->tone.tonePrint = Synthesizer::SquareWaveTone;
-    fx->frequency = 261.626f;
-    fx->volume = 0.0f;
+    fx->frequency = 130.81f;
+    fx->volume = 1.0f;
 
-    fx->effects[0].effect = SoundSynthesizerEffects::linearInterpolation;
-    fx->effects[0].parameter[0] = 1500.0f;
-    fx->effects[0].steps = 10;
-
-    fx->effects[1].effect = SoundSynthesizerEffects::volumeRampEffect;
-    fx->effects[1].parameter[0] = 1.0f;
-    fx->effects[1].steps = 10;
+    fx->effects[0].effect = SoundSynthesizerEffects::appregrioAscending;
+    fx->effects[0].parameter_p[0] = MusicalProgressions::pentatonic;
+    fx->effects[0].steps = 12;
 
     while(1)
     {
@@ -858,6 +809,49 @@ speaker_test2(int plays)
 }
 
 #ifdef CODE_TO_DERIVE_STEPSCOUNT_LIKE_JOSEPHINES_JS_SYNTH
+
+static const KeyValueTableEntry soundEmojiTonePrintData[] = {
+    {0, (const uint32_t) Synthesizer::SineTone},
+    {1, (const uint32_t) Synthesizer::SawtoothTone},
+    {2, (const uint32_t) Synthesizer::TriangleTone},
+    {3, (const uint32_t) Synthesizer::SquareWaveTone},
+    {4, (const uint32_t) Synthesizer::NoiseTone},
+    {5, (const uint32_t) Synthesizer::SquareWaveToneExt}
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiTonePrint, soundEmojiTonePrintData);
+
+static const KeyValueTableEntry soundEmojiInterpolatorsData[] = {
+    {0, (const uint32_t) SoundSynthesizerEffects::noInterpolation},
+    {1, (const uint32_t) SoundSynthesizerEffects::linearInterpolation},
+    {2, (const uint32_t) SoundSynthesizerEffects::curveInterpolation},
+    {3, (const uint32_t) SoundSynthesizerEffects::slowVibratoEffect},
+    {4, (const uint32_t) SoundSynthesizerEffects::warbleInterpolation},
+    {5, (const uint32_t) SoundSynthesizerEffects::exponentialRisingInterpolation},
+    {6, (const uint32_t) SoundSynthesizerEffects::exponentialFallingInterpolation},
+    {7, (const uint32_t) SoundSynthesizerEffects::vibratoEffect},
+    {8, (const uint32_t) SoundSynthesizerEffects::majAppregrioAscendInterpolation},
+    {9, (const uint32_t) SoundSynthesizerEffects::majAppregrioDescendInterpolation},
+    {10, (const uint32_t) SoundSynthesizerEffects::minAppregrioAscendInterpolation},
+    {11, (const uint32_t) SoundSynthesizerEffects::minAppregrioDescendInterpolation},
+    {12, (const uint32_t) SoundSynthesizerEffects::dimAppregrioAscendInterpolation},
+    {13, (const uint32_t) SoundSynthesizerEffects::dimAppregrioDescendInterpolation},
+    {14, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioAscendInterpolation},
+    {15, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioDescendInterpolation},
+    {16, (const uint32_t) SoundSynthesizerEffects::toneAppregrioAscendInterpolation},
+    {17, (const uint32_t) SoundSynthesizerEffects::toneAppregrioDescendInterpolation},
+    {20, (const uint32_t) SoundSynthesizerEffects::logarithmicInterpolation}
+
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiInterpolators, soundEmojiInterpolatorsData);
+
+static const KeyValueTableEntry soundEmojiStepsData[] = {
+    {500, 9},
+    {1150, 15},
+    {1800, 20},
+    {2070, 50},
+    {2100, 90}
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiSteps, soundEmojiStepsData);
 
     // Define the number of steps in the effect. This seems fairly arbitrary, but maintaining here for compatibility...
     // TODO: Simply replace all this with a configurable parameter???
