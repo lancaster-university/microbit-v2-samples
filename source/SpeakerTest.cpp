@@ -1,15 +1,61 @@
 #include "MicroBit.h"
 #include "DataStream.h"
 #include "MemorySource.h"
+#include "CodalUtil.h"
 #include "nrf.h"
 #include "NRF52PWM.h"
 #include "StreamNormalizer.h"
 #include "SerialStreamer.h"
 #include "Synthesizer.h"
 #include "SoundEmojiSynthesizer.h"
+#include "SoundSynthesizerEffects.h"
 #include "Tests.h"
 
 //#define SPEAKER_TEST_DIFFERENTIAL
+
+static const KeyValueTableEntry soundEmojiTonePrintData[] = {
+    {0, (const uint32_t) Synthesizer::SineTone},
+    {1, (const uint32_t) Synthesizer::SawtoothTone},
+    {2, (const uint32_t) Synthesizer::TriangleTone},
+    {3, (const uint32_t) Synthesizer::SquareWaveTone},
+    {4, (const uint32_t) Synthesizer::NoiseTone},
+    {5, (const uint32_t) Synthesizer::SquareWaveToneExt}
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiTonePrint, soundEmojiTonePrintData);
+
+static const KeyValueTableEntry soundEmojiInterpolatorsData[] = {
+    {0, (const uint32_t) SoundSynthesizerEffects::noInterpolation},
+    {1, (const uint32_t) SoundSynthesizerEffects::linearInterpolation},
+    {2, (const uint32_t) SoundSynthesizerEffects::curveInterpolation},
+    {3, (const uint32_t) SoundSynthesizerEffects::slowVibratoEffect},
+    {4, (const uint32_t) SoundSynthesizerEffects::warbleInterpolation},
+    {5, (const uint32_t) SoundSynthesizerEffects::exponentialRisingInterpolation},
+    {6, (const uint32_t) SoundSynthesizerEffects::exponentialFallingInterpolation},
+    {7, (const uint32_t) SoundSynthesizerEffects::vibratoEffect},
+    {8, (const uint32_t) SoundSynthesizerEffects::majAppregrioAscendInterpolation},
+    {9, (const uint32_t) SoundSynthesizerEffects::majAppregrioDescendInterpolation},
+    {10, (const uint32_t) SoundSynthesizerEffects::minAppregrioAscendInterpolation},
+    {11, (const uint32_t) SoundSynthesizerEffects::minAppregrioDescendInterpolation},
+    {12, (const uint32_t) SoundSynthesizerEffects::dimAppregrioAscendInterpolation},
+    {13, (const uint32_t) SoundSynthesizerEffects::dimAppregrioDescendInterpolation},
+    {14, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioAscendInterpolation},
+    {15, (const uint32_t) SoundSynthesizerEffects::chromaticAppregrioDescendInterpolation},
+    {16, (const uint32_t) SoundSynthesizerEffects::toneAppregrioAscendInterpolation},
+    {17, (const uint32_t) SoundSynthesizerEffects::toneAppregrioDescendInterpolation},
+    {20, (const uint32_t) SoundSynthesizerEffects::logarithmicInterpolation}
+
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiInterpolators, soundEmojiInterpolatorsData);
+
+static const KeyValueTableEntry soundEmojiStepsData[] = {
+    {500, 9},
+    {1150, 15},
+    {1800, 20},
+    {2070, 50},
+    {2100, 90}
+};
+CREATE_KEY_VALUE_TABLE(soundEmojiSteps, soundEmojiStepsData);
+
 
 
 static const uint8_t square[] = {128};
@@ -648,20 +694,23 @@ sound_emoji_test()
 {
     DMESG("SOUND_EMOJI TEST: STARTING...");
 
-    if (speaker == NULL)
-        speaker = new NRF52PWM(NRF_PWM1, normalizer->output, 44100);
-
     if (emojiSynth == NULL)
-    {
         emojiSynth = new SoundEmojiSynthesizer(44100);
-        emojiSynth->setSampleRange(speaker->getSampleRange());
-        emojiSynth->setOrMask(0x8000);
-    }
+
+    DMESG("SOUND_EMOJI TEST: SYNTH INITIALISED... ");
+
+    if (speaker == NULL)
+        speaker = new NRF52PWM(NRF_PWM1, *emojiSynth, 44100);
+
+    DMESG("SOUND_EMOJI TEST: PWM INITIALISED... ");
+
+    emojiSynth->setSampleRange(speaker->getSampleRange());
+    emojiSynth->setOrMask(0x8000);
 
     speaker->setDecoderMode(PWM_DECODER_LOAD_Common);
-    speaker->connectPin(uBit.io.speaker, 0);
-    speaker->connectPin(uBit.io.P0, 1);
-   
+    speaker->connectPin(uBit.io.P0, 0);
+    //speaker->connectPin(uBit.io.speaker, 1);
+
     uBit.io.speaker.setHighDrive(true);
 
     DMESG("SOUND_EMOJI TEST: RUNNING... ");
@@ -669,19 +718,23 @@ sound_emoji_test()
     ManagedBuffer b(sizeof(SoundEffect));
     SoundEffect *fx = (SoundEffect *)&b[0];
 
-    fx->duration = 2000;
-    fx->tone = 3;                   // Square Wave
-    fx->effect = 3;                 // Slow Vibrato
-    fx->effectParameter1 = 0;
-    fx->startFrequency = 261.626f;
-    fx->endFrequency = 523.251f;
-    fx->startvolume = 1.0f;
-    fx->endVolume = 0.5f;
+    for (int i=0; i<4; i++)
+    {
+        fx->duration = 1000;
+        fx->tone.tonePrint = Synthesizer::SquareWaveTone;
+        fx->frequency = 261.626f;
+        fx->volume = 1.0f;
+
+        fx->effects[0].effect = SoundSynthesizerEffects::logarithmicInterpolation;
+        fx->effects[0].parameter[0] = 1500.0f;
+        fx->steps = 10;
+    }
 
     while(1)
     {
+        DMESG("SOUND_EMOJI TEST: PLAY... ");
         emojiSynth->play(b);
-        uBit.sleep(5000);
+        uBit.sleep(3000);
     }
 
     // Should never get here...
@@ -803,3 +856,27 @@ speaker_test2(int plays)
     DMESG("SPEAKER TEST2: EXITING...");
 }
 
+#ifdef CODE_TO_DERIVE_STEPSCOUNT_LIKE_JOSEPHINES_JS_SYNTH
+
+    // Define the number of steps in the effect. This seems fairly arbitrary, but maintaining here for compatibility...
+    // TODO: Simply replace all this with a configurable parameter???
+    step = 0;
+    steps = soundEmojiSteps.find(effect->duration)->value;
+
+    // major/minor effects have four steps.
+    if (effect->effect >=8 && effect->effect < 12)
+        steps = 4;
+
+    // diminished effects have five steps.
+    if (effect->effect >=12 && effect->effect < 14)
+        steps = 5;
+
+    // chromatic effects have 13 steps.
+    if (effect->effect >=14 && effect->effect < 15)
+        steps = 13;
+
+    // wholetone effects have 7 steps.
+    if (effect->effect >=16 && effect->effect < 18)
+        steps = 7;
+
+#endif
