@@ -42,10 +42,75 @@ version_test()
 }
 
 void
-standby_test()
+off_test()
 {
     uBit.power.off();
 }
+
+static void power_management_enter_standby(MicroBitEvent)
+{
+    DMESG("Entering System Off in 1 second...");
+    uBit.sleep(1000);
+
+    uBit.power.off();
+}
+
+static void power_management_deep_sleep_until_button_b(MicroBitEvent)
+{
+    DMESG("Entering Deep Sleep, wake on button B.");
+    uBit.io.buttonB.setActiveLo();
+    uBit.power.deepSleep(uBit.io.buttonB);
+    DMESG("Leaving Deep Sleep...");
+}
+
+static void power_management_deep_sleep_until_P0_high(MicroBitEvent)
+{
+    DMESG("Entering Deep Sleep, on P0 LO->HI");
+    uBit.io.P0.setPull(PullMode::Down);
+    uBit.io.P0.setActiveHi();
+    uBit.power.deepSleep(uBit.io.P0);
+}
+
+void
+interactive_off_test()
+{
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, power_management_enter_standby);
+    uBit.display.print("*");
+
+    while(1)
+        uBit.sleep(10000);
+}
+
+void
+deep_sleep_test1()
+{
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, power_management_deep_sleep_until_button_b);
+    uBit.display.print("*");
+
+    while(1)
+        uBit.sleep(10000);
+}
+
+void
+deep_sleep_test2()
+{
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, power_management_deep_sleep_until_P0_high);
+    uBit.display.print("*");
+
+    while(1)
+        uBit.sleep(10000);
+}
+
+void
+interactive_deep_sleep_test()
+{
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, power_management_enter_standby);
+    uBit.display.print("*");
+
+    while(1)
+        uBit.sleep(10000);
+}
+
 
 void
 usb_connection_test()

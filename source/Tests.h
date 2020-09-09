@@ -79,6 +79,8 @@ void power_consumption_test();
 void power_source_test();
 void standby_test();
 void sound_emoji_test();
-
+void interactive_off_test();
+void deep_sleep_test1();
+void deep_sleep_test2();
 
 #endif
