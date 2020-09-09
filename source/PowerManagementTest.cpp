@@ -44,7 +44,7 @@ version_test()
 void
 standby_test()
 {
-    uBit.power.standby();
+    uBit.power.off();
 }
 
 void
