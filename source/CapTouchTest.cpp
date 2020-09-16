@@ -139,15 +139,17 @@ cap_touch_test()
     uBit.messageBus.listen(MICROBIT_ID_IO_P0, MICROBIT_BUTTON_EVT_CLICK, onTouchP0);
     uBit.messageBus.listen(MICROBIT_ID_IO_P1, MICROBIT_BUTTON_EVT_CLICK, onTouchP1);
     uBit.messageBus.listen(MICROBIT_ID_IO_P2, MICROBIT_BUTTON_EVT_CLICK, onTouchP2);
-    uBit.messageBus.listen(MICROBIT_ID_IO_FACE_TOUCH, MICROBIT_BUTTON_EVT_CLICK, onTouchFace);
+    uBit.messageBus.listen(MICROBIT_ID_FACE, MICROBIT_BUTTON_EVT_CLICK, onTouchFace);
 
     while(1)
     {
         uBit.display.image.setPixelValue(0,0,uBit.io.P0.isTouched(TouchMode::Resistive) ? 255 : 0);
         uBit.display.image.setPixelValue(2,0,uBit.io.P1.isTouched(TouchMode::Resistive) ? 255 : 0);
         uBit.display.image.setPixelValue(4,0,uBit.io.P2.isTouched(TouchMode::Resistive) ? 255 : 0);
-        uBit.display.image.setPixelValue(2,4,uBit.io.face.isTouched(TouchMode::Capacitative) ? 255 : 0);
 
+        uBit.display.image.setPixelValue(2,4,uBit.face.isPressed() ? 255 : 0);
+
+        // Only useful is pins are placed in capacitative mode...
         if (uBit.buttonA.isPressed())
         {
             uBit.io.P0.touchCalibrate();
