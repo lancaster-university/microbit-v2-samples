@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "Tests.h"
 
-static int last_t0, last_t1, last_t2;
+int last_t0, last_t1, last_t2;
 static int c0 = 0;
 static int c1 = 0;
 static int c2 = 0;
@@ -116,16 +116,47 @@ onPrint(MicroBitEvent)
         uBit.display.scroll(last_t2);    
 }
 
+void onTouchP0(MicroBitEvent e)
+{
+    DMESG("TOUCH: P0");
+}
+void onTouchP1(MicroBitEvent e)
+{
+    DMESG("TOUCH: P1");
+}
+void onTouchP2(MicroBitEvent e)
+{
+    DMESG("TOUCH: P2");
+}
+void onTouchFace(MicroBitEvent e)
+{
+    DMESG("TOUCH: FACE");
+}
+
 void 
 cap_touch_test()
 {
+    uBit.messageBus.listen(MICROBIT_ID_IO_P0, MICROBIT_BUTTON_EVT_CLICK, onTouchP0);
+    uBit.messageBus.listen(MICROBIT_ID_IO_P1, MICROBIT_BUTTON_EVT_CLICK, onTouchP1);
+    uBit.messageBus.listen(MICROBIT_ID_IO_P2, MICROBIT_BUTTON_EVT_CLICK, onTouchP2);
+    uBit.messageBus.listen(MICROBIT_ID_IO_FACE_TOUCH, MICROBIT_BUTTON_EVT_CLICK, onTouchFace);
+
     while(1)
     {
-        uBit.display.image.setPixelValue(0,0,uBit.io.P0.isTouched() ? 255 : 0);
-        uBit.display.image.setPixelValue(2,0,uBit.io.P1.isTouched() ? 255 : 0);
-        uBit.display.image.setPixelValue(4,0,uBit.io.P2.isTouched() ? 255 : 0);
-        uBit.display.image.setPixelValue(2,4,uBit.io.face.isTouched() ? 255 : 0);
-        
+        uBit.display.image.setPixelValue(0,0,uBit.io.P0.isTouched(TouchMode::Resistive) ? 255 : 0);
+        uBit.display.image.setPixelValue(2,0,uBit.io.P1.isTouched(TouchMode::Resistive) ? 255 : 0);
+        uBit.display.image.setPixelValue(4,0,uBit.io.P2.isTouched(TouchMode::Resistive) ? 255 : 0);
+        uBit.display.image.setPixelValue(2,4,uBit.io.face.isTouched(TouchMode::Capacitative) ? 255 : 0);
+
+        if (uBit.buttonA.isPressed())
+        {
+            uBit.io.P0.touchCalibrate();
+            uBit.io.P1.touchCalibrate();
+            uBit.io.P2.touchCalibrate();            
+
+            uBit.sleep(1000);
+        }
+
         uBit.sleep(100);
     }
 }
