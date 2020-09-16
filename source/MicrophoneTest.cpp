@@ -9,6 +9,7 @@ static NRF52ADCChannel *mic = NULL;
 static SerialStreamer *streamer = NULL;
 static StreamNormalizer *processor = NULL;
 static LevelDetector *level = NULL;
+static LevelDetectorSPL *levelSPL = NULL;
 static int claps = 0;
 static volatile int sample;
 
@@ -71,7 +72,7 @@ mems_mic_test()
 void
 mems_clap_test(int wait_for_clap)
 {
-    claps = -1;
+    claps = 0;
 
     if (mic == NULL){
         mic = uBit.adc.getChannel(uBit.io.microphone);
@@ -79,10 +80,10 @@ mems_clap_test(int wait_for_clap)
     }
 
     if (processor == NULL)
-        processor = new StreamNormalizer(mic->output, 1.0f, true);
+        processor = new StreamNormalizer(mic->output, 1.0f, true, DATASTREAM_FORMAT_UNKNOWN, 10);
 
     if (level == NULL)
-        level = new LevelDetector(processor->output, 600, 200);
+        level = new LevelDetector(processor->output, 150, 75);
 
     uBit.io.runmic.setDigitalValue(1);
     uBit.io.runmic.setHighDrive(true);
@@ -95,6 +96,35 @@ mems_clap_test(int wait_for_clap)
 
     uBit.messageBus.ignore(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_HIGH, onLoud);
     uBit.messageBus.ignore(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, LEVEL_THRESHOLD_LOW, onQuiet);
+}
+
+void
+mems_clap_test_spl(int wait_for_clap)
+{
+    claps = 0;
+
+    if (mic == NULL){
+        mic = uBit.adc.getChannel(uBit.io.microphone);
+        mic->setGain(7,0);
+    }
+
+    if (processor == NULL)
+        processor = new StreamNormalizer(mic->output, 1.0f, true, DATASTREAM_FORMAT_UNKNOWN, 10);
+
+    if (levelSPL == NULL)
+        levelSPL = new LevelDetectorSPL(processor->output, 75.0, 60.0, 9, 52, DEVICE_ID_MICROPHONE);
+
+    uBit.io.runmic.setDigitalValue(1);
+    uBit.io.runmic.setHighDrive(true);
+
+    uBit.messageBus.listen(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, onLoud);
+    uBit.messageBus.listen(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_LOW, onQuiet);
+
+    while(!wait_for_clap || (wait_for_clap && claps < 3))
+        uBit.sleep(1000);
+
+    uBit.messageBus.ignore(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, onLoud);
+    uBit.messageBus.ignore(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_LOW, onQuiet);
 }
 
 class MakeCodeMicrophoneTemplate {
@@ -113,5 +143,7 @@ mc_clap_test()
     uBit.messageBus.listen(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_LOW, onQuiet);
 
     while(1)
-        uBit.sleep(10000);
+    {
+        uBit.sleep(1000);
+    }
 }

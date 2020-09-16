@@ -40,6 +40,7 @@ void edge_connector_test();
 void analog_test();
 void piezo_clap_test(int wait_for_clap = 0);
 void mems_clap_test(int wait_for_clap = 0);
+void mems_clap_test_spl(int wait_for_clap = 0);
 void showSerialNumber();
 void display_wink();
 void display_tick();
