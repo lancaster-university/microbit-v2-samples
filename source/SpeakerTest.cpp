@@ -595,6 +595,7 @@ static StreamNormalizer *normalizer = NULL;
 //static SerialStreamer *streamer = NULL;
 static Synthesizer* synth = NULL;
 static SoundEmojiSynthesizer* emojiSynth = NULL;
+static SerialStreamer *streamer = NULL;
 
 void
 synthesizer_test()
@@ -692,6 +693,44 @@ sound_emoji_test()
     // Should never get here...
     DMESG("SOUND_EMOJI TEST: EXITING...");
 }
+
+void
+sound_emoji_streamer()
+{
+    DMESG("SOUND_EMOJI STREAMER: STARTING...");
+
+    if (emojiSynth == NULL)
+        emojiSynth = new SoundEmojiSynthesizer(44100);
+
+    DMESG("SOUND_EMOJI TEST: SYNTH INITIALISED... ");
+
+    emojiSynth->setSampleRange(352);
+    //emojiSynth->setOrMask(0x8000);
+
+    if (streamer == NULL)
+        streamer = new SerialStreamer(*emojiSynth, SERIAL_STREAM_MODE_DECIMAL);
+
+    ManagedBuffer b(sizeof(SoundEffect));
+    SoundEffect *fx = (SoundEffect *)&b[0];
+
+    fx->duration = 1000;
+    fx->tone.tonePrint = Synthesizer::SquareWaveTone;
+    fx->frequency = 130.81f;
+    fx->volume = 1.0f;
+    
+    emojiSynth->play(b);
+
+    //fx->effects[0].effect = SoundSynthesizerEffects::appregrioAscending;
+    //fx->effects[0].parameter_p[0] = MusicalProgressions::pentatonic;
+    //fx->effects[0].steps = 12;
+
+    while(1)
+    {
+        DMESG("PING...");
+        uBit.sleep(1000);
+    }
+}
+
 
 
 void

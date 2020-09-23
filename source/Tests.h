@@ -83,5 +83,7 @@ void sound_emoji_test();
 void interactive_off_test();
 void deep_sleep_test1();
 void deep_sleep_test2();
+void sound_emoji_streamer();
+void flash_storage_test();
 
 #endif
