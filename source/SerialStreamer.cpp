@@ -43,8 +43,22 @@ SerialStreamer::SerialStreamer(DataSource &source, int mode) : upstream(source)
  */
 int SerialStreamer::pullRequest()
 {
-    lastBuffer = upstream.pull();
-    streamBuffer(lastBuffer);
+    static volatile int pr = 0;
+     
+    if(!pr)
+    {
+        pr++;
+        while(pr)
+        {
+            lastBuffer = upstream.pull();
+            streamBuffer(lastBuffer);
+            pr--;
+        }
+    }
+    else
+    {
+        pr++;
+    }
     
     return DEVICE_OK;
 }
