@@ -147,7 +147,7 @@ cap_touch_test()
         uBit.display.image.setPixelValue(2,0,uBit.io.P1.isTouched(TouchMode::Resistive) ? 255 : 0);
         uBit.display.image.setPixelValue(4,0,uBit.io.P2.isTouched(TouchMode::Resistive) ? 255 : 0);
 
-        uBit.display.image.setPixelValue(2,4,uBit.face.isPressed() ? 255 : 0);
+        uBit.display.image.setPixelValue(2,4,uBit.logo.isPressed() ? 255 : 0);
 
         // Only useful is pins are placed in capacitative mode...
         if (uBit.buttonA.isPressed())
