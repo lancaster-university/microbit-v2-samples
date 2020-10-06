@@ -85,5 +85,10 @@ void deep_sleep_test1();
 void deep_sleep_test2();
 void sound_emoji_streamer();
 void flash_storage_test();
+void sound_expression_test();
+void audio_sound_expression_test();
+void mixer_test();
+void mixer_test2();
+void speaker_pin_test();
 
 #endif

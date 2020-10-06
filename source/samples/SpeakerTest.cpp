@@ -9,6 +9,8 @@
 #include "Synthesizer.h"
 #include "SoundEmojiSynthesizer.h"
 #include "SoundSynthesizerEffects.h"
+#include "Mixer2.h"
+#include "SoundOutputPin.h"
 #include "Tests.h"
 
 //#define SPEAKER_TEST_DIFFERENTIAL
@@ -595,7 +597,11 @@ static StreamNormalizer *normalizer = NULL;
 //static SerialStreamer *streamer = NULL;
 static Synthesizer* synth = NULL;
 static SoundEmojiSynthesizer* emojiSynth = NULL;
+static SoundEmojiSynthesizer* emojiSynth2 = NULL;
 static SerialStreamer *streamer = NULL;
+static Mixer2 *mixer = NULL;
+static SoundOutputPin *virtualPin = NULL;
+
 
 void
 synthesizer_test()
@@ -693,6 +699,191 @@ sound_emoji_test()
     // Should never get here...
     DMESG("SOUND_EMOJI TEST: EXITING...");
 }
+
+void
+mixer_test()
+{
+    DMESG("MIXER_TEST: STARTING...");
+
+    if (emojiSynth == NULL)
+        emojiSynth = new SoundEmojiSynthesizer(44100);
+
+    DMESG("MIXER_TEST: SYNTH INITIALISED... ");
+
+    if (mixer == NULL)
+        mixer = new Mixer2();
+
+    DMESG("MIXER_TEST: MIXER INITIALISED... ");
+
+    if (speaker == NULL)
+        speaker = new NRF52PWM(NRF_PWM1, *mixer, 44100);
+
+    DMESG("MIXER_TEST: PWM INITIALISED... ");
+
+    emojiSynth->setSampleRange(1023);
+    mixer->setSampleRange(speaker->getSampleRange());
+    mixer->setOrMask(0x8000);
+    mixer->addChannel(*emojiSynth);
+
+    speaker->setDecoderMode(PWM_DECODER_LOAD_Common);
+    speaker->connectPin(uBit.io.P0, 0);
+    //speaker->connectPin(uBit.io.speaker, 1);
+
+    uBit.io.speaker.setHighDrive(true);
+
+    DMESG("MIXER_TESTT: RUNNING... ");
+
+    ManagedBuffer b(sizeof(SoundEffect));
+    SoundEffect *fx = (SoundEffect *)&b[0];
+
+    fx->duration = -1000;
+    fx->tone.tonePrint = Synthesizer::SquareWaveTone;
+    fx->frequency = 130.81f;
+    fx->volume = 1.0f;
+
+    fx->effects[0].effect = SoundSynthesizerEffects::appregrioAscending;
+    fx->effects[0].parameter_p[0] = MusicalProgressions::pentatonic;
+    fx->effects[0].steps = 12;
+
+    while(1)
+    {
+        DMESG("MIXER_TEST: PLAY... ");
+        emojiSynth->play(b);
+        uBit.sleep(3000);
+    }
+
+    // Should never get here...
+    DMESG("MIXER_TEST: EXITING...");
+}
+
+
+void
+mixer_test2()
+{
+    DMESG("MIXER_TEST: STARTING...");
+
+    if (emojiSynth == NULL)
+        emojiSynth = new SoundEmojiSynthesizer(44100);
+
+    if (emojiSynth2 == NULL)
+        emojiSynth2 = new SoundEmojiSynthesizer(44100);
+
+    DMESG("MIXER_TEST: SYNTH(S) INITIALISED... ");
+
+    if (mixer == NULL)
+        mixer = new Mixer2();
+
+    DMESG("MIXER_TEST: MIXER INITIALISED... ");
+
+    if (speaker == NULL)
+        speaker = new NRF52PWM(NRF_PWM1, *mixer, 44100);
+
+    DMESG("MIXER_TEST: PWM INITIALISED... ");
+
+    emojiSynth->setSampleRange(1023);
+    mixer->setSampleRange(speaker->getSampleRange());
+    mixer->setOrMask(0x8000);
+    mixer->addChannel(*emojiSynth);
+    mixer->addChannel(*emojiSynth2);
+
+    speaker->setDecoderMode(PWM_DECODER_LOAD_Common);
+    speaker->connectPin(uBit.io.P0, 0);
+    //speaker->connectPin(uBit.io.speaker, 1);
+
+    uBit.io.speaker.setHighDrive(true);
+
+    DMESG("MIXER_TESTT: RUNNING... ");
+
+    ManagedBuffer b(sizeof(SoundEffect));
+    SoundEffect *fx = (SoundEffect *)&b[0];
+
+    fx->duration = 1000;
+    fx->tone.tonePrint = Synthesizer::SquareWaveTone;
+    fx->frequency = 130.81f;
+    fx->volume = 1.0f;
+
+    fx->effects[0].effect = SoundSynthesizerEffects::appregrioAscending;
+    fx->effects[0].parameter_p[0] = MusicalProgressions::pentatonic;
+    fx->effects[0].steps = 12;
+
+    ManagedBuffer b2(sizeof(SoundEffect));
+    SoundEffect *fx2 = (SoundEffect *)&b2[0];
+
+    fx2->duration = 1000;
+    fx2->tone.tonePrint = Synthesizer::SquareWaveTone;
+    fx2->frequency = 130.81f;
+    fx2->volume = 1.0f;
+
+    fx2->effects[0].effect = SoundSynthesizerEffects::appregrioDescending;
+    fx2->effects[0].parameter_p[0] = MusicalProgressions::pentatonic;
+    fx2->effects[0].steps = 12;
+
+    while(1)
+    {
+        DMESG("MIXER_TEST: PLAY... ");
+        emojiSynth->play(b);
+        emojiSynth2->play(b2);
+        uBit.sleep(3000);
+    }
+
+    // Should never get here...
+    DMESG("MIXER_TEST: EXITING...");
+}
+
+
+void
+speaker_pin_test()
+{
+    DMESG("SPEAKER_PIN_TEST: STARTING...");
+
+    if (mixer == NULL)
+        mixer = new Mixer2();
+
+    DMESG("SPEAKER_PIN_TEST: MIXER INITIALISED... ");
+
+    if (speaker == NULL)
+        speaker = new NRF52PWM(NRF_PWM1, *mixer, 44100);
+
+    DMESG("SPEAKER_PIN_TEST: PWM INITIALISED... ");
+
+    if (virtualPin == NULL)
+        virtualPin = new SoundOutputPin(*mixer);
+
+    mixer->setSampleRange(speaker->getSampleRange());
+    mixer->setOrMask(0x8000);
+
+    speaker->setDecoderMode(PWM_DECODER_LOAD_Common);
+    speaker->connectPin(uBit.io.P0, 0);
+    //speaker->connectPin(uBit.io.speaker, 1);
+
+    uBit.io.speaker.setHighDrive(true);
+
+    DMESG("SPEAKER_PIN_TEST: RUNNING... ");
+
+    while(1)
+    {
+        DMESG("SPEAKER_PIN_TEST: PLAY... ");
+        virtualPin->setAnalogPeriodUs(7645);
+        uBit.sleep(500);
+        virtualPin->setAnalogPeriodUs(6810);
+        uBit.sleep(500);
+        virtualPin->setAnalogPeriodUs(6068);
+        uBit.sleep(500);
+        virtualPin->setAnalogPeriodUs(6810);
+        uBit.sleep(500);
+        virtualPin->setAnalogPeriodUs(7645);
+        uBit.sleep(500);
+        virtualPin->setAnalogValue(0);
+        uBit.sleep(500);
+        virtualPin->setAnalogValue(512);
+
+    }
+
+    // Should never get here...
+    DMESG("SPEAKER_PIN_TEST: EXITING...");
+}
+
+
 
 void
 sound_emoji_streamer()
