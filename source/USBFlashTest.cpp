@@ -46,33 +46,41 @@ onReadFlash()
     ManagedBuffer response(size);
     response = uBit.flash.read(address, size);
 
+    /*
     for (int i=0; i<response.length(); i++)
         DMESG("  %x [%c]", response[i], response[i]);
+    */
 }
 
 static void
 onEraseFlash()
 {    
+    int err;
+
     DMESG("Erasing FLASH pages...");
 
     ManagedBuffer response(4);
-    if(uBit.flash.erase(0, 1024*4) != DEVICE_OK)
-        DMESG(" FLASH_ERASE ERROR");
+    err = uBit.flash.erase(0, 1024*4);
+    if(err != DEVICE_OK)
+        DMESG(" FLASH_ERASE ERROR %d", err);
 }
 
 static void
 onPartialEraseFlash()
 {    
+    int err;
     ManagedString s = "*** :) ***";
     ManagedBuffer b((uint8_t *)s.toCharArray(), 10);
 
     DMESG("Partial FLASH erase...");
 
-    if(uBit.flash.erase(100, 10) != DEVICE_OK)
-        DMESG(" FLASH_ERASE ERROR");
+    err = uBit.flash.erase(100, 10);
+    if(err != DEVICE_OK)
+        DMESG(" FLASH_ERASE ERROR: %d", err);
 
-    if(uBit.flash.write(b, 100) != DEVICE_OK)
-        DMESG(" WRITE ERROR");
+    err = uBit.flash.write(b, 100);
+    if(err != DEVICE_OK)
+        DMESG(" WRITE ERROR: %d", err);
 }
 
 static void
@@ -125,6 +133,8 @@ onStartFlashTest(MicroBitEvent)
     onReadFlash();
 
     DMESG("FLASH_STORAGE_TEST: DONE");
+
+    microbit_dmesg_flush();
 
 }
 
