@@ -4,7 +4,7 @@
   "description": "Component Oriented Device Abstraction Layer (CODAL) - root",
   "license": "MIT",
   "dependencies": {
-    "codal-microbit": "git@github.com:microbit-foundation/codal-microbit.git#master"
+    "codal-microbit": "git@github.com:lancsaster-university/codal-microbit-v2.git#master"
   },
   "targetDependencies": {},
   "extraIncludes": [
