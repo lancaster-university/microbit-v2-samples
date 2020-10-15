@@ -923,6 +923,26 @@ sound_emoji_streamer()
 }
 
 
+void
+say_hello()
+{
+    DMESG("HELLO TEST: STARTING...");
+
+    if (sampleSource == NULL){
+        sampleSource = new MemorySource();
+        sampleSource->setFormat(DATASTREAM_FORMAT_8BIT_UNSIGNED);
+        sampleSource->setBufferSize(512);
+    }
+
+    uBit.audio.mixer.addChannel(*sampleSource, 16000, 255);
+
+    while(1)
+    {
+        DMESG("PLAY HELLO\n");
+        sampleSource->play(hello, sizeof(hello));
+    }
+}
+
 
 void
 speaker_test(int plays)
