@@ -1,5 +1,4 @@
 #include "MicroBit.h"
-#include "Tests.h"
 
 MicroBit uBit;
 
@@ -8,5 +7,6 @@ main()
 {
     uBit.init();
 
-    audio_virtual_pin_melody();
+    while(1)
+        uBit.display.scroll("HELLO WORLD!");
 }
