@@ -657,7 +657,7 @@ sound_emoji_test()
     DMESG("SOUND_EMOJI TEST: STARTING...");
 
     if (emojiSynth == NULL)
-        emojiSynth = new SoundEmojiSynthesizer(44100);
+        emojiSynth = new SoundEmojiSynthesizer(DEVICE_ID_SOUND_EMOJI_SYNTHESIZER_0);
 
     DMESG("SOUND_EMOJI TEST: SYNTH INITIALISED... ");
 
@@ -706,7 +706,7 @@ mixer_test()
     DMESG("MIXER_TEST: STARTING...");
 
     if (emojiSynth == NULL)
-        emojiSynth = new SoundEmojiSynthesizer(44100);
+        emojiSynth = new SoundEmojiSynthesizer(DEVICE_ID_SOUND_EMOJI_SYNTHESIZER_0);
 
     DMESG("MIXER_TEST: SYNTH INITIALISED... ");
 
@@ -763,10 +763,10 @@ mixer_test2()
     DMESG("MIXER_TEST: STARTING...");
 
     if (emojiSynth == NULL)
-        emojiSynth = new SoundEmojiSynthesizer(44100);
+        emojiSynth = new SoundEmojiSynthesizer(DEVICE_ID_SOUND_EMOJI_SYNTHESIZER_0);
 
     if (emojiSynth2 == NULL)
-        emojiSynth2 = new SoundEmojiSynthesizer(44100);
+        emojiSynth2 = new SoundEmojiSynthesizer(DEVICE_ID_SOUND_EMOJI_SYNTHESIZER_0);
 
     DMESG("MIXER_TEST: SYNTH(S) INITIALISED... ");
 
@@ -891,7 +891,7 @@ sound_emoji_streamer()
     DMESG("SOUND_EMOJI STREAMER: STARTING...");
 
     if (emojiSynth == NULL)
-        emojiSynth = new SoundEmojiSynthesizer(44100);
+        emojiSynth = new SoundEmojiSynthesizer(DEVICE_ID_SOUND_EMOJI_SYNTHESIZER_1);
 
     DMESG("SOUND_EMOJI TEST: SYNTH INITIALISED... ");
 
