@@ -123,6 +123,9 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
         if (CRLF > 0)
             uBit.serial.printf("\n");
     }
+
+    // We're alway hungry, so deschedule ourselves after processing each buffer.
+    schedule();
 }
 
 
