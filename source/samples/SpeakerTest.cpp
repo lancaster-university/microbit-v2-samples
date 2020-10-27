@@ -1058,6 +1058,23 @@ speaker_test2(int plays)
     DMESG("SPEAKER TEST2: EXITING...");
 }
 
+static void
+start_mixer_streaming()
+{
+    uBit.audio.mixer.setOrMask(0);
+    uBit.audio.mixer.setFormat(DATASTREAM_FORMAT_8BIT_UNSIGNED);
+    uBit.audio.mixer.setSampleRange(255);
+    
+    new SerialStreamer(uBit.audio.mixer, SERIAL_STREAM_MODE_BINARY);
+}
+
+void
+stream_mixer_to_serial()
+{
+    // The serial port is always hungry, so run the serial streamer in the background.
+    create_fiber(start_mixer_streaming);
+}
+
 #ifdef CODE_TO_DERIVE_STEPSCOUNT_LIKE_JOSEPHINES_JS_SYNTH
 
 static const KeyValueTableEntry soundEmojiTonePrintData[] = {
