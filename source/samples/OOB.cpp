@@ -586,7 +586,7 @@ void next()
     
 }
 
-int
+void
 out_of_box_experience()
 {   
     if(uBit.buttonA.isPressed()) mode = SECRET;
