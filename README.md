@@ -1,4 +1,5 @@
 # microbit-v2-samples
+
 This repository is provides the tooling needed to compile a C/C++ CODAL program for the micro:bit v2 and produce a HEX file that can be downloaded to the device.
 
 ## Raising Issues
