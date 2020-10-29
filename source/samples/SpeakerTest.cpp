@@ -1061,6 +1061,14 @@ speaker_test2(int plays)
 static void
 start_mixer_streaming()
 {
+    // Ensure the audio pipeline is enabled. Otherwise, when we use it for the first time,
+    // it will overwrite our setting here with the defaults as it on demand activates...
+    MicroBitAudio::requestActivation();
+
+    // Disconnect physical audio output channels.
+    uBit.audio.setSpeakerEnabled(false);
+    uBit.io.P0.getDigitalValue();
+
     uBit.audio.mixer.setOrMask(0);
     uBit.audio.mixer.setFormat(DATASTREAM_FORMAT_8BIT_UNSIGNED);
     uBit.audio.mixer.setSampleRange(255);
