@@ -109,24 +109,22 @@ void audio_sound_expression_test()
         ManagedString("spring"),
         ManagedString("twinkle"),
         ManagedString("yawn"),
+        // "sad" but with an additional zero-duration effect which previously caused errors:
+        ManagedString("010232279000001440226608881023012800000000240000000000000000000000000000,000000440000000440044008880000012800000000240000000000000000000000000000,310232226070801440162408881023012800000100240000000000000000000000000000,310231623093602440093908880000012800000100240000000000000000000000000000"),
+        // Just a zero-duration frame.
+        ManagedString("000000440000000440044008880000012800000000240000000000000000000000000000"),
         ManagedString("")
     };
     
     // uBit.audio.virtualOutputPin.setAnalogPeriodUs(6068);
-    for (int i = 0; names[i].length() != 0; ++i) {
-        DMESG("sound %s", names[i].toCharArray());
-        uBit.audio.setVolume(255);
-        uBit.audio.soundExpressions.play(names[i]);
-        uBit.sleep(2000);
-
-        uBit.audio.setVolume(85);
-        uBit.audio.soundExpressions.play(names[i]);
-        uBit.sleep(2000);
-    }
-    
     while (1) {
-        //uBit.display.scroll("...");
-        DMESG("PING");
-        uBit.sleep(1000);
+        for (int i = 0; names[i].length() != 0; ++i) {
+            DMESG("sound %s", names[i].toCharArray());
+            uBit.audio.setVolume(255);
+            uBit.audio.soundExpressions.play(names[i]);
+
+            uBit.audio.setVolume(85);
+            uBit.audio.soundExpressions.play(names[i]);
+        }
     }
 }
