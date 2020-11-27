@@ -93,5 +93,8 @@ void mixer_test2();
 void speaker_pin_test();
 void say_hello();
 void stream_mixer_to_serial();
+int out_of_box_experience();
+void level_meter();
+void init_clap_detect();
 
 #endif
