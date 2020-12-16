@@ -61,4 +61,4 @@ The `samples` folder contains a number of simple sample programs that utilise yo
 This repository is designed to follow the principles and APIs developed for the first version of the micro:bit. We have also included a compatibility layer so that the vast majority of C/C++ programs built using [microbit-dal](https://www.github.com/lancaster-university/microbit-dal) will operate with few changes.
 
 # Documentation
-API documentation is embedded in the code using doxygen. We will produce integrated web-based documetation soon.
+API documentation is embedded in the code using doxygen. We will produce integrated web-based documentation soon.
