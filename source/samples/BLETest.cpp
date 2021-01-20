@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "Tests.h"
 
 extern MicroBit uBit;
+MicroBitUARTService *uart;
 
 // we use events abd the 'connected' variable to keep track of the status of the Bluetooth connection
 void onConnected(MicroBitEvent)
@@ -37,6 +38,12 @@ void onConnected(MicroBitEvent)
 void onDisconnected(MicroBitEvent)
 {
     uBit.display.print("D");
+}
+
+void onDelim(MicroBitEvent)
+{
+    ManagedString r = uart->readUntil("\r\n");
+    uart->send(r);
 }
 
 void ble_test()
@@ -74,22 +81,19 @@ void ble_test()
     // T: Temperature Service
     // U: UART Service
     //
-    // PAIRING CONFIG
-    // Note that switching pairing on or off is achieved by setting "open" in config.json to 1 or 0 respectively
 
     // P: PASSKEY
     // J: Just Works
     // N: No Pairing Required
-    //
-    // TX Power Level
-    // 0-7 taken from tx_power in config.json
 
 
     // Services/Pairing Config/Power Level
-    uBit.display.scroll("BLE ABDILMT/P/0");
+    uBit.display.scroll("BLE ABDILMTU/P");
 
     uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, onConnected);
     uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_DISCONNECTED, onDisconnected);
+    
+    uBit.messageBus.listen(MICROBIT_ID_BLE_UART, MICROBIT_UART_S_EVT_DELIM_MATCH, onDelim);
 
     new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
     new MicroBitButtonService(*uBit.ble);
@@ -97,6 +101,9 @@ void ble_test()
     new MicroBitLEDService(*uBit.ble, uBit.display);
     new MicroBitMagnetometerService(*uBit.ble, uBit.compass);
     new MicroBitTemperatureService(*uBit.ble, uBit.thermometer);
+
+    uart = new MicroBitUARTService(*uBit.ble, 32, 32);
+    uart->eventOn("\r\n");
 
     // If main exits, there may still be other fibers running or registered event handlers etc.
     // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
