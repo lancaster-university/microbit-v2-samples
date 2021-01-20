@@ -43,21 +43,23 @@ void ble_test()
 {
     // Configuration Tips
     //
-    // config.json contains various Bluetooth related properties some of which are explained here:
+    // codal.json contains various Bluetooth related properties some of which are explained here:
     //
-    // "dfu_service": 1,               // 1 will cause the DFU service to be instantiated
-    // "event_service": 1,             // 1 causes the event service to be instantiated
-    // "device_info_service": 1
-    // "enabled": 1,                   // 1 means the Bluetooth stack will be included as standard. 0 means it will not.
-    // "pairing_mode": 1,              // 1 means it's possible to go into pairing mode which will include bringing up the Bluetooth stack whilst in that mode.
-    // "open": 0,                      // 1 means there's no Bluetooth security i.e. no need to pair the micro:bit with other devices that want to communicate with it.
-    // "tx_power": 7,                  // Transmission power of the Bluetooth radio. A value of 0 - 7 with 0 the lowest power and 7 the highest power.
-    // "gatt_table_size": "0x700"      // Amount of memory (in hex bytes) set aside for the Bluetooth GATT table
-    // "nested_heap_proportion": 0.75, // Reducing this can sometimes help make enough memory available for all the Bluetooth services you want. Only experiment with this as a last resort.
-
-    // MicrobitConfig.h in yotta_modules\microbit-dal\inc\core contains MICROBIT_BLE_SECURITY_LEVEL which can be set to SECURITY_MODE_ENCRYPTION_WITH_MITM for passkey authentication when
-    // pairing or SECURITY_MODE_ENCRYPTION_NO_MITM to use Just Works pairing.
-
+    // "SOFTDEVICE_PRESENT": 1             Determines whether the build contains softdevice
+    // "DEVICE_BLE": 1                     Determines whether BLE is enabled 
+    // "MICROBIT_BLE_ENABLED" : 1          Determines whether BLE is enabled
+    // "MICROBIT_BLE_PAIRING_MODE": 1      Determines whether Pairing Mode is enabled
+    // "MICROBIT_BLE_DFU_SERVICE": 1       Determines whether the Nordic DFU Service is enabled
+    // "MICROBIT_BLE_DEVICE_INFORMATION_SERVICE": 1 Determines whether the DIS is enabled
+    // "MICROBIT_BLE_EVENT_SERVICE" : 1,   Determines whether the Event Service is enabled
+    // "MICROBIT_BLE_PARTIAL_FLASHING" : 0 Determines whether Partial Flashing is enabled (Needs MakeCode/Python)
+    // "MICROBIT_BLE_SECURITY_LEVEL": "SECURITY_MODE_ENCRYPTION_WITH_MITM" Determines security mode
+    //
+    // Options for MICROBIT_BLE_SECURITY_LEVEL are:
+    // SECURITY_MODE_ENCRYPTION_WITH_MITM, enables pairing with a passcode
+    // SECURITY_MODE_ENCRYPTION_NO_MITM, enables pairing without a passcode
+    // SECURITY_MODE_ENCRYPTION_OPEN_LINK, pairing is no required
+    //
     // A cunning code to indicate during start-up the particular Bluetooth configuration in the build
     //
     // SERVICE CODES
