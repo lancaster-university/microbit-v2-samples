@@ -93,5 +93,6 @@ void mixer_test2();
 void speaker_pin_test();
 void say_hello();
 void stream_mixer_to_serial();
+void ble_test();
 
 #endif
