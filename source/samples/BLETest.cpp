@@ -50,6 +50,9 @@ void ble_test()
 {
     // Configuration Tips
     //
+    // An example codal.json is provided in the root directory: codal.ble.json
+    // Rename codal.ble.json to codal.json to use this BLE sample
+    //
     // codal.json contains various Bluetooth related properties some of which are explained here:
     //
     // "SOFTDEVICE_PRESENT": 1             Determines whether the build contains softdevice
