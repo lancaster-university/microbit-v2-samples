@@ -1,0 +1,45 @@
+name: Build CODAL
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+  schedule:
+    # Runs every working day at 8 am
+    - cron: '0 8 * * 1-5'
+
+jobs:
+  build-py-script:
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, macos-10.15, windows-2016]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: build.py ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install toolchain (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sh ./.github/workflows/scripts/install-toolchain-ubuntu.sh
+      - name: Install toolchain (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\.github\workflows\scripts\install-toolchain-win.ps1
+          echo "::add-path::${env:GITHUB_WORKSPACE}"
+      - name: Install toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: sh ./.github/workflows/scripts/install-toolchain-mac.sh
+      - name: Check Versions
+        run: |
+          arm-none-eabi-gcc --version
+          cmake --version
+          ninja --version
+          srec_cat --version
+      - name: Build using build.py
+        run: python build.py
+      - name: Upload hex file
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-py-${{ matrix.os }}
+          path: MICROBIT.hex
