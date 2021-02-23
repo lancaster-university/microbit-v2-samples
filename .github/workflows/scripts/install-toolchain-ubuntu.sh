@@ -9,4 +9,3 @@ sudo apt-get update -qq
 sudo apt-get install -y gcc-arm-embedded
 sudo apt-get install -y cmake
 sudo apt-get install -y ninja-build
-sudo apt-get install -y srecord
