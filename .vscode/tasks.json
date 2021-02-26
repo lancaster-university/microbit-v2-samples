@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build with build.py",
+            "type": "shell",
+            "command": "python build.py",
+			"windows": {
+				"command": "py build.py"
+			},
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build and flash with build.py",
+            "type": "shell",
+            "command": "python build.py -f",
+			"windows": {
+				"command": "py build.py -f"
+			},
+            "problemMatcher": []
+        },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "python -c \"import os; from utils.python.flash import flash; flash(os.path.join(os.getcwd(), 'MICROBIT.hex'))\"",
+			"windows":{
+				"command": "py -c \"import os; from utils.python.flash import flash; flash(os.path.join(os.getcwd(), 'MICROBIT.hex'))\""
+			},
+            "problemMatcher": []
+        }
+    ]
+}
