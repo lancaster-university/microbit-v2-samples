@@ -57,6 +57,17 @@ You will find a simple main.cpp in the `source` folder which you can edit. CODAL
 
 The `samples` folder contains a number of simple sample programs that utilise you may find useful.
 
+# Debugging
+If you are using Visual Studio Code, there is a working debugging environment already set up for you, allowing you to set breakpoints and observe the micro:bit's memory. To get it working, follow these steps:
+
+1. Install either [OpenOCD](http://openocd.org) or [PyOCD](https://github.com/pyocd/pyOCD).
+2. Install the `marus25.cortex-debug` VS Code extension.
+3. Build your program.
+4. Click the Run and Debug option in the toolbar.
+5. Two debugging options are provided: one for OpenOCD, and one for PyOCD. Select the correct one depending on the debugger you installed.
+
+This should launch the debugging environment for you. To set breakpoints, you can click to the left of the line number of where you want to stop.
+
 # Compatibility
 This repository is designed to follow the principles and APIs developed for the first version of the micro:bit. We have also included a compatibility layer so that the vast majority of C/C++ programs built using [microbit-dal](https://www.github.com/lancaster-university/microbit-dal) will operate with few changes.
 
