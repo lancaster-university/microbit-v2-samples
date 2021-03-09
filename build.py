@@ -30,6 +30,7 @@ import json
 import shutil
 import re
 from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
+from utils.python.flash import flash
 
 parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -44,6 +45,7 @@ parser.add_option('-s', '--status', dest='status', action="store_true", help='gi
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
+parser.add_option('-f', '--flash', dest='flash', action="store_true", help="Attempt to automatically flash the micro:bit.", default=False)
 
 (options, args) = parser.parse_args()
 
@@ -66,6 +68,7 @@ if options.revision:
     revision(options.revision)
     exit(0)
 
+base_dir = os.getcwd()
 # out of source build!
 os.chdir("build")
 
@@ -139,6 +142,10 @@ if not options.test_platform:
         exit(0)
 
     build(options.clean)
+
+    if options.flash:
+        flash(os.path.join(base_dir, 'MICROBIT.hex'))
+
     exit(0)
 
 for json_obj in test_json:
