@@ -11,11 +11,6 @@
 #define OOB_SHAKE_OVERSAMPLING_THRESHOLD        4
 #define OOB_SHAKE_THRESHOLD                     1200
 
-static Pin *analogPins[] = {&uBit.io.P1};
-static NRF52PWM *pwm = NULL;
-static MemorySource *pwmSource = NULL;
-static uint16_t square[4];
-
 enum modes {
     WAKE = 0,
     INTRO,
