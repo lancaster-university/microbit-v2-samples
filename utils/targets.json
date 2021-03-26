@@ -102,4 +102,13 @@
         "branch":"master",
         "type":"git"
     }
+    ,
+    {
+        "name":"codal-makeable",
+        "info":"This target specifies the makeable board, based on the nordic NRF52833",
+        "device_url":"",
+        "url":"https://github.com/jamesadevine/codal-makeable",
+        "branch":"master",
+        "type":"git"
+    }
 ]
