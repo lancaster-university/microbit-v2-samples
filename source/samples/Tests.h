@@ -95,5 +95,6 @@ void out_of_box_experience();
 void level_meter();
 void init_clap_detect();
 void ble_test();
+void deepsleep_test( int test);
 
 #endif
