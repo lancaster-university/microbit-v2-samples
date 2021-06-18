@@ -59,7 +59,8 @@ static void power_management_deep_sleep_until_button_b(MicroBitEvent)
 {
     DMESG("Entering Deep Sleep, wake on button B.");
     uBit.io.buttonB.setActiveLo();
-    uBit.power.deepSleep(uBit.io.buttonB);
+    uBit.io.buttonB.wakeOnActive(1);
+    uBit.power.deepSleep();
     DMESG("Leaving Deep Sleep...");
 }
 
@@ -68,7 +69,8 @@ static void power_management_deep_sleep_until_P0_high(MicroBitEvent)
     DMESG("Entering Deep Sleep, on P0 LO->HI");
     uBit.io.P0.setPull(PullMode::Down);
     uBit.io.P0.setActiveHi();
-    uBit.power.deepSleep(uBit.io.P0);
+    uBit.io.P0.wakeOnActive(1);
+    uBit.power.deepSleep();
 }
 
 void
