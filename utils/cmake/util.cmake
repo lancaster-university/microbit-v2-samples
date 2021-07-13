@@ -182,9 +182,6 @@ function(FORM_SHELL_COMMAND device process_obj output_command)
 
     #convert to a command
     separate_arguments(SHELL_CMD UNIX_COMMAND ${CODAL_CONCAT_REPLACE_COMMAND})
-    message("POO ${SHELL_CMD} || ${output_command}")
     set(${output_command} ${SHELL_CMD} PARENT_SCOPE)
-
-    message("Wee ${output_command}")
 
 endfunction()
