@@ -156,7 +156,6 @@ MACRO(SUB_DIRS return_dirs dir)
 ENDMACRO()
 
 function(FORM_SHELL_COMMAND device process_obj output_command)
-    message("DEVICE ${${device}} ${${process_obj}.command}")
     if("${${process_obj}.command}" STRGREATER "")
         set(SHELL_PROCESS_COMMAND ${${process_obj}.command})
         set(SHELL_PROCESS_DEPENDS ${${process_obj}.depends})
