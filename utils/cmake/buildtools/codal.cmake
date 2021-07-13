@@ -40,7 +40,7 @@ endif()
 if("${device.post_process.command}" STRGREATER "" OR "${device.post_process}" STRGREATER "")
     FORM_SHELL_COMMAND(device device.post_process FINAL_COMMAND)
     # execute
-    if(POST_PROCESS_DEPENDS STREQUAL "ELF")
+    if("${device.post_process.depends}" STREQUAL "ELF")
         add_custom_command(
             TARGET ${device.device}
             COMMAND ${FINAL_COMMAND}
@@ -48,7 +48,7 @@ if("${device.post_process.command}" STRGREATER "" OR "${device.post_process}" ST
             WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
             COMMENT "Executing post process command"
         )
-    elseif(POST_PROCESS_DEPENDS STREQUAL "HEX")
+    elseif("${device.post_process.depends}" STREQUAL "HEX")
         add_custom_command(
             TARGET ${device.device}_hex
             COMMAND ${FINAL_COMMAND}

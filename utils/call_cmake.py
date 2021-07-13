@@ -1,13 +1,13 @@
-from shutil import copy2
 import shutil
-import sys
-import struct
-import subprocess
-import re
-import os
+import os, stat
 import os.path
 import argparse
 from python.codal_utils import build
+
+def copy_file_and_owner(src, dest):
+    shutil.copy2(src, dest)
+    st = os.stat(src)
+    os.chown(dest, st[stat.ST_UID], st[stat.ST_GID])
 
 def main():
     parser = argparse.ArgumentParser(description='Initiate a CMake build at <path>')
@@ -61,8 +61,7 @@ def main():
             iter_files = [f for f in files if f in built_files]
 
         for f in iter_files:
-            shutil.copyfile(build_folder + "/" + f, out_path + "/" + f)
-
+            copy_file_and_owner(build_folder + "/" + f, out_path + "/" + f)
 
 if __name__ == "__main__":
     main()
