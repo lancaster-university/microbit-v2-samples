@@ -95,7 +95,7 @@ endif()
 ####################
 
 SET(TOOLCHAIN ${device.toolchain})
-SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
+SET(TOOLCHAIN_FOLDER "${CMAKE_CURRENT_LIST_DIR}/utils/cmake/toolchains/${device.toolchain}")
 
 # include toolchain file
 set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake" CACHE PATH "toolchain file")
