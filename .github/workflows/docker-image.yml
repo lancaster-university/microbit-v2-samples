@@ -1,0 +1,19 @@
+name: Build CODAL via Docker
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build using the Docker image
+      run: docker build -t microbit-tools --output out .
+    - name: Upload hex file
+      uses: actions/upload-artifact@v1
+      with:
+        name: Export from Docker
+        path: out/MICROBIT.hex
