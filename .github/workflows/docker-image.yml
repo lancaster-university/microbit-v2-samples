@@ -12,6 +12,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build using the Docker image
       run: docker build -t microbit-tools --output out .
+    - name: Directory Listing
+      run: ls -al
     - name: Upload hex file
       uses: actions/upload-artifact@v1
       with:
