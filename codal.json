@@ -5,7 +5,7 @@
         "branch": "master",
         "type": "git",
         "test_ignore": true,
-        "dev": true
+        "dev": false
     } ,
     "config":{
         "NO_BLE": 1,
