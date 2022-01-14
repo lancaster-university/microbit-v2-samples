@@ -3,7 +3,7 @@ name: Build CODAL
 on:
   workflow_dispatch:
   push:
-    branches: 'feature/ci-update'
+    branches: 'master'
   pull_request:
     branches: '*'
 
