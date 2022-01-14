@@ -28,7 +28,13 @@ For backwards compatibility with [microbit-samples](https://github.com/lancaster
 ## Docker
 You can use the [Dockerfile](https://github.com/lancaster-university/microbit-v2-samples/blob/master/Dockerfile) provided to build the samples, or your own project sources, without installing additional dependencies.
 
-Run the following command to build the image locally:
+Run the following command to build the image locally; the .bin and .hex files from a successful compile will be placed in a new `out/` directory:
+
+```
+    docker build -t microbit-tools --output out .
+```
+
+To omit the final output stage (for CI, for example) run without the `--output` arguments:
 
 ```
     docker build -t microbit-tools .
