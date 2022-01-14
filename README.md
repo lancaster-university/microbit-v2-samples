@@ -45,19 +45,6 @@ To omit the final output stage (for CI, for example) run without the `--output` 
 - In the root of this repository type `python build.py`
 - The hex file will be built `MICROBIT.HEX` and placed in the root folder.
 
-## Docker
-You can use the image you built previously to build the project sources in the current working directory (equivalent to executing `build.py`).
-
-```
-    docker run -v $(pwd):/app --rm microbit-tools
-```
-
-You can also provide additional arguments like `--clean`.
-
-```
-    docker run -v $(pwd):/app --rm microbit-tools --clean
-```
-
 # Developing
 You will find a simple main.cpp in the `source` folder which you can edit. CODAL will also compile any other C/C++ header files our source files with the extension `.h .c .cpp` it finds in the source folder.
 
