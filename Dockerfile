@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as builder
 
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
@@ -13,6 +13,13 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 # Project sources volume should be mounted at /app
-WORKDIR /app
+COPY . /opt/microbit-samples
+WORKDIR /opt/microbit-samples
 
-ENTRYPOINT ["python3", "build.py"]
+RUN python3 build.py
+
+FROM scratch AS export-stage
+COPY --from=builder /opt/microbit-samples/MICROBIT.bin .
+COPY --from=builder /opt/microbit-samples/MICROBIT.hex .
+
+ENTRYPOINT ["/bin/bash"]
