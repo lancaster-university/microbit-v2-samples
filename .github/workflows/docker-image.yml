@@ -1,8 +1,15 @@
-name: Build CODAL via Docker
+name: Build via Docker
 
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+defaults:
+  run:
+    shell: bash
+    working-directory: codal
 
 jobs:
   build:
@@ -11,7 +18,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build using the Docker image
-      run: docker build -t microbit-tools --output out .
+      env:
+        DOCKER_BUILDKIT: 1
+      run: docker build -t microbit-tools --output type=local,dest=out . 
     - name: Directory Listing
       run: ls -al
     - name: Upload hex file
