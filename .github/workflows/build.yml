@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-defaults:
-  run:
-    shell: bash
-    working-directory: codal
-
 jobs:
   build-py-script:
     strategy:
