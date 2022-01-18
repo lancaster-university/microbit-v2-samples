@@ -1,0 +1,47 @@
+name: Build Natively
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-py-script:
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-latest, windows-2016]
+        gcc: ['7-2017-q4', 'latest']
+        cmake: ['3.6.0', '3.21.3']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Setup arm-none-eabi-gcc ${{ matrix.gcc }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: ${{ matrix.gcc }}
+      - name: Setup CMake ${{ matrix.cmake }}
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: ${{ matrix.cmake }}
+      - name: Install Ninja via PyPI
+        run: python -m pip install ninja
+      - name: Check Versions
+        run: |
+          arm-none-eabi-gcc --version
+          cmake --version
+          ninja --version
+          python --version
+      - name: Build using build.py
+        run: python build.py
+      - name: Upload hex file
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-py-${{ matrix.os }}
+          path: MICROBIT.hex

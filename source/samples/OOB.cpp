@@ -819,7 +819,7 @@ void onFacePalm(MicroBitEvent e) {
     mute = !mute;
 }
 
-int
+void
 out_of_box_experience()
 {   
     target_freq = 0;
