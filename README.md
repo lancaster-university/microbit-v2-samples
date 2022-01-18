@@ -1,5 +1,7 @@
 # microbit-v2-samples
 
+[![Native Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml) [![Docker Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml)
+
 This repository is provides the tooling needed to compile a C/C++ CODAL program for the micro:bit v2 and produce a HEX file that can be downloaded to the device.
 
 ## Raising Issues
@@ -28,7 +30,13 @@ For backwards compatibility with [microbit-samples](https://github.com/lancaster
 ## Docker
 You can use the [Dockerfile](https://github.com/lancaster-university/microbit-v2-samples/blob/master/Dockerfile) provided to build the samples, or your own project sources, without installing additional dependencies.
 
-Run the following command to build the image locally:
+Run the following command to build the image locally; the .bin and .hex files from a successful compile will be placed in a new `out/` directory:
+
+```
+    docker build -t microbit-tools --output out .
+```
+
+To omit the final output stage (for CI, for example) run without the `--output` arguments:
 
 ```
     docker build -t microbit-tools .
@@ -38,19 +46,6 @@ Run the following command to build the image locally:
 - Clone this repository
 - In the root of this repository type `python build.py`
 - The hex file will be built `MICROBIT.HEX` and placed in the root folder.
-
-## Docker
-You can use the image you built previously to build the project sources in the current working directory (equivalent to executing `build.py`).
-
-```
-    docker run -v $(pwd):/app --rm microbit-tools
-```
-
-You can also provide additional arguments like `--clean`.
-
-```
-    docker run -v $(pwd):/app --rm microbit-tools --clean
-```
 
 # Developing
 You will find a simple main.cpp in the `source` folder which you can edit. CODAL will also compile any other C/C++ header files our source files with the extension `.h .c .cpp` it finds in the source folder.
