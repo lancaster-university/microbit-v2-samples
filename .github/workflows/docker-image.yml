@@ -1,0 +1,25 @@
+name: Build via Docker
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build using the Docker image
+      env:
+        DOCKER_BUILDKIT: 1
+      run: docker build -t microbit-tools --output type=local,dest=out . 
+    - name: Directory Listing
+      run: ls -al
+    - name: Upload hex file
+      uses: actions/upload-artifact@v1
+      with:
+        name: Export from Docker
+        path: out/MICROBIT.hex
