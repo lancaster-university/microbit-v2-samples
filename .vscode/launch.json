@@ -10,7 +10,6 @@
           "interface": "swd",
           "device": "nrf52",
           "targetId": "nrf52",
-          "boardId": "9904",
           "svdFile": "libraries/codal-nrf52/nrfx/mdk/nrf52833.svd",
           "preLaunchCommands": [
             "load build/MICROBIT",
