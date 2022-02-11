@@ -22,9 +22,10 @@
 cmake_minimum_required(VERSION 3.3)
 
 # include additional cmake
-include(utils/cmake/JSONParser.cmake)
-include(utils/cmake/util.cmake)
-include(utils/cmake/colours.cmake)
+set( CORE_PATH "libraries/codal" )
+include(${CORE_PATH}/utils/cmake/JSONParser.cmake)
+include(${CORE_PATH}/utils/cmake/util.cmake)
+include(${CORE_PATH}/utils/cmake/colours.cmake)
 
 if (NOT "${BUILD_TOOL}" STRGREATER "")
     set(BUILD_TOOL "CODAL")
@@ -95,7 +96,7 @@ endif()
 ####################
 
 SET(TOOLCHAIN ${device.toolchain})
-SET(TOOLCHAIN_FOLDER "${CMAKE_CURRENT_LIST_DIR}/utils/cmake/toolchains/${device.toolchain}")
+SET(TOOLCHAIN_FOLDER "${CMAKE_CURRENT_LIST_DIR}/${CORE_PATH}/utils/cmake/toolchains/${device.toolchain}")
 
 # include toolchain file
 set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake" CACHE PATH "toolchain file")
@@ -106,7 +107,7 @@ enable_language(ASM)
 
 # include compiler flags overrides
 include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
-set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${device.toolchain}")
+set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/${CORE_PATH}/utils/cmake/toolchains/${device.toolchain}")
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
@@ -193,7 +194,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PLATFORM_INCLUDES_PATH}")
 set(CODAL_BUILD_SYSTEM TRUE)
 
 # a define specificying common utils used in codal
-set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/utils/cmake/util.cmake")
+set(CODAL_UTILS_LOCATION "${PROJECT_SOURCE_DIR}/${CORE_PATH}/utils/cmake/util.cmake")
 
 # this variable is used in the linking step of the final binary.
 set(LIB_FOLDERS "")
@@ -268,12 +269,12 @@ endif()
 if ("${BUILD_TOOL}" STRGREATER "")
     string(COMPARE EQUAL "${BUILD_TOOL}" "YOTTA" YOTTA_BUILD)
     if (${YOTTA_BUILD})
-        include("${PROJECT_SOURCE_DIR}/utils/cmake/buildtools/yotta.cmake")
+        include("${PROJECT_SOURCE_DIR}/${CORE_PATH}/utils/cmake/buildtools/yotta.cmake")
     endif ()
 
     string(COMPARE EQUAL "${BUILD_TOOL}" "CODAL" CODAL_BUILD)
     if (${CODAL_BUILD})
-        include("${PROJECT_SOURCE_DIR}/utils/cmake/buildtools/codal.cmake")
+        include("${PROJECT_SOURCE_DIR}/${CORE_PATH}/utils/cmake/buildtools/codal.cmake")
     endif()
 endif()
 
