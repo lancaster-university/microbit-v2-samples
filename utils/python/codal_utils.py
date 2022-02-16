@@ -67,7 +67,7 @@ def update():
 
 def printstatus():
     print("\n***%s" % os.getcwd())
-    system("git status -s")
+    system("git status -sb")
 
 def status():
     (codal, targetdir, target) = read_config()
