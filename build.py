@@ -65,6 +65,7 @@ def create_tree():
       "*.pyc\n",
       "*.swp\n",
       "*.uf2\n",
+      "*.pyc\n",
       "*~\n",
       "build\n",
       "buildcache.json\n",
