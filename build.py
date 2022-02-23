@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # The MIT License (MIT)
 
-# Copyright (c) 2017 Lancaster University.
+# Copyright (c) 2022 Lancaster University.
 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,147 +22,134 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import os
-import sys
-import optparse
-import platform
 import json
+import os
 import shutil
-import re
-from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
+import sys
+import urllib.request
+import optparse
 
-parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
-parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
-parser.add_option('-t', '--test-platforms', dest='test_platform', action="store_true", help='Specify whether the target platform is a test platform or not.', default=False)
-parser.add_option('-l', '--lock', dest='lock_target', action="store_true", help='Create target-lock.json, updating patch version', default=False)
-parser.add_option('-b', '--branch', dest='branch', action="store_true", help='With -l, use vX.X.X-BRANCH.Y', default=False)
-parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
-parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
-parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
-parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
-parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
-parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
-parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
-parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
+from importlib import import_module
+from genericpath import exists
 
+TARGET_LIST = [
+    "https://raw.githubusercontent.com/lancaster-university/codal/master/utils/targets.json"
+]
+BASE_ROOT = os.getcwd()
+
+if exists( os.path.join(BASE_ROOT, "codal.json") ) and exists( os.path.join(BASE_ROOT, "libraries", "codal", "build.py") ):
+  sys.path.append( os.path.join(BASE_ROOT, "libraries", "codal") )
+  import_module( f'libraries.codal.build' )
+  exit( 0 )
+
+parser = optparse.OptionParser(usage="usage: %prog target-name [options]", description="BOOTSTRAP MODE - Configures the current project directory for a specified target. Will defer to the latest build tools once configured.")
 (options, args) = parser.parse_args()
 
-if not os.path.exists("build"):
-    os.mkdir("build")
+def create_tree():
+  path_list = [
+    "libraries",
+    "build",
+    "source"
+  ]
+  for p in path_list:
+    if not exists( os.path.join( BASE_ROOT, p ) ):
+      os.mkdir( os.path.join( BASE_ROOT, p ) )
+  
+  with open(".gitignore", 'w') as git_ignore:
+    git_ignore.writelines( [
+      ".vscode\n",
+      ".yotta.json\n",
+      "*.bin\n",
+      "*.DS_Store\n",
+      "*.hex\n",
+      "*.pyc\n",
+      "*.swp\n",
+      "*.uf2\n",
+      "*~\n",
+      "build\n",
+      "buildcache.json\n",
+      "codal.json\n",
+      "libraries\n",
+      "Makefile\n",
+      "pxtapp\n",
+      "yotta_modules\n",
+      "yotta_targets\n"
+    ] )
 
-if options.lock_target:
-    lock(options)
-    exit(0)
+def download_targets():
+  print( "Downloading valid targets..." )
+  cache = {}
+  for url in TARGET_LIST:
+    r = urllib.request.urlopen( url )
+    for t in json.load( r ):
+      cache[ t["name"] ] = t
+  return cache
 
-if options.update:
-    update()
-    exit(0)
+def library_clone( url, name, branch = "master", specfile = "module.json" ):
+  print( f'Downloading library {name}...' )
+  git_root = os.path.join( BASE_ROOT, 'libraries', name )
+  if not exists( os.path.join( git_root, '.git' ) ):
+    os.system( f'git clone --recurse-submodules --branch "{branch}" "{url}" "{git_root}"' )
 
-if options.status:
-    status()
-    exit(0)
+  if exists( os.path.join( git_root, specfile ) ):
+    return load_json( os.path.join( git_root, specfile ) )
 
-if options.revision:
-    revision(options.revision)
-    exit(0)
+  print( f'WARN: Missing specification file for {name}: {specfile}' )
+  return {}
 
-# out of source build!
-os.chdir("build")
+def load_json( path ):
+  with open(path, 'r') as src:
+    return json.load( src )
 
-test_json = read_json("../utils/targets.json")
+if exists( os.path.join( BASE_ROOT, "codal.json" ) ):
+  exit( "It looks like this project has already been configured, if this is not the case, delete codal.json and re-run this script." )
 
-# configure the target a user has specified:
+if len(args) == 0 or (len(args) == 1 and args[0] == "ls"):
+  targets = download_targets()
+
+  print( "Please supply an initial target to build against" )
+
+  for t in targets:
+    print( f'{t:<30}: {targets[t]["info"]}' )
+
 if len(args) == 1:
+  targets = download_targets()
+  query = args[0]
 
-    target_name = args[0]
-    target_config = None
+  if query not in targets:
+    exit( "Invalid or unknown target" )
 
-    # list all targets
-    if target_name == "ls":
-        for json_obj in test_json:
-            s = "%s: %s" % (json_obj["name"], json_obj["info"])
-            if "device_url" in json_obj.keys():
-                s += "(%s)" % json_obj["device_url"]
-            print(s)
-        exit(0)
+  info = targets[query]
 
-    # cycle through out targets and check for a match
-    for json_obj in test_json:
-        if json_obj["name"] != target_name:
-            continue
+  create_tree()
+  library_clone( "https://github.com/lancaster-university/codal.git", "codal", branch="feature/bootstrap" )
 
-        del json_obj["device_url"]
-        del json_obj["info"]
+  # Copy out the base CMakeLists.txt, can't run from the library, and this is a CMake limitation
+  # Note; use copy2 here to preserve metadata
+  shutil.copy2(
+    os.path.join( BASE_ROOT, "libraries", "codal", "CMakeLists.txt" ),
+    os.path.join( BASE_ROOT, "CMakeLists.txt" )
+  )
 
-        target_config = json_obj
-        break
+  print( "Downloading target support files..." )
+  details = library_clone( info["url"], info["name"], branch = info["branch"], specfile = "target.json" )
 
-    if target_config == None and target_name.startswith("http"):
-        target_config = {
-            "name": re.sub("^.*/", "", target_name),
-            "url": target_name,
-            "branch": "master",
-            "type": "git"
-        }
+  # This is _somewhat_ redundant as cmake does this as well, but it might be worth doing anyway as there might be
+  # additional library files needed for other, as-yet unidentified features. Plus, it makes the build faster afterwards -JV
+  print( "Downloading libraries..." )
+  for lib in details["libraries"]:
+    library_clone( lib["url"], lib["name"], branch = lib["branch"] )
 
-    if target_config == None:
-        print("'" + target_name + "'" + " is not a valid target.")
-        exit(1)
-
-    # developer mode is for users who wish to contribute, it will clone and checkout commitable branches.
-    if options.dev:
-        target_config["dev"] = True
-
+  with open( os.path.join( BASE_ROOT, "codal.json" ), "w" ) as codal_json:
     config = {
-        "target":target_config
+      "target": info
     }
+    config["target"]["test_ignore"] = True
+    config["target"]["dev"] = True
 
-    with open("../codal.json", 'w') as codal_json:
-        json.dump(config, codal_json, indent=4)
-
-    # remove the build folder, a user could be swapping targets.
-    delete_build_folder()
-
-
-elif len(args) > 1:
-    print("Too many arguments supplied, only one target can be specified.")
-    exit(1)
-
-if not options.test_platform:
-
-    if not os.path.exists("../codal.json"):
-        print("No target specified in codal.json, does codal.json exist?")
-        exit(1)
-
-    if options.generate_docs:
-        generate_docs()
-        exit(0)
-
-    build(options.clean)
-    exit(0)
-
-for json_obj in test_json:
-
-    # some platforms aren't supported by travis, ignore them when testing.
-    if "test_ignore" in json_obj:
-        print("ignoring: " + json_obj["name"])
-        continue
-
-    # ensure we have a clean build tree.
-    delete_build_folder()
-
-    # clean libs
-    if os.path.exists("../libraries"):
-        shutil.rmtree('../libraries')
-
-    # configure the target and tests...
-    config = {
-        "target":json_obj,
-        "output":".",
-        "application":"libraries/"+json_obj["name"]+"/tests/"
-    }
-
-    with open("../codal.json", 'w') as codal_json:
-        json.dump(config, codal_json, indent=4)
-
-    build(True, True)
+    json.dump( config, codal_json, indent=4 )
+  
+  print( "\n" )
+  print( "All done! You can now start developing your code in the source/ folder. Running ./build.py will now defer to the actual build tools" )
+  print( "Happy coding!" )
+  print( "" )
