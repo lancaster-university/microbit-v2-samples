@@ -101,8 +101,8 @@ def load_json( path ):
   with open(path, 'r') as src:
     return json.load( src )
 
-if exists( os.path.join( BASE_ROOT, "codal.json" ) ):
-  exit( "It looks like this project has already been configured, if this is not the case, delete codal.json and re-run this script." )
+#if exists( os.path.join( BASE_ROOT, "codal.json" ) ):
+#  exit( "It looks like this project has already been configured, if this is not the case, delete codal.json and re-run this script." )
 
 if len(args) == 0 or (len(args) == 1 and args[0] == "ls"):
   targets = download_targets()
