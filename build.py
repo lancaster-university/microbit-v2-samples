@@ -32,17 +32,37 @@ import optparse
 from importlib import import_module
 from genericpath import exists
 
+TOOLCHAIN_URL = "https://github.com/lancaster-university/codal.git"
 TARGET_LIST = [
     "https://raw.githubusercontent.com/lancaster-university/codal/master/utils/targets.json"
 ]
 BASE_ROOT = os.getcwd()
 
+class PassThroughOptionParser(optparse.OptionParser):
+  def _process_args(self, largs, rargs, values):
+    while rargs:
+      try:
+        optparse.OptionParser._process_args(self, largs, rargs,values)
+      except (optparse.BadOptionError, optparse.AmbiguousOptionError) as e:
+        largs.append(e.opt_str)
+
 if exists( os.path.join(BASE_ROOT, "codal.json") ) and exists( os.path.join(BASE_ROOT, "libraries", "codal", "build.py") ):
-  sys.path.append( os.path.join(BASE_ROOT, "libraries", "codal") )
-  import_module( f'libraries.codal.build' )
-  exit( 0 )
+  parser = PassThroughOptionParser(add_help_option=False)
+  parser.add_option('--bootstrap', dest='force_bootstrap', action="store_true", default=False)
+  (options, args) = parser.parse_args()
+
+  if options.force_bootstrap:
+    print( "WARNING: '--bootstrap' forces bootstrap to take over, downloaded build tools will not be run!" )
+
+  if not options.force_bootstrap:
+    sys.path.append( os.path.join(BASE_ROOT, "libraries", "codal") )
+    import_module( f'libraries.codal.build' )
+    exit(0)
 
 parser = optparse.OptionParser(usage="usage: %prog target-name [options]", description="BOOTSTRAP MODE - Configures the current project directory for a specified target. Will defer to the latest build tools once configured.")
+parser.add_option('--bootstrap', dest='force_bootstrap', action='store_true', help="Skips any already downloaded build toolchain, and runs in bootstrap mode directly.", default=False)
+parser.add_option('--ignore-codal', dest='ignore_codal', action='store_true', help="Skips any pre-existing codal.json in the project folder, and runs as if none exists.", default=False)
+parser.add_option('--merge-upstream-target', dest='merge_upstream_target', action='store_true', help="Keeps the existing codal.json, but only for non-target parameters, merging the new target definition in with the old arguments.", default=False)
 (options, args) = parser.parse_args()
 
 def create_tree():
@@ -102,28 +122,9 @@ def load_json( path ):
   with open(path, 'r') as src:
     return json.load( src )
 
-#if exists( os.path.join( BASE_ROOT, "codal.json" ) ):
-#  exit( "It looks like this project has already been configured, if this is not the case, delete codal.json and re-run this script." )
-
-if len(args) == 0 or (len(args) == 1 and args[0] == "ls"):
-  targets = download_targets()
-
-  print( "Please supply an initial target to build against" )
-
-  for t in targets:
-    print( f'{t:<30}: {targets[t]["info"]}' )
-
-if len(args) == 1:
-  targets = download_targets()
-  query = args[0]
-
-  if query not in targets:
-    exit( "Invalid or unknown target" )
-
-  info = targets[query]
-
+def go_configure( info, config={} ):
   create_tree()
-  library_clone( "https://github.com/lancaster-university/codal.git", "codal", branch="feature/bootstrap" )
+  library_clone( TOOLCHAIN_URL, "codal", branch="feature/bootstrap" )
 
   # Copy out the base CMakeLists.txt, can't run from the library, and this is a CMake limitation
   # Note; use copy2 here to preserve metadata
@@ -142,9 +143,7 @@ if len(args) == 1:
     library_clone( lib["url"], lib["name"], branch = lib["branch"] )
 
   with open( os.path.join( BASE_ROOT, "codal.json" ), "w" ) as codal_json:
-    config = {
-      "target": info
-    }
+    config["target"] = info
     config["target"]["test_ignore"] = True
     config["target"]["dev"] = True
 
@@ -154,3 +153,44 @@ if len(args) == 1:
   print( "All done! You can now start developing your code in the source/ folder. Running ./build.py will now defer to the actual build tools" )
   print( "Happy coding!" )
   print( "" )
+
+def list_valid_targets():
+  targets = download_targets()
+  for t in targets:
+    print( f'{t:<30}: {targets[t]["info"]}' )
+
+if len(args) == 0:
+  # We might have an existing device config already, so grab that and try and pull that...
+  if exists( os.path.join( BASE_ROOT, "codal.json" ) ) and not options.ignore_codal:
+    print( "Project already has a codal.json, trying to use that to determine the build system and any missing dependencies..." )
+    local_config = load_json( os.path.join( BASE_ROOT, "codal.json" ) )
+    local_target = local_config["target"]
+
+    print( "Configuring from codal.json!" )
+    go_configure( local_target )
+    exit(0)
+
+  print( "Please supply an initial target to build against:" )
+  list_valid_targets()
+  exit( 0 )
+
+if len(args) == 1:
+
+  # 'Magic' target to list all targets
+  if args[0] == "ls":
+    print( "Available target platforms:" )
+    list_valid_targets()
+    exit( 0 )
+  
+  targets = download_targets()
+  query = args[0]
+
+  if query not in targets:
+    exit( "Invalid or unknown target, try './build.py ls' to see available targets" )
+
+  local_config = {}
+  if options.merge_upstream_target:
+    print( "Preserving local configuration, but ignoring the target and using supplied user target..." )
+    local_config = load_json( os.path.join( BASE_ROOT, "codal.json" ) )
+
+  go_configure( targets[query], config=local_config )

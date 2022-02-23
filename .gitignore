@@ -6,8 +6,8 @@
 *.pyc
 *.swp
 *.uf2
-*~
 *.pyc
+*~
 build
 buildcache.json
 codal.json
