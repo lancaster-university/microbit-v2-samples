@@ -61,8 +61,6 @@ if options.status:
     status()
     exit(0)
 
-os.environ
-
 # out of source build!
 os.chdir("build")
 
