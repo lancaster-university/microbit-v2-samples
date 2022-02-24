@@ -65,7 +65,7 @@ INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.
 message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
 list(APPEND CODAL_DEPS ${codal.target.name})
 
-if("${codal.target.dev}" STRGREATER "")
+if("${codal.target.dev}" STREQUAL "true")
     file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
     message("${BoldMagenta}Using target.json (dev version) ${ColourReset}")
 else()

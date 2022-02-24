@@ -7,9 +7,15 @@
         "branch": "master",
         "type": "git",
         "test_ignore": true,
+<<<<<<< HEAD
         "dev": true
     },
     "config": {
+=======
+        "dev": false
+    } ,
+    "config":{
+>>>>>>> bug/build-system
         "NO_BLE": 1,
         "MICROBIT_BLE_ENABLED": 0,
         "MICROBIT_BLE_PAIRING_MODE": 0
