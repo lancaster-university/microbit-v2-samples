@@ -6,12 +6,12 @@
 
 using namespace codal;
 
-#define VERBOSITY 4
+#define VERBOSITY 1
 
 #if VERBOSITY == 1
-    #define FMESG(...) DMESG( __VA_ARGS__ )
+    #define FMESG(...) DMESGF( __VA_ARGS__ )
 #elif VERBOSITY == 2
-    #define FMESG(...) DMESG( "%s", __PRETTY_FUNCTION__ ); DMESG( __VA_ARGS__ )
+    #define FMESG(...) DMESGF( "%s", __PRETTY_FUNCTION__ ); DMESG( __VA_ARGS__ )
 #elif VERBOSITY == 3
     #define FMESG(...) DMESGF( "%s:%d", __PRETTY_FUNCTION__, __LINE__ ); DMESG( __VA_ARGS__ )
 #elif VERBOSITY == 4
