@@ -1,13 +1,13 @@
 # microbit-v2-samples
 
-> ## FEATURE TEST BUILD
+> ## FEATURE TEST BRANCH
 >
 > Designed to be used with the following library branches:
 >
-> + codal-core -> recordingAPI
-> + codal-nrf52 -> adc-live-demux
+> + codal-core -> feature/audio
+> + codal-nrf52 -> feature/audio
 > + codal-microbit-nrf5sdk -> master
-> + codal-microbit-v2 -> input_pipeline
+> + codal-microbit-v2 -> feature/audio
 >
 > Will not compile/work without these set manually
 
