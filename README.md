@@ -1,5 +1,16 @@
 # microbit-v2-samples
 
+> ## FEATURE TEST BUILD
+>
+> Designed to be used with the following library branches:
+>
+> + codal-core -> recordingAPI
+> + codal-nrf52 -> adc-live-demux
+> + codal-microbit-nrf5sdk -> master
+> + codal-microbit-v2 -> input_pipeline
+>
+> Will not compile/work without these set manually
+
 [![Native Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml) [![Docker Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml)
 
 This repository is provides the tooling needed to compile a C/C++ CODAL program for the micro:bit v2 and produce a HEX file that can be downloaded to the device.

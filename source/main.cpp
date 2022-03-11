@@ -8,6 +8,9 @@ main()
 {
     uBit.init();
 
-    while(1)
+    while(1) {
         rec_test_main();
+
+        uBit.sleep( 1000  );
+    }
 }

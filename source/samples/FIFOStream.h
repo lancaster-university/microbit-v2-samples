@@ -2,25 +2,29 @@
 #include "DataStream.h"
 
 
-#define TAPEDECK_MAXIMUM_BUFFERS 32
+#define TAPEDECK_MAXIMUM_BUFFERS 256
 
 namespace codal {
 
-    class TapeDeck : public DataSource, public DataSink
+    class FIFOStream : public DataSource, public DataSink
     {
         private:
 
         ManagedBuffer buffer[TAPEDECK_MAXIMUM_BUFFERS];
         int bufferCount;
         int bufferLength;
+        int notifyID;
+
+        bool allowInput;
+        bool allowOutput;
 
         DataSink *downStream;
-        DataSource *upStream;
+        DataSource &upStream;
 
         public:
 
-        TapeDeck( DataSource &upstream );
-        ~TapeDeck();
+        FIFOStream( DataSource &source );
+        ~FIFOStream();
 
         virtual ManagedBuffer pull();
         virtual int pullRequest();
@@ -30,9 +34,12 @@ namespace codal {
         virtual int setFormat( int format );
         int length();
         void dumpState();
-        
+
         bool canPull();
         bool isFull();
+
+        void setInputEnable( bool state );
+        void setOutputEnable( bool state );
 
 
     };

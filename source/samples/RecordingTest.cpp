@@ -4,117 +4,63 @@
 #include "LevelDetector.h"
 #include "MemorySource.h"
 #include "DataStream.h"
-#include "TapeDeck.h"
+#include "FIFOStream.h"
 
 extern MicroBit uBit;
 
-NRF52ADCChannel *mic = NULL;
-SerialStreamer *streamer = NULL;
-StreamNormalizer *processor = NULL;
-LevelDetector *level = NULL;
-MemorySource *player = NULL;
-
-#define SAMPLE_FREQ (11e3)
+#define SAMPLE_FREQ 11000
 #define SAMPLE_HZ_TO_USEC(hz) (1e6 / (hz))
 
 void rec_simple_recorder()
 {
-    DMESG( "Configuring..." );
+    DMESG( "Configuring..." );    
 
-    if( mic == NULL )
-    {
-        mic = uBit.adc.getChannel( uBit.io.microphone );
-        uBit.adc.setSamplePeriod( SAMPLE_HZ_TO_USEC( SAMPLE_FREQ ) ); // 11kHz
-        mic->setGain( 7, 0 );
-    }
+    MemorySource player;
+    player.setFormat( uBit.audio.mic->getFormat() );
+    uBit.audio.mixer.addChannel(
+        player,
+        player.getFormat() // Copy whatever format the mic is currently using
+    );
+    uBit.audio.mixer.setSampleRate( 11000 );
 
-    /*if( processor == NULL )
-        processor = new StreamNormalizer( mic->output, 1.0f, true );
-    
-    if( level == NULL )
-        level = new LevelDetector( processor->output, 300, 200 );*/
+    FIFOStream fifo( *uBit.audio.mic );
+    fifo.setInputEnable( true );
+    fifo.setOutputEnable( true );
 
-    if( player == NULL )
-    {
-        player = new MemorySource();
-        player->setFormat( DATASTREAM_FORMAT_8BIT_UNSIGNED );
-        uBit.audio.mixer.addChannel(
-            *player,
-            SAMPLE_FREQ // 11k
-        );
-    }
-
-    TapeDeck tape( *mic );
-
-    DMESG( "READY..." );
+    SerialStreamer streamer( fifo, SERIAL_STREAM_MODE_HEX );
 
     while( true )
     {
-        uBit.display.clear();
-
-        // Hold to record
         if( uBit.buttonA.isPressed() )
         {
-            DMESG( "REC:START" );
             uBit.audio.activateMic();
+
             while( uBit.buttonA.isPressed() )
             {
-                tape.dumpState();
-                tape.pullRequest();
-
-                /*int value = recBuffer.pullRequest();
-                if( value == DEVICE_OK ) {
-                    DMESG( "OK" );
-                }
-                else if( value == DEVICE_NO_RESOURCES )
-                {
-                    DMESG( "OOM" );
-                }*/
-
-                //int32_t value = level->getValue();
-                /*DMESG( "%d\t%d Bytes (full? %d)", value, recBuffer->length(), recBuffer->full() );
-
-                uBit.display.clear();
-                for( int i = 0; i < 5; i++ )
-                {
-                    if( value > (i * (i*5)) )
-                    {
-                        for( int x = 0; x < 5; x++ )
-                        {
-                            uBit.display.image.setPixelValue( x, 5 - i, 255 );
-                        }
-                    }
-                }*/
+                fifo.pullRequest();
+                uint16_t sample = uBit.audio.mic->getSample();
+                DMESGF( "Val = %d", sample );
             }
-            uBit.audio.deactivateMic();
 
-            DMESG( "REC:STOP" );
+            uBit.audio.deactivateMic();
         }
 
         // Tap to play back
         if( uBit.buttonB.isPressed() )
         {
-            DMESG( "PLAY ? %d Bytes", tape.length() );
-            tape.dumpState();
-            uBit.audio.setVolume( 255 );
+            uBit.audio.requestActivation();
             uBit.audio.setSpeakerEnabled( true );
-
-            while( tape.length() > 0 )
+            uBit.audio.setVolume( 200 );
+            while( uBit.buttonB.isPressed() )
             {
-                ManagedBuffer block = tape.pull();
-                DMESG( "len = %d, first = %d", block.length(), block.getByte(0) );
-                player->play( block, 1 );
-                tape.dumpState();
-
-                uBit.sleep( 100 );
+                if( fifo.canPull() )
+                    player.play( fifo.pull(), 1 );
             }
-
             uBit.audio.setSpeakerEnabled( false );
-            DMESG( "PLAY:STOP" );
         }
         
+        uBit.sleep( 100 );
     }
-    uBit.display.clear();
 }
 
 void rec_test_main()

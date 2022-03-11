@@ -107,6 +107,9 @@ def library_clone( url, name, branch = "master", specfile = "module.json" ):
   if not exists( os.path.join( git_root, '.git' ) ):
     os.system( f'git clone --recurse-submodules --branch "{branch}" "{url}" "{git_root}"' )
 
+  if exists( os.path.join( git_root, "module.json" ) ):
+    log_warn( f'WARN: The library {name} includes legacy yotta build files...' )
+
   if exists( os.path.join( git_root, specfile ) ):
     return load_json( os.path.join( git_root, specfile ) )
 
@@ -196,7 +199,7 @@ if exists( os.path.join(BASE_ROOT, "codal.json") ) and exists( os.path.join(BASE
 
   if not options.force_bootstrap:
     sys.path.append( os.path.join(BASE_ROOT, "libraries", "codal") )
-    import_module( f'libraries.codal.build' )
+    import_module( 'libraries.codal.build' )
     exit(0)
 
 parser = optparse.OptionParser(usage="usage: %prog target-name [options]", description="BOOTSTRAP MODE - Configures the current project directory for a specified target. Will defer to the latest build tools once configured.")

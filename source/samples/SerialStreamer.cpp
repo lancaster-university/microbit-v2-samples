@@ -44,7 +44,9 @@ SerialStreamer::SerialStreamer(DataSource &source, int mode) : upstream(source)
 int SerialStreamer::pullRequest()
 {
     static volatile int pr = 0;
-     
+
+    DMESGF( "SerialStreamer:pullRequest" );
+
     if(!pr)
     {
         pr++;
@@ -125,7 +127,7 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
     }
 
     // We're alway hungry, so deschedule ourselves after processing each buffer.
-    schedule();
+    //schedule();
 }
 
 
