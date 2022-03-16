@@ -102,8 +102,6 @@ int FIFOStream::pullRequest()
         this->bufferLength += inBuffer.length();
     }
 
-    this->dumpState();
-
     return DEVICE_OK;
 }
 
