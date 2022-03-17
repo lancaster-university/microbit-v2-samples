@@ -17,7 +17,7 @@ SerialStreamer * streamer;
 
 void rec_simple_recorder()
 {
-    DMESG( "Configuring..." );    
+    DMESG( "Configuring..." );
 
     player = new MemorySource();
     player->setFormat( uBit.audio.mic->getFormat() );
