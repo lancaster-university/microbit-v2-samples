@@ -8,7 +8,7 @@
 
 extern MicroBit uBit;
 
-#define SAMPLE_FREQ 110000
+#define SAMPLE_FREQ 11000
 #define SAMPLE_HZ_TO_USEC(hz) (1e6 / (hz))
 
 MemorySource * player;
@@ -19,52 +19,44 @@ void rec_simple_recorder()
 {
     DMESG( "Configuring..." );    
 
-    player = new MemorySource();
-    player->setFormat( uBit.audio.mic->getFormat() );
-    uBit.audio.mixer.addChannel(
-        *player,
-        player->getFormat() // Copy whatever format the mic is currently using
-    );
+    uBit.audio.soundExpressions.play("giggle");
 
-    uBit.audio.mixer.setSampleRate( SAMPLE_FREQ );
-    uBit.adc.setSamplePeriod( SAMPLE_HZ_TO_USEC(SAMPLE_FREQ) );
+    fifo = new FIFOStream( *uBit.audio.splitter );
+    uBit.audio.mixer.addChannel(*fifo, SAMPLE_FREQ); 
+    //streamer = new SerialStreamer( *fifo, SERIAL_STREAM_MODE_HEX );
 
-    fifo = new FIFOStream( *uBit.audio.mic );
-    fifo->setInputEnable( true );
-    fifo->setOutputEnable( true );
-
-    streamer = new SerialStreamer( *fifo, SERIAL_STREAM_MODE_HEX );
+    //uBit.audio.requestActivation();
+    //uBit.audio.setSpeakerEnabled( true );
+    //uBit.audio.setVolume( 200 );
 
     while( true )
     {
         if( uBit.buttonA.isPressed() )
         {
-            uBit.audio.activateMic();
+            fifo->setInputEnable( true );
 
             while( uBit.buttonA.isPressed() )
             {
                 fifo->pullRequest();
-                //uint16_t sample = uBit.audio.mic->getSample();
-                //DMESGF( "Val = %d", sample );
+                uBit.sleep(100);
             }
-            DMESG( "Length = %d", fifo->length() );
 
-            uBit.audio.deactivateMic();
+            fifo->setInputEnable( false );
+            DMESG( "FIFO Length = %d", fifo->length() );
         }
 
         // Tap to play back
         if( uBit.buttonB.isPressed() )
         {
-            uBit.audio.requestActivation();
-            uBit.audio.setSpeakerEnabled( true );
-            uBit.audio.setVolume( 200 );
+            fifo->setOutputEnable( true );
+
             while( uBit.buttonB.isPressed() )
             {
-                if( fifo->canPull() )
-                    player->play( fifo->pull(), 1 );
+                uBit.sleep(100);
             }
-            DMESG( "Length = %d", fifo->length() );
-            uBit.audio.setSpeakerEnabled( false );
+
+            fifo->setOutputEnable( false );
+            DMESG( "FIFO Length = %d", fifo->length() );
         }
         
         uBit.sleep( 100 );
