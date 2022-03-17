@@ -9,7 +9,6 @@
 extern MicroBit uBit;
 
 #define SAMPLE_FREQ 11000
-#define SAMPLE_HZ_TO_USEC(hz) (1e6 / (hz))
 
 MemorySource * player;
 FIFOStream * fifo;
@@ -37,8 +36,7 @@ void rec_simple_recorder()
 
             while( uBit.buttonA.isPressed() )
             {
-                fifo->pullRequest();
-                uBit.sleep(100);
+                uBit.sleep( 100 );
             }
 
             fifo->setInputEnable( false );
