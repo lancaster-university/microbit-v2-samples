@@ -75,8 +75,6 @@ void FIFOStream::dumpState()
 
 int FIFOStream::pullRequest()
 {
-    DMESG("FIFO:pullRequest");
-
     ManagedBuffer inBuffer = this->upStream.pull();
 
     if( this->bufferCount >= TAPEDECK_MAXIMUM_BUFFERS )
