@@ -9,10 +9,13 @@
         "test_ignore": true,
         "dev": true
     },
-    "config": {
-        "DMESG_SERIAL_DEBUG":1,
+
+    "config":{
         "NO_BLE": 1,
-        "MICROBIT_BLE_ENABLED": 0,
-        "MICROBIT_BLE_PAIRING_MODE": 0
+        "MICROBIT_BLE_ENABLED" : 0,
+        "MICROBIT_BLE_PAIRING_MODE": 1,
+        "MICROBIT_BLE_PARTIAL_FLASHING": 0,
+        "DEVICE_DMESG_BUFFER_SIZE":8192,
+        "DMESG_SERIAL_DEBUG": 1
     }
 }

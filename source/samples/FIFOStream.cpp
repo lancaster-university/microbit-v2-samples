@@ -39,12 +39,15 @@ ManagedBuffer FIFOStream::pull()
 
         for (int i = 0; i < TAPEDECK_MAXIMUM_BUFFERS-1; i++)
             buffer[i] = buffer[i + 1];
+
         buffer[TAPEDECK_MAXIMUM_BUFFERS-1] = ManagedBuffer();
 
         this->bufferLength -= out.length();
         this->bufferCount--;
 
-        this->downStream->pullRequest();
+        if (this->bufferCount > 0 && downStream != NULL)
+            downStream->pullRequest();
+
         return out;
     }
 
@@ -72,15 +75,19 @@ void FIFOStream::dumpState()
 
 int FIFOStream::pullRequest()
 {
+    ManagedBuffer inBuffer = this->upStream.pull();
+
     if( this->bufferCount >= TAPEDECK_MAXIMUM_BUFFERS )
         return DEVICE_NO_RESOURCES;
-
-    ManagedBuffer inBuffer = this->upStream.pull();
 
     if( this->allowInput && inBuffer.length() > 0 )
     {
         this->buffer[ this->bufferCount++ ] = inBuffer;
         this->bufferLength += inBuffer.length();
+
+        // If we've just received a buffer after being idle, issue a downstream pullrequest to notify that data is ready.
+        if (bufferCount == 1 && this->allowOutput && downStream != NULL)
+            downStream->pullRequest();
     }
 
     return DEVICE_OK;
@@ -112,5 +119,15 @@ void FIFOStream::setInputEnable( bool state )
 }
 void FIFOStream::setOutputEnable( bool state )
 {
+    bool enabling = false;
+    DMESG("FIFO:setOutputEnable %d", state );
+
+    if (this->allowOutput == false && state)
+        enabling = true;
+
     this->allowOutput = state;
+    
+    // If we've just been enabled and have data to send, issue a pullrequest to ensure our downstream is aware of this
+    if (enabling && bufferCount > 0 && downStream != NULL)
+        downStream->pullRequest();
 }
