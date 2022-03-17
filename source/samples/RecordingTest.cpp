@@ -8,7 +8,7 @@
 
 extern MicroBit uBit;
 
-#define SAMPLE_FREQ 110000
+#define SAMPLE_FREQ 11000
 #define SAMPLE_HZ_TO_USEC(hz) (1e6 / (hz))
 
 MemorySource * player;
@@ -29,7 +29,8 @@ void rec_simple_recorder()
     uBit.audio.mixer.setSampleRate( SAMPLE_FREQ );
     uBit.adc.setSamplePeriod( SAMPLE_HZ_TO_USEC(SAMPLE_FREQ) );
 
-    fifo = new FIFOStream( *uBit.audio.mic );
+    fifo = new FIFOStream( uBit.audio.mic->output );
+    //fifo = new FIFOStream( *uBit.audio.splitter );
     fifo->setInputEnable( true );
     fifo->setOutputEnable( true );
 
@@ -41,11 +42,11 @@ void rec_simple_recorder()
         {
             uBit.audio.activateMic();
 
+            fifo->pullRequest();
+
             while( uBit.buttonA.isPressed() )
             {
-                fifo->pullRequest();
-                //uint16_t sample = uBit.audio.mic->getSample();
-                //DMESGF( "Val = %d", sample );
+                uBit.sleep( 100 );
             }
             DMESG( "Length = %d", fifo->length() );
 

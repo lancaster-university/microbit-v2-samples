@@ -60,9 +60,13 @@ ManagedBuffer FIFOStream::pull()
         this->bufferLength -= out.length();
         this->bufferCount--;
 
+        this->downStream->pullRequest();
         return out;
     }
 
+    // Note - this may be bogus as we technically don't send any data, we'd be relying on the
+    // downstream to not bother actually pulling via canPull() or getting a null ManagedBuffer...
+    this->downStream->pullRequest();
     return ManagedBuffer();
 }
 
