@@ -16,3 +16,4 @@ Makefile
 pxtapp
 yotta_modules
 yotta_targets
+docs
