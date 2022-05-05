@@ -53,7 +53,7 @@ void off_power_test()
 }
 
 
-void setDisplay(int mode)
+static void setDisplay(int mode)
 {
     DMESG(mode ? "RED\n" : "GREEN\n");
 
@@ -70,7 +70,7 @@ void setDisplay(int mode)
     uBit.io.col5.setDigitalValue(!mode);
 }
 
-void setCol(int col, int mode)
+static void setCol(int col, int mode)
 {
     int c = 0;
 

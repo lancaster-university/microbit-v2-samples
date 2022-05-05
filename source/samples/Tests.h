@@ -72,6 +72,7 @@ void mems_mic_drift_test();
 void mc_clap_test();
 void synthesizer_test();
 void version_test();
+void off_test();
 void power_consumption_test();
 void power_source_test();
 void standby_test();

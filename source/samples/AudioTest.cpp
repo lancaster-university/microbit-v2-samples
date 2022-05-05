@@ -56,7 +56,7 @@ static Pin *pin = NULL;
 static uint8_t pitchVolume = 0xff;
 
 // Pin control as per MakeCode.
-void analogPitch(int frequency, int ms) {
+static void analogPitch(int frequency, int ms) {
     if (frequency <= 0 || pitchVolume == 0) {
         pin->setAnalogValue(0);
     } else {
@@ -74,7 +74,7 @@ void analogPitch(int frequency, int ms) {
     }
 }
 
-void playScale() {
+static void playScale() {
     const int beat = 500;
     analogPitch(Note::C5, beat);
     analogPitch(Note::B, beat);
