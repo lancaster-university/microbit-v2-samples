@@ -1,153 +1,70 @@
-# Codal [![Build Status](https://travis-ci.org/lancaster-university/codal.svg?branch=master)](https://travis-ci.org/lancaster-university/codal)
+# microbit-v2-samples
 
-The main repository for the Component Oriented Device Abstraction Layer (CODAL).
+[![Native Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/build.yml) [![Docker Build Status](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml/badge.svg)](https://github.com/lancaster-university/microbit-v2-samples/actions/workflows/docker-image.yml)
 
-This repository is an empty shell that provides the tooling needed to produce a bin/hex/uf2 file for a CODAL device.
+This repository is provides the tooling needed to compile a C/C++ CODAL program for the micro:bit v2 and produce a HEX file that can be downloaded to the device.
 
-## Installation
+## Raising Issues
+Any issues regarding the micro:bit are gathered on the [lancaster-university/codal-microbit-v2](https://github.com/lancaster-university/codal-microbit-v2) repository. Please raise yours there too.
 
-### Automatic installation.
+# Installation
+You need some open source pre-requisites to build this repo. You can either install these tools yourself, or use the docker image provided below.
 
-This software has its grounding on the founding principles of [Yotta](https://www.mbed.com/en/platform/software/mbed-yotta/), the simplest install path would be to install their tools via their handy installer.
+- [GNU Arm Embedded Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
+- [Github desktop](https://desktop.github.com/)
+- [CMake](https://cmake.org/download/)
+- [Python 3](https://www.python.org/downloads/)
 
-### Docker
+We use Ubuntu Linux for most of our tests. You can also install these tools easily through the package manager:
 
-A [docker image](https://hub.docker.com/r/jamesadevine/codal-toolchains/) is available that contains toolchains used to build codal targets. A wrapper [Dockerfile](https://github.com/lancaster-university/codal-docker) is available that can be used to build your project with ease.
+```
+    sudo apt install gcc
+    sudo apt install git
+    sudo apt install cmake
+    sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi
+```
 
-Then follow the build steps listed below.
+## Yotta
+For backwards compatibility with [microbit-samples](https://github.com/lancaster-university/microbit-samples) users, we also provide a yotta target for this repository.
 
-### Manual installation
+## Docker
+You can use the [Dockerfile](https://github.com/lancaster-university/microbit-v2-samples/blob/master/Dockerfile) provided to build the samples, or your own project sources, without installing additional dependencies.
 
-1. Install `git`, ensure it is available on your platforms path.
-2. Install the `arm-none-eabi-*` command line utilities for ARM based devices and/or `avr-gcc`, `avr-binutils`, `avr-libc` for AVR based devices, ensure they are available on your platforms path.
-3. Install [CMake](https://cmake.org)(Cross platform make), this is the entirety of the build system.
-    5. If on Windows, install ninja.
-4. Install `Python 2.7` (if you are unfamiliar with CMake), python scripts are used to simplify the build process.
-5. Clone this repository
+Run the following command to build the image locally; the .bin and .hex files from a successful compile will be placed in a new `out/` directory:
+
+```
+    docker build -t microbit-tools --output out .
+```
+
+To omit the final output stage (for CI, for example) run without the `--output` arguments:
+
+```
+    docker build -t microbit-tools .
+```
 
 # Building
-- Generate or create a `codal.json` file
-    - `python build.py ls` lists all available targets
-    - `python build.py <target-name>` generates a codal.json file for a given target
-- In the root of this repository type `python build.py` the `-c` option cleans before building.
-    - If you are not using python:
-        - Windows:
-            1. In the root of the repository make a build folder.
-            2. `cd build`
-            3. `cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=RelWithDebInfo`
-            4. `ninja`
-        - Mac:
-            1. In the root of the repository make a build folder.
-            2. `cd build`
-            3. `cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo`
-            4. `make`
+- Clone this repository
+- In the root of this repository type `python build.py`
+- The hex file will be built `MICROBIT.HEX` and placed in the root folder.
 
-- The hex file will be placed at the location specified by `codal.json`, by default this is the root.
+# Developing
+You will find a simple main.cpp in the `source` folder which you can edit. CODAL will also compile any other C/C++ header files our source files with the extension `.h .c .cpp` it finds in the source folder.
 
-# Configuration
+The `samples` folder contains a number of simple sample programs that utilise you may find useful.
 
-Below is an example of how to configure codal to build the [codal-circuit-playground](https://github.com/lancaster-university/codal-circuit-playground) target, example applications will automatically be loaded into the "source" folder:
+# Debugging
+If you are using Visual Studio Code, there is a working debugging environment already set up for you, allowing you to set breakpoints and observe the micro:bit's memory. To get it working, follow these steps:
 
-```json
-{
-    "target":{
-        "name":"codal-circuit-playground",
-        "url":"https://github.com/lancaster-university/codal-circuit-playground",
-        "branch":"master",
-        "type":"git"
-    }
-}
-```
+1. Install either [OpenOCD](http://openocd.org) or [PyOCD](https://github.com/pyocd/pyOCD).
+2. Install the `marus25.cortex-debug` VS Code extension.
+3. Build your program.
+4. Click the Run and Debug option in the toolbar.
+5. Two debugging options are provided: one for OpenOCD, and one for PyOCD. Select the correct one depending on the debugger you installed.
 
-For more targets, read the targets section below.
+This should launch the debugging environment for you. To set breakpoints, you can click to the left of the line number of where you want to stop.
 
-## Advanced
+# Compatibility
+This repository is designed to follow the principles and APIs developed for the first version of the micro:bit. We have also included a compatibility layer so that the vast majority of C/C++ programs built using [microbit-dal](https://www.github.com/lancaster-university/microbit-dal) will operate with few changes.
 
-If you would like to override or define any additional configuration options (`#define's`) that are used by the supporting libraries, the codal build system allows the addition of a config field in `codal.json`:
-
-```json
-{
-    "target":{
-        "name":"codal-circuit-playground",
-        "url":"https://github.com/lancaster-university/codal-circuit-playground",
-        "branch":"master",
-        "type":"git"
-    },
-    "config":{
-        "NUMBER_ONE":1
-    },
-    "application":"source",
-    "output_folder":"."
-}
-```
-
-The above example will be translate `"NUMBER_ONE":1` into: `#define NUMBER_ONE     1` and force include it during compilation. You can also specify alternate application or output folders.
-
-# Targets
-
-To obtain a full list of targets type:
-
-```
-python build.py ls
-```
-
-To generate the `codal.json` for a target listed by the ls command, please run:
-
-```
-python build.py <target-name>
-```
-
-Please note you may need to remove the libraries folder if your previous build relied on similar dependencies.
-
-## Arduino Uno
-
-This target specifies the arduino uno which is driven by an atmega328p.
-
-### codal.json specification
-```json
-"target":{
-    "name":"codal-arduino-uno",
-    "url":"https://github.com/lancaster-university/codal-arduino-uno",
-    "branch":"master",
-    "type":"git"
-}
-```
-This target depends on:
-* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
-* [codal-atmega328p](https://github.com/lancaster-university/codal-atmega328p) implements basic CODAL components (I2C, Pin, Serial, Timer)
-
-## BrainPad
-
-This target specifies the BrainPad which is driven by a STM32F.
-
-### codal.json specification
-```json
-"target":{
-    "name":"codal-brainpad",
-    "url":"https://github.com/lancaster-university/codal-brainpad",
-    "branch":"master",
-    "type":"git"
-}
-```
-This target depends on:
-* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
-* [codal-mbedos](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
-
-## Circuit Playground
-
-This target specifies the circuit playground which is driven by a SAMD21.
-
-### codal.json specification
-```json
-"target":{
-    "name":"codal-circuit-playground",
-    "url":"https://github.com/lancaster-university/codal-circuit-playground",
-    "branch":"master",
-    "type":"git"
-}
-```
-This target depends on:
-* [codal-core](https://github.com/lancaster-university/codal-core) provides the core CODAL abstractions
-* [codal-mbed](https://github.com/lancaster-university/codal-mbed) implements required CODAL basic components (Timer, Serial, Pin, I2C, ...) using Mbed
-* [codal-samd21](https://github.com/lancaster-university/codal-samd21) implements SAMD21-specific components (such as USB)
-* [mbed-classic](https://github.com/lancaster-university/mbed-classic) is a fork of mbed, used by codal-mbed
+# Documentation
+API documentation is embedded in the code using doxygen. We will produce integrated web-based documentation soon.
