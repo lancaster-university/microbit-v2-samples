@@ -78,7 +78,7 @@ def printstatus():
     print("\n***%s" % os.getcwd())
     system("git status -s")
     system("git rev-parse HEAD")
-    system("git branch")
+    system("git branch --show-current")
 
 def status():
     (codal, targetdir, target) = read_config()
