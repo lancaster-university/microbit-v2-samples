@@ -120,14 +120,14 @@ usb_connection_test()
     while(1)
     {
         uBit.display.print(" ");
-        uBit.sleep(100);    
-        DMESG("POWER_CONSUMPTION:  %d", uBit.power.getPowerConsumption());
-        uBit.sleep(2000);    
+        uBit.sleep(100);
+        DMESG("POWER_CONSUMPTION:  %d", uBit.power.getPowerData().estimatedPowerConsumption);
+        uBit.sleep(2000);
 
         uBit.display.print("*");
-        uBit.sleep(100);    
-        DMESG("POWER_CONSUMPTION:  %d", uBit.power.getPowerConsumption());
-        uBit.sleep(2000);    
+        uBit.sleep(100);
+        DMESG("POWER_CONSUMPTION:  %d", uBit.power.getPowerData().estimatedPowerConsumption);
+        uBit.sleep(2000);
     }
 }
 
