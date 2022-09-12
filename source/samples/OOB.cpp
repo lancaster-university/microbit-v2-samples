@@ -131,7 +131,6 @@ int chatter_toggle = false;
 // ---------------------------
 void playfreq(int freq)
 {
-  DMESG("freq %d\r\n", freq);
   if (mute || freq == 0) { 
     uBit.io.speaker.setAnalogValue(0);
     uBit.io.P0.setAnalogValue(0);
