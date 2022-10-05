@@ -20,7 +20,10 @@ def build(clean, verbose = False):
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
 
         # build
-        system("ninja")
+        if verbose:
+            system("ninja --verbose")
+        else:
+            system("ninja")
     else:
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
