@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBit.h"
 #include "Tests.h"
 
+#if CONFIG_ENABLED(DEVICE_BLE)
+
 extern MicroBit uBit;
 MicroBitUARTService *uart;
 
@@ -113,3 +115,4 @@ void ble_test()
     release_fiber();
 }
 
+#endif
