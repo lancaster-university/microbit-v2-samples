@@ -87,6 +87,9 @@ void ble_test()
     uart = new MicroBitUARTService(*uBit.ble, 32, 32);
     uart->eventOn("\r\n");
 
+    if ( !uBit.compass.isCalibrated())
+        uBit.compass.calibrate();
+
     // A cunning code to indicate during start-up the particular Bluetooth configuration in the build
     //
     // SERVICE CODES
