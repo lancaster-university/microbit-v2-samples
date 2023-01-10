@@ -1,12 +1,11 @@
 #include "MicroBit.h"
+#include "samples/Tests.h"
 
 MicroBit uBit;
 
-int 
-main()
+int main()
 {
     uBit.init();
 
-    while(1)
-        uBit.display.scroll("HELLO WORLD!");
+    out_of_box_experience();
 }
