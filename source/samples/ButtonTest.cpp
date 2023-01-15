@@ -39,25 +39,25 @@ button_test2()
     }
 }
 
-void
+static void
 onButtonA(MicroBitEvent)
 {
     uBit.display.print("Aa");
 }
 
-void
+static void
 onButtonB(MicroBitEvent)
 {
     uBit.display.print("Bb");
 }
 
-void
+static void
 onButtonAB(MicroBitEvent)
 {
     uBit.display.print("Cc");
 }
 
-void listenerRemoved(MicroBitListener *)
+static void listenerRemoved(MicroBitListener *)
 {
     DMESG("Listener deleted");
 }

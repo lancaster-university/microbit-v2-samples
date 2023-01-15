@@ -6,19 +6,19 @@
 // TESTS
 
 // A fiber that sleeps for a few seconds
-void deepsleep_test1();
+static void deepsleep_test1();
 
  // A fiber that sleeps until woken by button A or B
-void deepsleep_test2();
+static void deepsleep_test2();
 
 // A timer event handler that sleeps between events
-void deepsleep_test3();
+static void deepsleep_test3();
 
 // Wake to run button A or B handlers
-void deepsleep_test4();
+static void deepsleep_test4();
 
 // Two timer event handlers with different periods that sleep between events
-void deepsleep_test5();
+static void deepsleep_test5();
 
 ////////////////////////////////////////////////////////////////
 // TEST
@@ -40,16 +40,16 @@ void deepsleep_test( int test)
 ////////////////////////////////////////////////////////////////
 // HELPERS
 
-void deepsleep_test_zeroone();
-void deepsleep_test_threefour();
-void deepsleep_test_send_time( const char *suffix);
+static void deepsleep_test_zeroone();
+static void deepsleep_test_threefour();
+static void deepsleep_test_send_time( const char *suffix);
 
 ////////////////////////////////////////////////////////////////
 // TEST 1
 
 // A fiber that sleeps for a few seconds
 
-void deepsleep_test1_fiber()
+static void deepsleep_test1_fiber()
 {
     while (true)
     {
@@ -60,7 +60,7 @@ void deepsleep_test1_fiber()
     }
 }
 
-void deepsleep_test1()
+static void deepsleep_test1()
 {
     deepsleep_test_send_time( "deepsleep_test2\n");
 
@@ -75,7 +75,7 @@ void deepsleep_test1()
 
 // A fiber that sleeps until woken by button A or B
 
-void deepsleep_test2_fiber()
+static void deepsleep_test2_fiber()
 {
     while (true)
     {
@@ -93,7 +93,7 @@ void deepsleep_test2_fiber()
 }
 
 
-void deepsleep_test2()
+static void deepsleep_test2()
 {
     deepsleep_test_send_time( "deepsleep_test2\n");
 
@@ -111,7 +111,7 @@ void deepsleep_test2()
 
 // A timer event handler that sleeps between events
 
-void deepsleep_test3_onTimer(MicroBitEvent e)
+static void deepsleep_test3_onTimer(MicroBitEvent e)
 {
     deepsleep_test_send_time( "deepsleep_test3_onTimer\n");
     deepsleep_test_zeroone();
@@ -121,7 +121,7 @@ void deepsleep_test3_onTimer(MicroBitEvent e)
 }
 
 
-void deepsleep_test3()
+static void deepsleep_test3()
 {
     deepsleep_test_send_time( "deepsleep_test3\n");
 
@@ -143,7 +143,7 @@ void deepsleep_test3()
 
 // Wake to run button A or B handlers
 
-void deepsleep_test4_onButtonA(MicroBitEvent e)
+static void deepsleep_test4_onButtonA(MicroBitEvent e)
 {
     // Disable deep sleep power down until we have finished
     uBit.power.powerDownDisable();
@@ -157,7 +157,7 @@ void deepsleep_test4_onButtonA(MicroBitEvent e)
 }
 
 
-void deepsleep_test4_onButtonB(MicroBitEvent e)
+static void deepsleep_test4_onButtonB(MicroBitEvent e)
 {
     uBit.power.powerDownDisable();
 
@@ -170,7 +170,7 @@ void deepsleep_test4_onButtonB(MicroBitEvent e)
 }
 
 
-void deepsleep_test4()
+static void deepsleep_test4()
 {
     deepsleep_test_send_time( "deepsleep_test4\n");
 
@@ -191,7 +191,7 @@ void deepsleep_test4()
 
 // Two timer event handlers with different periods that sleep between events
 
-void deepsleep_test5_onTimer1(MicroBitEvent e)
+static void deepsleep_test5_onTimer1(MicroBitEvent e)
 {
     uBit.power.powerDownDisable();
 
@@ -208,7 +208,7 @@ void deepsleep_test5_onTimer1(MicroBitEvent e)
 }
 
 
-void deepsleep_test5_onTimer2(MicroBitEvent e)
+static void deepsleep_test5_onTimer2(MicroBitEvent e)
 {
     uBit.power.powerDownDisable();
 
@@ -225,7 +225,7 @@ void deepsleep_test5_onTimer2(MicroBitEvent e)
 }
 
 
-void deepsleep_test5()
+static void deepsleep_test5()
 {
     deepsleep_test_send_time( "deepsleep_test5\n");
 
@@ -248,13 +248,13 @@ void deepsleep_test5()
 ////////////////////////////////////////////////////////////////
 // HELPERS
 
-void deepsleep_test_togglePixel( int x, int y)
+static void deepsleep_test_togglePixel( int x, int y)
 {
     uBit.display.image.setPixelValue( x, y, uBit.display.image.getPixelValue( x, y) ? 0 : 255);
 }
 
 
-void deepsleep_test_sirenPixels( int x0, int y0, int x1, int y1, int ms)
+static void deepsleep_test_sirenPixels( int x0, int y0, int x1, int y1, int ms)
 {
     deepsleep_test_togglePixel( x0, y0);
     uBit.sleep(ms);
@@ -265,21 +265,21 @@ void deepsleep_test_sirenPixels( int x0, int y0, int x1, int y1, int ms)
 }
 
 
-void deepsleep_test_zeroone()
+static void deepsleep_test_zeroone()
 {
     deepsleep_test_send_time( "deepsleep_test_zeroone\n");
     deepsleep_test_sirenPixels( 0, 0, 1, 0, 150);
 }
 
 
-void deepsleep_test_threefour()
+static void deepsleep_test_threefour()
 {
     deepsleep_test_send_time( "deepsleep_test_threefour\n");
     deepsleep_test_sirenPixels( 3, 0, 4, 0, 500);
 }
 
 
-void deepsleep_test_send_time( const char *suffix)
+static void deepsleep_test_send_time( const char *suffix)
 {
     uint64_t second = 1000000;
 

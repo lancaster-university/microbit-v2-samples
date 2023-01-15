@@ -3,7 +3,7 @@
 
 int data_received;
 
-void onData(MicroBitEvent)
+static void onData(MicroBitEvent)
 {
     PacketBuffer b = uBit.radio.datagram.recv();
 
@@ -14,7 +14,7 @@ void onData(MicroBitEvent)
         uBit.display.print("B");
 }
 
-void onData2(MicroBitEvent)
+static void onData2(MicroBitEvent)
 {
     PacketBuffer b = uBit.radio.datagram.recv();
     DMESG("RECV");
