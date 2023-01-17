@@ -50,9 +50,6 @@ const char * const sad_emoji ="\
     000,255,255,255,000\n\
     255,000,000,000,255\n";
 
-Image happy(happy_emoji);
-Image sad(sad_emoji);
-
 static void
 concurrent_display_test_t1()
 {
