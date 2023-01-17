@@ -24,10 +24,6 @@
     000,255,255,255,000\n\
     000,255,255,255,000\n";
 
-    static MicroBitImage dc(dc_emoji);
-    static MicroBitImage usb(usb_emoji);
-    static MicroBitImage battery(battery_emoji);
-
 void
 version_test()
 {
@@ -134,6 +130,10 @@ usb_connection_test()
 void
 power_source_test()
 {
+    MicroBitImage dc(dc_emoji);
+    MicroBitImage usb(usb_emoji);
+    MicroBitImage battery(battery_emoji);
+
     while(1)
     {
         MicroBitPowerSource p = uBit.power.getPowerSource();
