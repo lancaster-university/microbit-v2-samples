@@ -53,7 +53,7 @@ const char * const sad_emoji ="\
 Image happy(happy_emoji);
 Image sad(sad_emoji);
 
-void
+static void
 concurrent_display_test_t1()
 {
     while(1)
@@ -63,7 +63,7 @@ concurrent_display_test_t1()
     }
 }
 
-void
+static void
 concurrent_display_test_t2()
 {
     uBit.sleep(500);
@@ -245,7 +245,7 @@ raw_blinky_test()
 }
 
 
-void
+static void
 onButtonAPressed(MicroBitEvent)
 {
     const char * const a_emoji ="\
@@ -259,7 +259,7 @@ onButtonAPressed(MicroBitEvent)
     uBit.display.print(img_a);
 }
 
-void
+static void
 onButtonBPressed(MicroBitEvent)
 {
     const char * const b_emoji ="\
@@ -272,7 +272,7 @@ onButtonBPressed(MicroBitEvent)
     uBit.display.print(img_b);    
 }
 
-void
+static void
 onButtonABPressed(MicroBitEvent)
 {
     const char * const c_emoji ="\
@@ -285,7 +285,7 @@ onButtonABPressed(MicroBitEvent)
     uBit.display.print(img_c);    
 }
 
-void
+static void
 onShakePressed(MicroBitEvent)
 {
     const char * const d_emoji ="\
@@ -298,7 +298,7 @@ onShakePressed(MicroBitEvent)
     uBit.display.print(img_d);    
 }
 
-void
+static void
 do_something_forever()
 {
     uBit.sleep(10);

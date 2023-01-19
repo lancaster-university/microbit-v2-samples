@@ -13,7 +13,7 @@ static LevelDetectorSPL *levelSPL = NULL;
 static int claps = 0;
 static volatile int sample;
 
-void
+static void
 onLoud(MicroBitEvent)
 {
     DMESG("LOUD");
@@ -24,7 +24,7 @@ onLoud(MicroBitEvent)
     uBit.display.print(claps);
 }
 
-void
+static void
 onQuiet(MicroBitEvent)
 {
     DMESG("QUIET");

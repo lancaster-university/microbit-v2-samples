@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define SERIAL_STREAM_MODE_BINARY               1
 #define SERIAL_STREAM_MODE_DECIMAL              2
-#define SERIAL_STREAM_MODE_HEX                  3
+#define SERIAL_STREAM_MODE_HEX                  4
 
 class SerialStreamer : public DataSink
 {

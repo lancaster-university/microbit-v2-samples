@@ -1,19 +1,19 @@
 #include "MicroBit.h"
 #include "Tests.h"
 
-void
+static void
 onCompassData(MicroBitEvent)
 {
     DMESGN("C");
 }
 
-void
+static void
 onAccelerometerData(MicroBitEvent)
 {
     DMESGN("A");
 }
 
-void
+static void
 onShake(MicroBitEvent)
 {
     DMESG(" *** SHAKE ***");
@@ -34,7 +34,7 @@ accelerometer_test1()
     }
 }
 
-int g_to_pix(int g)
+static int g_to_pix(int g)
 {
     int v = 2;
     if ( g < -200) v--;

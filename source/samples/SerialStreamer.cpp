@@ -80,21 +80,25 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
     int bps = upstream.getFormat();
 
     // If a BINARY mode is requested, simply output all the bytes to the serial port.
-    if (mode == SERIAL_STREAM_MODE_BINARY)
+    if( mode == SERIAL_STREAM_MODE_BINARY )
     {
         uint8_t *p = &buffer[0];
         uint8_t *end = p + buffer.length();
 
         while(p < end)
             uBit.serial.putc(*p++);
+        
+        uBit.serial.putc('\t');
     }
 
     // if a HEX mode is requested, format using printf, framed by sample size..
-    if (mode == SERIAL_STREAM_MODE_HEX  || mode == SERIAL_STREAM_MODE_DECIMAL)
+    if( mode == SERIAL_STREAM_MODE_HEX || mode == SERIAL_STREAM_MODE_DECIMAL )
     {
         uint8_t *d = &buffer[0];
         uint8_t *end = d+buffer.length();
         uint32_t data;
+
+        uint32_t sum = 0;
 
         while(d < end)
         {
@@ -113,19 +117,23 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
                 uBit.serial.printf("%d ", data);
 
             CRLF++;
+            sum += data;
 
-            if (CRLF == 16){
-                uBit.serial.printf("\n");
+            if (CRLF >= 16){
+                uBit.serial.putc('\r');
+                uBit.serial.putc('\n');
+                sum = 0;
                 CRLF = 0;
             }
         }
         
-        if (CRLF > 0)
-            uBit.serial.printf("\n");
+        if (CRLF > 0) {
+            uBit.serial.putc( '\r' );
+            uBit.serial.putc( '\n' );
+        }
     }
 
-    // We're alway hungry, so deschedule ourselves after processing each buffer.
-    schedule();
+
 }
 
 

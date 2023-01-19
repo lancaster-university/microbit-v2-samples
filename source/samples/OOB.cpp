@@ -870,7 +870,7 @@ out_of_box_experience()
     uBit.messageBus.listen(uBit.io.face.id, MICROBIT_BUTTON_EVT_CLICK, onFacePalm);
     */
 
-   mode = LOGO_BUTTON;
+   mode = WAKE;
 
     if(uBit.buttonA.isPressed()) mode = SECRET;
     while(1)
