@@ -87,9 +87,6 @@ void ble_test()
     uart = new MicroBitUARTService(*uBit.ble, 32, 32);
     uart->eventOn("\r\n");
 
-    if ( !uBit.compass.isCalibrated())
-        uBit.compass.calibrate();
-
     // A cunning code to indicate during start-up the particular Bluetooth configuration in the build
     //
     // SERVICE CODES
@@ -111,6 +108,9 @@ void ble_test()
 
     // Services/Pairing Config/Power Level
     uBit.display.scroll("BLE ABDILMTU/P");
+
+    if ( !uBit.compass.isCalibrated())
+        uBit.compass.calibrate();
 
     // If main exits, there may still be other fibers running or registered event handlers etc.
     // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
