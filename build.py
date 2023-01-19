@@ -39,6 +39,7 @@ parser.add_option('-b', '--branch', dest='branch', action="store_true", help='Wi
 parser.add_option('-m', '--minor', dest='update_minor', action="store_true", help='With -l, update minor version', default=False)
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
+parser.add_option('-v', '--verbose', dest='verbose', action="store_true", help='Increases verbosity)', default=False)
 parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
@@ -138,7 +139,7 @@ if not options.test_platform:
         generate_docs()
         exit(0)
 
-    build(options.clean)
+    build(options.clean, verbose=options.verbose)
     exit(0)
 
 for json_obj in test_json:
