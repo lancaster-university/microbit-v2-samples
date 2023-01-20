@@ -8,7 +8,6 @@
         "dev": true
     } ,
     "config":{
-        "SOFTDEVICE_PRESENT": 1,
         "DEVICE_BLE": 1,
         "MICROBIT_BLE_ENABLED" : 1,
         "MICROBIT_BLE_PAIRING_MODE": 1,
