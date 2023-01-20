@@ -19,6 +19,9 @@ def build(clean, verbose = False):
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
 
+        if clean:
+            system("ninja clean")
+
         # build
         if verbose:
             system("ninja --verbose")
