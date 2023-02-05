@@ -99,7 +99,7 @@ calibrateTest(float sample)
     //DMESG("[SAMPLE: %d]", (int)sample);
 }
 
-void
+static void
 onCalibrate(MicroBitEvent)
 {
     
@@ -109,26 +109,26 @@ onCalibrate(MicroBitEvent)
     c2 = last_t2;
 }
 
-void
+static void
 onPrint(MicroBitEvent)
 {
     while(1)
         uBit.display.scroll(last_t2);    
 }
 
-void onTouchP0(MicroBitEvent e)
+static void onTouchP0(MicroBitEvent e)
 {
     DMESG("TOUCH: P0");
 }
-void onTouchP1(MicroBitEvent e)
+static void onTouchP1(MicroBitEvent e)
 {
     DMESG("TOUCH: P1");
 }
-void onTouchP2(MicroBitEvent e)
+static void onTouchP2(MicroBitEvent e)
 {
     DMESG("TOUCH: P2");
 }
-void onTouchFace(MicroBitEvent e)
+static void onTouchFace(MicroBitEvent e)
 {
     DMESG("TOUCH: FACE");
 }

@@ -25,21 +25,23 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBit.h"
 #include "Tests.h"
 
+#if CONFIG_ENABLED(DEVICE_BLE)
+
 extern MicroBit uBit;
 MicroBitUARTService *uart;
 
 // we use events abd the 'connected' variable to keep track of the status of the Bluetooth connection
-void onConnected(MicroBitEvent)
+static void onConnected(MicroBitEvent)
 {
     uBit.display.print("C");
 }
 
-void onDisconnected(MicroBitEvent)
+static void onDisconnected(MicroBitEvent)
 {
     uBit.display.print("D");
 }
 
-void onDelim(MicroBitEvent)
+static void onDelim(MicroBitEvent)
 {
     ManagedString r = uart->readUntil("\r\n");
     uart->send(r);
@@ -113,3 +115,4 @@ void ble_test()
     release_fiber();
 }
 
+#endif

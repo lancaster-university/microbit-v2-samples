@@ -16,6 +16,7 @@ enum modes {
     INTRO,
     BUTTON_A,
     BUTTON_B,
+    LOGO_BUTTON,
     TURN,
     DOTCHASER,
     CLAP,
@@ -130,7 +131,6 @@ int chatter_toggle = false;
 // ---------------------------
 void playfreq(int freq)
 {
-  DMESG("freq %d\r\n", freq);
   if (mute || freq == 0) { 
     uBit.io.speaker.setAnalogValue(0);
     uBit.io.P0.setAnalogValue(0);
@@ -351,6 +351,49 @@ void pressButtonB()
         uBit.display.print(currentFrame,0,0,0,100);
        uBit.sleep(100);
         if(button_b_pressed)break;
+    }
+    
+    // SADHBH'S animation goes here.
+    for(int i=0; i<10; i++) {
+        currentFrame = MicroBitImage(twistyTime[i]);
+        uBit.display.print(currentFrame,0,0,0,100);
+        play_note(basenote + (9*5) - (i * 5)) ;
+    }
+    play_note(0);
+    
+    uBit.sleep(2000);
+    
+    // Proceed to the next mode.
+    mode++;
+}
+
+int button_logo_pressed = false; 
+void OOB_onButtonLogo(MicroBitEvent)
+{
+    button_logo_pressed = true;
+}
+
+void pressLogoButton()
+{
+    // Give instruction
+   
+   uBit.messageBus.listen(MICROBIT_ID_LOGO, MICROBIT_BUTTON_EVT_CLICK, OOB_onButtonLogo);
+    
+    // Wait for a button press.
+    while(!button_b_pressed) {
+        uBit.display.print("Logo");
+        uBit.sleep(500);
+        if(button_logo_pressed) break;
+    
+        currentFrame = MicroBitImage(topArrow[2]);
+        uBit.display.print(currentFrame,0,0,0,100);
+        uBit.sleep(100);
+        if(button_logo_pressed)break;
+    
+        currentFrame = MicroBitImage(topArrow[2]);
+        uBit.display.print(currentFrame,0,0,0,100);
+        uBit.sleep(100);
+        if(button_logo_pressed)break;
     }
     
     // SADHBH'S animation goes here.
@@ -827,6 +870,8 @@ out_of_box_experience()
     uBit.messageBus.listen(uBit.io.face.id, MICROBIT_BUTTON_EVT_CLICK, onFacePalm);
     */
 
+   mode = WAKE;
+
     if(uBit.buttonA.isPressed()) mode = SECRET;
     while(1)
     {   
@@ -846,6 +891,10 @@ out_of_box_experience()
                 
             case BUTTON_B:
                 pressButtonB();
+                break;
+            
+            case LOGO_BUTTON:
+                pressLogoButton();
                 break;
             
             case TURN:

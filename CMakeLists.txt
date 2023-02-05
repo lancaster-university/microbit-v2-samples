@@ -133,7 +133,7 @@ foreach(var ${device})
     string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
 
     set(${CODAL_CMAKE_DEFINITION} ${${var}})
- endforeach()
+endforeach()
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
