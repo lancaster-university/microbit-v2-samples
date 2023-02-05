@@ -28,24 +28,23 @@ import sys
 from importlib import import_module
 from genericpath import exists
 
-BOOTSTRAP_TAG = "main"
+BOOTSTRAP_TAG = "feature/bootstrap-refactor"
 TARGET_LIST = [
     "https://raw.githubusercontent.com/lancaster-university/codal/master/utils/targets.json"
 ]
 BASE_ROOT = os.getcwd()
-BOOTSTRAP_ROOT = os.path.join( BASE_ROOT, 'libraries', 'codal-bootstrap' )
+CODAL_ROOT = os.path.join( BASE_ROOT, 'libraries', 'codal' )
 
 # Minimum folder structure:
 if not exists( os.path.join( BASE_ROOT, 'libraries' ) ):
   os.mkdir( os.path.join( BASE_ROOT, 'libraries' ) );
 
 # Grab the latest library
-if not exists( os.path.join( BASE_ROOT, 'libraries', 'codal-bootstrap' ) ):
+if not exists( os.path.join( BASE_ROOT, 'libraries', 'codal' ) ):
   print( "Downloading codal-bootstrap..." )
-  if not exists( os.path.join( BOOTSTRAP_ROOT, '.git' ) ):
-    os.system( f'git clone --recurse-submodules --branch "{BOOTSTRAP_TAG}" "https://github.com/lancaster-university/codal-bootstrap.git" "{BOOTSTRAP_ROOT}"' )
+  if not exists( os.path.join( CODAL_ROOT, '.git' ) ):
+    os.system( f'git clone --recurse-submodules --branch "{BOOTSTRAP_TAG}" "https://github.com/lancaster-university/codal.git" "{CODAL_ROOT}"' )
 
 # Jump into the current upstream code
-sys.path.append( BOOTSTRAP_ROOT )
-bootstrap = import_module( f'libraries.codal-bootstrap.bootstrap' )
-bootstrap.go_bootstrap( TARGET_LIST )
+sys.path.append( CODAL_ROOT )
+import_module( f'libraries.codal.codal' )

@@ -7,11 +7,26 @@
         "test_ignore": true,
         "dev": true
     },
-    "config":{
+    "libraries": [
+        {
+            "name": "codal",
+            "url": "https://github.com/lancaster-university/codal",
+            "branch": "feature/bootstrap-refactor",
+            "type": "git"
+        },
+        {
+            "url": "https://github.com/JohnVidler/codal-field-testing.git",
+            "name": "codal-field-testing",
+            "branch": "Master",
+            "type": "git"
+        }
+    ],
+    "config": {
         "DEVICE_DMESG": 1,
         "DMESG_SERIAL_DEBUG": 1,
         "CODAL_DEBUG": 1,
-        "MICROBIT_BLE_ENABLED" : 0,
+        "DEVICE_BLE": 0,
+        "MICROBIT_BLE_ENABLED": 0,
         "MICROBIT_BLE_PAIRING_MODE": 0,
         "CONFIG_MICROBIT_ERASE_USER_DATA_ON_REFLASH": 1
     }

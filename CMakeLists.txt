@@ -133,7 +133,7 @@ foreach(var ${device})
     string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
 
     set(${CODAL_CMAKE_DEFINITION} ${${var}})
-endforeach()
+ endforeach()
 
 #define any additional symbols specified by the target.
 if("${device.definitions}" STRGREATER "")
@@ -183,12 +183,12 @@ if("${CODAL_DEFINITIONS}" STRGREATER "")
     file(WRITE "${EXTRA_INCLUDES_NEW_PATH}" ${CODAL_DEFINITIONS})
     configure_file(${EXTRA_INCLUDES_NEW_PATH} ${EXTRA_INCLUDES_PATH} COPYONLY)
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include \"${EXTRA_INCLUDES_PATH}\"")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include \"${EXTRA_INCLUDES_PATH}\"")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include ${EXTRA_INCLUDES_PATH}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include ${EXTRA_INCLUDES_PATH}")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${PLATFORM_INCLUDES_PATH}\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I\"${PLATFORM_INCLUDES_PATH}\"")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${PLATFORM_INCLUDES_PATH}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${PLATFORM_INCLUDES_PATH}")
 
 # a define for cmake if statements to detect if within the CODAL build environment
 set(CODAL_BUILD_SYSTEM TRUE)
@@ -221,8 +221,10 @@ if("${device.libraries}" STRGREATER "")
             MESSAGE (STATUS "Override branch: ${BRANCH}")
         endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${URL} ${BRANCH} ${device.libraries_${i}.type})
-        list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
+        if( NOT "${device.libraries_${i}.name}" STREQUAL "codal" )
+            INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${URL} ${BRANCH} ${device.libraries_${i}.type})
+            list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
+        endif()
     endforeach()
 endif()
 
@@ -242,8 +244,10 @@ if("${codal.libraries}" STRGREATER "")
             MESSAGE (STATUS "Override branch: ${BRANCH}")
         endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${codal.libraries_${i}.name} ${URL} ${BRANCH} ${codal.libraries_${i}.type})
-        list(APPEND CODAL_DEPS "${codal.libraries_${i}.name}")
+        if( NOT "${codal.libraries_${i}.name}" STREQUAL "codal" )
+            INSTALL_DEPENDENCY(${LIB_DEST} ${codal.libraries_${i}.name} ${URL} ${BRANCH} ${codal.libraries_${i}.type})
+            list(APPEND CODAL_DEPS "${codal.libraries_${i}.name}")
+        endif()
     endforeach()
 endif()
 
