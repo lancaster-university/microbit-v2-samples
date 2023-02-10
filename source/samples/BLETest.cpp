@@ -71,6 +71,22 @@ void ble_test()
     // SECURITY_MODE_ENCRYPTION_NO_MITM, enables pairing without a passcode
     // SECURITY_MODE_ENCRYPTION_OPEN_LINK, pairing is no required
     //
+
+    uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, onConnected);
+    uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_DISCONNECTED, onDisconnected);
+    
+    uBit.messageBus.listen(MICROBIT_ID_BLE_UART, MICROBIT_UART_S_EVT_DELIM_MATCH, onDelim);
+
+    new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
+    new MicroBitButtonService(*uBit.ble);
+    new MicroBitIOPinService(*uBit.ble, uBit.io);
+    new MicroBitLEDService(*uBit.ble, uBit.display);
+    new MicroBitMagnetometerService(*uBit.ble, uBit.compass);
+    new MicroBitTemperatureService(*uBit.ble, uBit.thermometer);
+
+    uart = new MicroBitUARTService(*uBit.ble, 32, 32);
+    uart->eventOn("\r\n");
+
     // A cunning code to indicate during start-up the particular Bluetooth configuration in the build
     //
     // SERVICE CODES
@@ -90,24 +106,11 @@ void ble_test()
     // J: Just Works
     // N: No Pairing Required
 
-
     // Services/Pairing Config/Power Level
     uBit.display.scroll("BLE ABDILMTU/P");
 
-    uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, onConnected);
-    uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_DISCONNECTED, onDisconnected);
-    
-    uBit.messageBus.listen(MICROBIT_ID_BLE_UART, MICROBIT_UART_S_EVT_DELIM_MATCH, onDelim);
-
-    new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
-    new MicroBitButtonService(*uBit.ble);
-    new MicroBitIOPinService(*uBit.ble, uBit.io);
-    new MicroBitLEDService(*uBit.ble, uBit.display);
-    new MicroBitMagnetometerService(*uBit.ble, uBit.compass);
-    new MicroBitTemperatureService(*uBit.ble, uBit.thermometer);
-
-    uart = new MicroBitUARTService(*uBit.ble, 32, 32);
-    uart->eventOn("\r\n");
+    if ( !uBit.compass.isCalibrated())
+        uBit.compass.calibrate();
 
     // If main exits, there may still be other fibers running or registered event handlers etc.
     // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
