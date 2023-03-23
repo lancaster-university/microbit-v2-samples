@@ -94,11 +94,12 @@ def printstatus( logLines = 3 ):
     print( f"Branch: {branch}, Nearest Tag: {tag} ({hash})" )
     system( f"git --no-pager log -n {logLines} --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit" )
     #system(f"git --no-pager log -n {logLines} --pretty=oneline")
-    system("git status -s")
+    print( "" )
+    system("git status -sb")
     print( "" )
     
 
-def status( logLines = 5 ):
+def status( logLines = 3 ):
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
     for ln in target['libraries']:
