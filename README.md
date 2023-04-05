@@ -52,6 +52,11 @@ You will find a simple main.cpp in the `source` folder which you can edit. CODAL
 
 The `samples` folder contains a number of simple sample programs that utilise you may find useful.
 
+## Developer codal.json
+
+There is an example `coda.dev.json` file which enables "developer builds" (clones dependencies from the latest commits, instead of the commits locked in the `codal-microbit-v2` tag), and adds extra CODAL flags that enable debug data to be printed to serial.
+To use it, simply copy the additional json entries into your `codal.json` file, or you can replace the file completely (`mv coda.dev.json codal.json`).
+
 # Debugging
 If you are using Visual Studio Code, there is a working debugging environment already set up for you, allowing you to set breakpoints and observe the micro:bit's memory. To get it working, follow these steps:
 
