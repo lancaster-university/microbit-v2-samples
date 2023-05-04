@@ -56,7 +56,6 @@ void ble_test()
     //
     // codal.json contains various Bluetooth related properties some of which are explained here:
     //
-    // "SOFTDEVICE_PRESENT": 1             Determines whether the build contains softdevice
     // "DEVICE_BLE": 1                     Determines whether BLE is enabled 
     // "MICROBIT_BLE_ENABLED" : 1          Determines whether BLE is enabled
     // "MICROBIT_BLE_PAIRING_MODE": 1      Determines whether Pairing Mode is enabled
