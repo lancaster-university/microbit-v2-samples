@@ -15,7 +15,7 @@ def system(cmd):
     if os.system(cmd) != 0:
       sys.exit(1)
 
-def build(clean, verbose = False):
+def build(clean, verbose = False, parallelism = 10):
     if platform.system() == "Windows":
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
@@ -25,9 +25,9 @@ def build(clean, verbose = False):
 
         # build
         if verbose:
-            system("ninja --verbose")
+            system(f"ninja -j {parallelism} --verbose")
         else:
-            system("ninja")
+            system(f"ninja -j {parallelism}")
     else:
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
@@ -37,9 +37,9 @@ def build(clean, verbose = False):
 
         # build
         if verbose:
-            system("make -j 10 VERBOSE=1")
+            system(f"make -j {parallelism} VERBOSE=1")
         else:
-            system("make -j 10")
+            system(f"make -j {parallelism}")
 
 def read_json(fn):
     json_file = ""

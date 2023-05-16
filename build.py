@@ -45,6 +45,7 @@ parser.add_option('-s', '--status', dest='status', action="store_true", help='gi
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
+parser.add_option('-j', '--parallelism', dest='parallelism', action="store", help='Set the number of parallel threads to build with, if supported', default=10)
 
 (options, args) = parser.parse_args()
 
@@ -139,7 +140,7 @@ if not options.test_platform:
         generate_docs()
         exit(0)
 
-    build(options.clean, verbose=options.verbose)
+    build(options.clean, verbose=options.verbose, parallelism=options.parallelism)
     exit(0)
 
 for json_obj in test_json:
@@ -166,4 +167,4 @@ for json_obj in test_json:
     with open("../codal.json", 'w') as codal_json:
         json.dump(config, codal_json, indent=4)
 
-    build(True, True)
+    build(True, True, options.parallelism)
