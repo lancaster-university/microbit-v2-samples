@@ -87,8 +87,6 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
 
         while(p < end)
             uBit.serial.putc(*p++);
-        
-        uBit.serial.putc('\t');
     }
 
     // if a HEX mode is requested, format using printf, framed by sample size..
