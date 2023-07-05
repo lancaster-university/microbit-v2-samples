@@ -25,9 +25,9 @@ def build(clean, verbose = False, parallelism = 10):
 
         # build
         if verbose:
-            system(f"ninja -j {parallelism} --verbose")
+            system("ninja -j {} --verbose".format(parallelism))
         else:
-            system(f"ninja -j {parallelism}")
+            system("ninja -j {}".format(parallelism))
     else:
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
@@ -37,9 +37,9 @@ def build(clean, verbose = False, parallelism = 10):
 
         # build
         if verbose:
-            system(f"make -j {parallelism} VERBOSE=1")
+            system("make -j {} VERBOSE=1".format(parallelism))
         else:
-            system(f"make -j {parallelism}")
+            system("make -j {}".format(parallelism))
 
 def read_json(fn):
     json_file = ""
@@ -81,7 +81,7 @@ def revision(rev):
     os.chdir(dirname)
     update(True)
 
-def printstatus( logLines = 3 ):
+def printstatus( logLines = 3, detail = False ):
     print("\n***%s" % os.getcwd())
     branch = str(subprocess.check_output( [ "git", "branch", "--show-current"] ), "utf8").strip()
     hash   = str(subprocess.check_output( [ "git", "rev-parse", "HEAD" ] ), "utf8").strip()
@@ -91,24 +91,31 @@ def printstatus( logLines = 3 ):
     except subprocess.CalledProcessError as e:
         tag = "~none~"
     
-    print( f"Branch: {branch}, Nearest Tag: {tag} ({hash})" )
-    system( f"git --no-pager log -n {logLines} --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit" )
-    #system(f"git --no-pager log -n {logLines} --pretty=oneline")
-    print( "" )
+    print( "Branch: {branch}, Nearest Tag: {tag} ({hash})".format(branch=branch, tag=tag, hash=hash) )
+    if detail:
+        system( "git --no-pager log -n {} --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit".format(logLines) )
+        print( "" )
+        
     system("git status -sb")
     print( "" )
     
 
-def status( logLines = 3 ):
+def status( logLines = 3, detail = True, libs = [] ):
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
-    for ln in target['libraries']:
-        os.chdir(dirname + "/libraries/" + ln['name'])
-        printstatus( logLines )
-    os.chdir(dirname + "/libraries/" + targetdir)
-    printstatus( logLines )
-    os.chdir(dirname)
-    printstatus( logLines )
+
+    if len(libs) == 0:
+        for ln in target['libraries']:
+            os.chdir(dirname + "/libraries/" + ln['name'])
+            printstatus( logLines, detail )
+        os.chdir(dirname + "/libraries/" + targetdir)
+        printstatus( logLines, detail )
+        os.chdir(dirname)
+        printstatus( logLines, detail )
+    else:
+        for lib in libs:
+            os.chdir(dirname + "/libraries/" + lib)
+            printstatus( logLines, detail )
 
 def get_next_version(options):
     if options.version:
