@@ -858,7 +858,7 @@ void onFacePalm(MicroBitEvent e) {
 }
 
 void
-out_of_box_experience()
+out_of_box_experience_v2()
 {   
     target_freq = 0;
     current_freq = 0;
