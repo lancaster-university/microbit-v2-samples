@@ -1,3 +1,9 @@
+# Clang/LLVM is NOT the officialy supported toolchain for building Micro:Bit V2 CODAL applications.
+# This file serves to define an alternative compiler of which work has been put into making
+# compatible, but milage may vary in getting a working build. It is recommended to use 
+# ARM_GCC where possible, with that being said complete Clang are possible with some tweaking.
+# See compiler-flags.cmake
+
 find_program(LLVM_RANLIB llvm-ranlib)
 find_program(LLVM_AR llvm-ar)
 find_program(CLANG clang)

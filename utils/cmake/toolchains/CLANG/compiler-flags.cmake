@@ -1,3 +1,18 @@
+# See toolchain.cmake before modifying this.
+
+# This file is a copy from ../ARM_GCC, building with Clang/LLVM however will not immediatly work,
+# some flags are not accepted by both compilers (e.g -Wl,--no-wchar-size-warning, defined in target.json), handle conflicts, 
+# and Clang will require the --target=arm-none-eabi flag. We also need Clang to include extra header files:
+# "-I/lib/arm-none-eabi/include -I/etc/alternatives/gcc-arm-none-eabi-include -I/usr/include/newlib/c++/10.3.1 -I/usr/include/newlib/c++/10.3.1/arm-none-eabi"
+# Note: The version of newlib may have changed. These changes *should* allow you too build upto the final link.
+
+# The arm-embedded linker is auto configured, and specifically searches for corresponding libraries/startup files, given
+# the architecture on the command line, Clang does not do this and as such linking is a much more difficult step, it remains easiest
+# to run the arm-embedded linker, view its command using "$ python(3) build.py -v", further verbose this command, copy it and invoke lld directly.  
+
+# This file hasn't been changed to reflect any of this, modifying target.json is likely the easier route.
+# Note: The above build process assumes that arm-embedded is already installed, which brings in all of the dependencies.
+
 set(EXPLICIT_INCLUDES "")
 if((CMAKE_VERSION VERSION_GREATER "3.4.0") OR (CMAKE_VERSION VERSION_EQUAL "3.4.0"))
     # from CMake 3.4 <INCLUDES> are separate to <FLAGS> in the
