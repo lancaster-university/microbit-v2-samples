@@ -22,6 +22,7 @@ void display_test2();
 void concurrent_display_test();
 void fade_test();
 void mems_mic_test();
+void mems_mic_zero_offset_test();
 void speaker_test(int plays);
 void speaker_test2(int plays);
 void gpio_test();
