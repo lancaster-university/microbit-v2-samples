@@ -40,7 +40,7 @@ parser.add_option('-m', '--minor', dest='update_minor', action="store_true", hel
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
 parser.add_option('-v', '--verbose', dest='verbose', action="store_true", help='Increases verbosity)', default=False)
-parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
+parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries, use with "-d/--dev" to update all libraries to their latest master' , default=False)
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
@@ -58,7 +58,7 @@ if options.lock_target:
     exit(0)
 
 if options.update:
-    update()
+    update(sync_dev = options.dev)
     exit(0)
 
 if options.status:

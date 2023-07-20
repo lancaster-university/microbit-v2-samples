@@ -59,12 +59,16 @@ def read_config():
     target = read_json("libraries/" + targetdir + "/target.json")
     return (codal, targetdir, target)
 
-def update(allow_detached=False):
+def update(allow_detached=False, sync_dev=False):
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
     for ln in target['libraries']:
         os.chdir(dirname + "/libraries/" + ln['name'])
-        system("git checkout " + ln['branch'])
+        if sync_dev:
+            default_branch = list(filter( lambda v: v.strip().startswith('HEAD'), str(subprocess.check_output( ["git", "remote", "show", "origin"] ), "utf8").splitlines()))[0].split(":")[1].strip()
+            system("git checkout " + default_branch)
+        else:
+            system("git checkout " + ln['branch'])
         system("git pull")
     os.chdir(dirname + "/libraries/" + targetdir)
     if ("HEAD detached" in os.popen('git branch').read().strip() and
