@@ -1,8 +1,7 @@
 name: Static Analysis Report
 
 on:
-  commit:
-    branches: ['main', 'master']
+  workflow_dispatch:
   push:
     branches: '*'
   pull_request:
