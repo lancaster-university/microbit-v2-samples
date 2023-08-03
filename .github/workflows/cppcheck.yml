@@ -28,15 +28,13 @@ jobs:
       - name: Run CppCheck
         run: |
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
-          cppcheck --project=compile_commands.json --std=c++11 2> cppcheck.log
+          cppcheck --project=compile_commands.json --std=c++11 --template='### {id} - {file}:{line}\n**{severity}:** {message}\n```\n{code}\n```\n' 2> cppcheck.md
       - name: Add CppCheck result to job summary
         run: |
           echo "## Cppcheck output" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$(cat cppcheck.log)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$(cat cppcheck.md)" >> $GITHUB_STEP_SUMMARY
       - name: Upload log file
         uses: actions/upload-artifact@v1
         with:
-          name: cppcheck.log
-          path: cppcheck.log
+          name: cppcheck.md
+          path: cppcheck.md
