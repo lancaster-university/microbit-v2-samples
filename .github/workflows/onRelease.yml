@@ -1,4 +1,4 @@
-name: Static Analysis Report
+name: Release Library Builds
 
 on:
   workflow_dispatch:
