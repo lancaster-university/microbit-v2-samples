@@ -30,6 +30,7 @@
             "target/nrf52.cfg"
           ],
           "interface": "swd",
+          "svdFile": "libraries/codal-nrf52/nrfx/mdk/nrf52833.svd",
           "preLaunchCommands": [
             "load build/MICROBIT",
             "enable breakpoint",
