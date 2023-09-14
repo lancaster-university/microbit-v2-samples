@@ -2,6 +2,7 @@
 #include "CodalAssert.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
+#include "StreamRecording.h"
 #include "Tests.h"
 
 /**
@@ -41,6 +42,53 @@ void stream_test_getValue_interval() {
     assert( uBit.audio.isMicrophoneEnabled() == false, "Microphone should be shut down after 2 * CODAL_STREAM_IDLE_TIMEOUT_MS" );
     assert( uBit.audio.mic->output.isFlowing() == false, "isFlowing() should be false after 2 * CODAL_STREAM_IDLE_TIMEOUT_MS" );
     assert_pass( NULL );
+}
+
+void stream_test_record() {
+    uBit.audio.requestActivation();
+    static SplitterChannel * input = uBit.audio.splitter->createChannel();
+    static StreamRecording * recording = new StreamRecording( *input );
+    static MixerChannel * output = uBit.audio.mixer.addChannel( *recording );
+
+    input->requestSampleRate( 11000 );
+    output->setSampleRate( 11000 );
+    output->setVolume( CONFIG_MIXER_INTERNAL_RANGE * 0.8 ); // 80% volume
+
+    uBit.display.printChar( '3', 1000 );
+    uBit.display.printChar( '2', 1000 );
+    uBit.display.printChar( '1', 1000 );
+
+    uBit.display.printChar( 'R' );
+    recording->recordAsync();
+    while( recording->isRecording() ) {
+        if( uBit.buttonA.isPressed() )
+            input->requestSampleRate( 6600 );
+        uBit.display.printChar( '~' );
+        uBit.sleep( 100 );
+        uBit.display.printChar( '-' );
+        uBit.sleep( 100 );
+    }
+    uBit.display.printChar( 'X' );
+
+    uBit.sleep( 1000 );
+
+    uBit.display.printChar( 'P' );
+    output->setSampleRate( 11000 );
+    recording->playAsync();
+    while( recording->isPlaying() ) {
+        if( uBit.buttonB.isPressed() )
+            output->setSampleRate( 22000 );
+        
+        uBit.display.printChar( '>' );
+        uBit.sleep( 100 );
+        uBit.display.printChar( ' ' );
+        uBit.sleep( 100 );
+    }
+    uBit.display.printChar( 'X' );
+
+    uBit.sleep( 1000 );
+
+    recording->erase();
 }
 
 void stream_test_all() {
