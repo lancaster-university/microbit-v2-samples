@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "MicroBit.h"
 #include "SerialStreamer.h"
 #include "StreamNormalizer.h"
@@ -67,6 +68,26 @@ mems_mic_test()
 
     while(1)
         uBit.sleep(1000);
+}
+
+// WARNING! For this test to run correctly floats for printf/sprintf/snprintf
+// have to be enabled by adding this flag to the linker (target.json):
+// -u _printf_float
+void
+mems_mic_zero_offset_test()
+{
+    LevelDetectorSPL* levelSPL = new LevelDetectorSPL(uBit.audio.processor->output, 85.0, 65.0, 16.0, 0, DEVICE_ID_SYSTEM_LEVEL_DETECTOR, false);
+    uBit.audio.activateMic();
+
+    char float_str[20];
+    volatile auto value = 0;
+
+    while (true) {
+        value = levelSPL->getValue();
+        snprintf(float_str, 80, "%.4f", uBit.audio.processor->zeroOffset);
+        uBit.serial.printf("%s\n", float_str);
+        uBit.sleep(1);
+    }
 }
 
 void

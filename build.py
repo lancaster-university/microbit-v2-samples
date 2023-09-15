@@ -40,12 +40,13 @@ parser.add_option('-m', '--minor', dest='update_minor', action="store_true", hel
 parser.add_option('-M', '--major', dest='update_major', action="store_true", help='With -l, update major version', default=False)
 parser.add_option('-V', '--version', dest='version', metavar="VERSION", help='With -l, set the version; use "-V v0.0.1" to bootstrap', default=False)
 parser.add_option('-v', '--verbose', dest='verbose', action="store_true", help='Increases verbosity)', default=False)
-parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries', default=False)
+parser.add_option('-u', '--update', dest='update', action="store_true", help='git pull target and libraries, use with "-d/--dev" to update all libraries to their latest master' , default=False)
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
 parser.add_option('-j', '--parallelism', dest='parallelism', action="store", help='Set the number of parallel threads to build with, if supported', default=10)
+parser.add_option('-n', '--lines', dest='detail_lines', action="store", help="Sets the number of detail lines to output (only relevant to --status)", default=3 )
 
 (options, args) = parser.parse_args()
 
@@ -57,11 +58,11 @@ if options.lock_target:
     exit(0)
 
 if options.update:
-    update()
+    update(sync_dev = options.dev)
     exit(0)
 
 if options.status:
-    status()
+    status(logLines=options.detail_lines, detail=options.verbose, libs=args)
     exit(0)
 
 if options.revision:

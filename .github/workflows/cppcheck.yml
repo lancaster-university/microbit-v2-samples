@@ -1,0 +1,40 @@
+name: Static Analysis Report
+
+on:
+  workflow_dispatch:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-20.04
+    name: Run CppCheck against the codebase + libraries
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install CppCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+      - name: Setup arm-none-eabi-gcc
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: latest
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+      - name: Build default project using build.py
+        run: python build.py
+      - name: Run CppCheck
+        run: |
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+          cppcheck --project=compile_commands.json --std=c++11 --template='### {id} - {file}:{line}\n**{severity}:** {message}\n```\n{code}\n```\n' 2> cppcheck.md
+      - name: Add CppCheck result to job summary
+        run: |
+          echo "## Cppcheck output" >> $GITHUB_STEP_SUMMARY
+          echo "$(cat cppcheck.md)" >> $GITHUB_STEP_SUMMARY
+      - name: Upload log file
+        uses: actions/upload-artifact@v1
+        with:
+          name: cppcheck.md
+          path: cppcheck.md

@@ -1,0 +1,36 @@
+name: Release Library Builds
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-20.04
+    name: Build against Ubuntu-20.04 for release assets
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install CppCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+      
+      - name: Setup arm-none-eabi-gcc
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: latest
+      
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+      
+      - name: Build default project using build.py
+        run: python build.py
+      
+      - uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "build/*.a"
+          update_latest_release: true
+        

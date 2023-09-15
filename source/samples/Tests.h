@@ -22,6 +22,7 @@ void display_test2();
 void concurrent_display_test();
 void fade_test();
 void mems_mic_test();
+void mems_mic_zero_offset_test();
 void speaker_test(int plays);
 void speaker_test2(int plays);
 void gpio_test();
@@ -92,11 +93,16 @@ void mixer_test2();
 void speaker_pin_test();
 void say_hello();
 void stream_mixer_to_serial();
+void out_of_box_experience_v2();
 void out_of_box_experience();
 void level_meter();
 void init_clap_detect();
 void ble_test();
 void deepsleep_test( int test);
 void neopixel_test();
+void stream_test_mic_activate();
+void stream_test_getValue_interval();
+void stream_test_record();
+void stream_test_all();
 
 #endif
