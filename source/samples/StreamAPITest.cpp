@@ -59,10 +59,9 @@ void stream_test_record() {
     uBit.display.printChar( '1', 1000 );
 
     uBit.display.printChar( 'R' );
+    input->requestSampleRate( 11000 );
     recording->recordAsync();
     while( recording->isRecording() ) {
-        if( uBit.buttonA.isPressed() )
-            input->requestSampleRate( 6600 );
         uBit.display.printChar( '~' );
         uBit.sleep( 100 );
         uBit.display.printChar( '-' );
@@ -73,12 +72,9 @@ void stream_test_record() {
     uBit.sleep( 1000 );
 
     uBit.display.printChar( 'P' );
-    output->setSampleRate( 11000 );
+    output->setSampleRate( 18000 );
     recording->playAsync();
     while( recording->isPlaying() ) {
-        if( uBit.buttonB.isPressed() )
-            output->setSampleRate( 22000 );
-        
         uBit.display.printChar( '>' );
         uBit.sleep( 100 );
         uBit.display.printChar( ' ' );
