@@ -30,7 +30,8 @@ def build(clean, verbose = False, parallelism = 10):
             system("ninja -j {}".format(parallelism))
     else:
         # configure
-        system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
+        #system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
+        system("cmake .. -DCMAKE_BUILD_TYPE=Debug -G \"Unix Makefiles\"")
 
         if clean:
             system("make clean")
