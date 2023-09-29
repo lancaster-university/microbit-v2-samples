@@ -23,13 +23,11 @@
 # DEALINGS IN THE SOFTWARE.
 
 import os
-import sys
 import optparse
-import platform
 import json
 import shutil
 import re
-from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
+from utils.python.codal_utils import build, read_json, update, revision, status, lock, delete_build_folder, generate_docs
 
 parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -44,6 +42,7 @@ parser.add_option('-u', '--update', dest='update', action="store_true", help='gi
 parser.add_option('-s', '--status', dest='status', action="store_true", help='git status target and libraries', default=False)
 parser.add_option('-r', '--revision', dest='revision', action="store", help='Checkout a specific revision of the target', default=False)
 parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable developer mode (does not use target-locked.json)', default=False)
+parser.add_option('-D', '--debug-build', dest='debug_build', action="store_true", help='build ', default=False)
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
 parser.add_option('-j', '--parallelism', dest='parallelism', action="store", help='Set the number of parallel threads to build with, if supported', default=10)
 parser.add_option('-n', '--lines', dest='detail_lines', action="store", help="Sets the number of detail lines to output (only relevant to --status)", default=3 )
@@ -141,7 +140,12 @@ if not options.test_platform:
         generate_docs()
         exit(0)
 
-    build(options.clean, verbose=options.verbose, parallelism=options.parallelism)
+    build(
+        clean=options.clean,
+        verbose=options.verbose,
+        parallelism=options.parallelism,
+        debug_build=options.debug_build,
+    )
     exit(0)
 
 for json_obj in test_json:
@@ -168,4 +172,9 @@ for json_obj in test_json:
     with open("../codal.json", 'w') as codal_json:
         json.dump(config, codal_json, indent=4)
 
-    build(True, True, options.parallelism)
+    build(
+        clean=True,
+        verbose=True,
+        parallelism=options.parallelism,
+        debug_build=options.debug_build,
+    )

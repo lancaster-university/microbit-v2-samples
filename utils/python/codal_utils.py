@@ -5,41 +5,34 @@ import platform
 import json
 import shutil
 import re
-
-import os, re, json, xml.etree.ElementTree
-from optparse import OptionParser
 import subprocess
 
 
 def system(cmd):
     if os.system(cmd) != 0:
-      sys.exit(1)
+        sys.exit(1)
 
-def build(clean, verbose = False, parallelism = 10):
+def build(clean, verbose=False, parallelism=10, debug_build=False):
+    build_type = "Debug" if debug_build else "RelWithDebInfo"
+
     if platform.system() == "Windows":
         # configure
-        system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
+        system("cmake .. -DCMAKE_BUILD_TYPE={} -G \"Ninja\"".format(build_type))
 
         if clean:
             system("ninja clean")
 
         # build
-        if verbose:
-            system("ninja -j {} --verbose".format(parallelism))
-        else:
-            system("ninja -j {}".format(parallelism))
+        system("ninja -j {} {}".format(parallelism, "--verbose" if verbose else ""))
     else:
         # configure
-        system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
+        system("cmake .. -DCMAKE_BUILD_TYPE={} -G \"Unix Makefiles\"".format(build_type))
 
         if clean:
             system("make clean")
 
         # build
-        if verbose:
-            system("make -j {} VERBOSE=1".format(parallelism))
-        else:
-            system("make -j {}".format(parallelism))
+        system("make -j {} {}".format(parallelism, "VERBOSE=1" if verbose else ""))
 
 def read_json(fn):
     json_file = ""
