@@ -51,7 +51,7 @@ class NoiseProfiler : public DataSink
     /**
      * Callback provided when data is ready.
      */
-    virtual int pullRequest();
+    virtual int pullRequest() override;
 
     /**
     * reset gathered data
