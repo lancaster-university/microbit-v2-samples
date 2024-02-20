@@ -87,6 +87,72 @@ void stream_test_record() {
     recording->erase();
 }
 
+static const int STRSR_SAMPLE_RATE = 11000;
+
+static void strsr_handle_buttonA(MicroBitEvent) {
+    static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
+    splitterChannel->requestSampleRate(STRSR_SAMPLE_RATE);
+    static StreamRecording *recording = new StreamRecording(*splitterChannel);
+    static MixerChannel *channel = uBit.audio.mixer.addChannel(*recording, STRSR_SAMPLE_RATE);
+
+    DMESG( "Actual sample rate: %d (requested %d)", (int)splitterChannel->getSampleRate(), STRSR_SAMPLE_RATE );
+
+    MicroBitAudio::requestActivation();
+    channel->setVolume(75.0);
+    uBit.audio.mixer.setVolume(512);
+    uBit.audio.mixer.setSilenceLevel( 0 );
+    uBit.audio.setPinEnabled( true );
+
+    uBit.display.clear();
+    uBit.audio.levelSPL->setUnit(LEVEL_DETECTOR_SPL_8BIT);
+
+    splitterChannel->requestSampleRate( STRSR_SAMPLE_RATE );
+
+    DMESG( "RECORDING" );
+    recording->recordAsync();
+    bool showR = true;
+    while (uBit.buttonA.isPressed()) {
+        if( uBit.logo.isPressed() ) {
+            splitterChannel->requestSampleRate( abs((uBit.accelerometer.getRoll()-90) * 100) );
+            DMESG( "Sample Rate: %d (mic = %d)", (int)splitterChannel->getSampleRate(), (int)uBit.audio.mic->getSampleRate() );
+        } else {
+            if( uBit.buttonB.isPressed() )
+                splitterChannel->requestSampleRate( 5000 );
+            else
+                splitterChannel->requestSampleRate( STRSR_SAMPLE_RATE );
+        }
+        
+        if (showR)
+            uBit.display.print("R");
+        else
+            uBit.display.clear();
+        uBit.sleep(150);
+    }
+    recording->stop();
+    DMESG( "STOPPED" );
+
+    DMESG( "PLAYING" );
+    recording->playAsync();
+    while (recording->isPlaying()) {
+        if (showR)
+            uBit.display.print("P");
+        else
+            uBit.display.clear();
+        uBit.sleep(20);
+    }
+    recording->erase();
+    uBit.display.clear();
+    DMESG( "STOPPED" );
+}
+
+void stream_test_recording_sample_rates() {
+    uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_DOWN, strsr_handle_buttonA);
+
+    while (true) {
+        uBit.sleep(1000);
+    }
+}
+
 void stream_test_all() {
     stream_test_mic_activate();
     stream_test_getValue_interval();
