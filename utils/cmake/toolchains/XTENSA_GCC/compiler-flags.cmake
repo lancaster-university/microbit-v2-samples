@@ -1,3 +1,6 @@
+# This file is using CMAKE_<LANG>_FLAGS_<CONFIG>_INIT introduced in 3.11
+cmake_minimum_required(VERSION 3.11)
+
 set(EXPLICIT_INCLUDES "")
 if((CMAKE_VERSION VERSION_GREATER "3.4.0") OR (CMAKE_VERSION VERSION_EQUAL "3.4.0"))
     # from CMake 3.4 <INCLUDES> are separate to <FLAGS> in the
