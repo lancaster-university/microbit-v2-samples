@@ -852,8 +852,8 @@ void clap() {
     mode++;
 }
 
-void onFacePalm(MicroBitEvent e) {
-    uBit.serial.printf("face palm \r\n");
+void onLogoTouch(MicroBitEvent e) {
+    uBit.serial.printf("logo touch \r\n");
     mute = !mute;
 }
 
@@ -865,9 +865,9 @@ out_of_box_experience_v2()
 
     create_fiber(playback_ticker);
    
-    /* Disable face touch to mute 
-    uBit.io.face.isTouched();
-    uBit.messageBus.listen(uBit.io.face.id, MICROBIT_BUTTON_EVT_CLICK, onFacePalm);
+    /* Disable logo touch to mute
+    uBit.io.logo.isTouched();
+    uBit.messageBus.listen(uBit.io.logo.id, MICROBIT_BUTTON_EVT_CLICK, onLogoTouch);
     */
 
    mode = WAKE;
