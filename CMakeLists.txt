@@ -121,6 +121,11 @@ EXTRACT_JSON_ARRAY(device "device\.config\." DEVICE_FIELDS DEVICE_VALUES)
 UNIQUE_JSON_KEYS(CODAL_FIELDS CODAL_VALUES DEVICE_FIELDS DEVICE_VALUES FINAL_FIELDS FINAL_VALUES)
 FORM_DEFINITIONS(FINAL_FIELDS FINAL_VALUES CODAL_DEFINITIONS)
 
+# If the CODAL target version is stored in target-locked.json add it to the DEVICE_DAL_VERSION define
+if (DEFINED device.snapshot_version)
+    set(CODAL_DEFINITIONS "${CODAL_DEFINITIONS} #define DEVICE_DAL_VERSION\t \"${device.snapshot_version}\"\n")
+endif()
+
 # extract any CMAKE definitions specified in the target.json object, and set as native cmake vars
 # cmake definitions require special handling as types are not safe in cmake, any semi-colon would need escaped, which would be ugly.
 foreach(var ${device})
