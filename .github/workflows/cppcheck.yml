@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: Run CppCheck against the codebase + libraries
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install CppCheck
         run: |
           sudo apt-get update
@@ -22,7 +22,7 @@ jobs:
         with:
           release: latest
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1
+        uses: jwlawson/actions-setup-cmake@v2
       - name: Build default project using build.py
         run: python build.py
       - name: Run CppCheck
@@ -34,7 +34,7 @@ jobs:
           echo "## Cppcheck output" >> $GITHUB_STEP_SUMMARY
           echo "$(cat cppcheck.md)" >> $GITHUB_STEP_SUMMARY
       - name: Upload log file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: cppcheck.md
           path: cppcheck.md
