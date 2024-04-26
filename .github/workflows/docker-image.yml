@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build using the Docker image
       env:
         DOCKER_BUILDKIT: 1
@@ -19,7 +19,7 @@ jobs:
     - name: Directory Listing
       run: ls -al
     - name: Upload hex file
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: Export from Docker
         path: out/MICROBIT.hex

@@ -17,9 +17,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.8'
       - name: Setup arm-none-eabi-gcc ${{ matrix.gcc }}
@@ -27,7 +27,7 @@ jobs:
         with:
           release: ${{ matrix.gcc }}
       - name: Setup CMake ${{ matrix.cmake }}
-        uses: jwlawson/actions-setup-cmake@v1
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: ${{ matrix.cmake }}
       - name: Install Ninja via PyPI
@@ -41,9 +41,9 @@ jobs:
       - name: Build default project using build.py
         run: python build.py
       - name: Upload hex file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: build-py-${{ matrix.os }}
+          name: MICROBIT-${{ matrix.os }}-gcc-${{ matrix.gcc }}-cmake-${{ matrix.cmake || 'latest' }}
           path: MICROBIT.hex
       - name: Prepare BLE example
         run: |
@@ -56,7 +56,7 @@ jobs:
       - name: Build BLE project using build.py
         run: python build.py --clean
       - name: Upload BLE hex file
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: build-py-BLE-${{ matrix.os }}
+          name: MICROBIT-BLE-${{ matrix.os }}-gcc-${{ matrix.gcc }}-cmake-${{ matrix.cmake || 'latest' }}
           path: MICROBIT.hex
