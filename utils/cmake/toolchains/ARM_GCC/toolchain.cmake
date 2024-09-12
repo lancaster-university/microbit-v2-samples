@@ -3,6 +3,7 @@ find_program(ARM_NONE_EABI_AR arm-none-eabi-ar)
 find_program(ARM_NONE_EABI_GCC arm-none-eabi-gcc)
 find_program(ARM_NONE_EABI_GPP arm-none-eabi-g++)
 find_program(ARM_NONE_EABI_OBJCOPY arm-none-eabi-objcopy)
+find_program(ARM_NONE_EABI_SIZE arm-none-eabi-size)
 
 set(CMAKE_OSX_SYSROOT "/")
 set(CMAKE_OSX_DEPLOYMENT_TARGET "")
@@ -19,7 +20,7 @@ if(CMAKE_VERSION VERSION_LESS "3.5.0")
 else()
     # from 3.5 the force_compiler macro is deprecated: CMake can detect
     # arm-none-eabi-gcc as being a GNU compiler automatically
-	set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
     set(CMAKE_C_COMPILER "${ARM_NONE_EABI_GCC}")
     set(CMAKE_CXX_COMPILER "${ARM_NONE_EABI_GPP}")
 endif()
