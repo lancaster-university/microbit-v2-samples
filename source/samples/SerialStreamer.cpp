@@ -96,8 +96,6 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
         uint8_t *end = d+buffer.length();
         uint32_t data;
 
-        uint32_t sum = 0;
-
         while(d < end)
         {
             data = *d++;
@@ -109,29 +107,40 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
             if (bps > DATASTREAM_FORMAT_24BIT_SIGNED)
                 data |= (*d++) << 24;
 
-            if (mode == SERIAL_STREAM_MODE_HEX)
+            if (mode == SERIAL_STREAM_MODE_HEX) {
                 uBit.serial.printf("%x ", data);
-            else
-                uBit.serial.printf("%d ", data);
+            } else {
+                // SERIAL_STREAM_MODE_DECIMAL
+                if (bps == DATASTREAM_FORMAT_8BIT_SIGNED) {
+                    uBit.serial.printf("%d ", (int8_t)(data & 0xFF));
+                } else if (bps == DATASTREAM_FORMAT_16BIT_SIGNED) {
+                    uBit.serial.printf("%d ", (int16_t)(data & 0xFFFF));
+                } else if (bps == DATASTREAM_FORMAT_24BIT_SIGNED) {
+                    // Move the sign bit to the most significant bit
+                    int32_t signed_data = data & 0x7FFFFF;
+                    if (data & (1 << 23)) {
+                        signed_data |= 1 << 31;
+                    }
+                    uBit.serial.printf("%d ", signed_data);
+                } else {
+                    // Cannot print uint32_t correctly as serial.printf
+                    // does not support "%u"
+                    uBit.serial.printf("%d ", data);
+                }
+            }
 
             CRLF++;
-            sum += data;
 
             if (CRLF >= 16){
                 uBit.serial.putc('\r');
                 uBit.serial.putc('\n');
-                sum = 0;
                 CRLF = 0;
             }
         }
-        
+
         if (CRLF > 0) {
             uBit.serial.putc( '\r' );
             uBit.serial.putc( '\n' );
         }
     }
-
-
 }
-
-
