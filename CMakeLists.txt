@@ -150,7 +150,7 @@ if("${device.cpu_opts}" STRGREATER "")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device.cpu_opts}")
 endif()
 
-set(_C_FAMILY_FLAGS_INIT "-fno-exceptions -fno-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-parameter")
+set(_C_FAMILY_FLAGS_INIT "-fno-exceptions -fno-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-parameter -Werror=return-type")
 
 # asm
 if("${device.asm_flags}" STRGREATER "")
