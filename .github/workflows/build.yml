@@ -10,7 +10,7 @@ jobs:
   build-py-script:
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-12, windows-2019]
+        os: [ubuntu-20.04, macos-13, windows-2019]
         gcc: ['7-2017-q4', 'latest']
         cmake: ['3.6.0', '']  # Empty string installs the latest CMake release
       fail-fast: false
