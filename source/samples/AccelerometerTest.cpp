@@ -1,28 +1,6 @@
 #include "MicroBit.h"
 #include "Tests.h"
 
-static void
-onCompassData(MicroBitEvent)
-{
-    DMESGN("C");
-}
-
-static void
-onAccelerometerData(MicroBitEvent)
-{
-    DMESGN("A");
-}
-
-static void
-onShake(MicroBitEvent)
-{
-    DMESG(" *** SHAKE ***");
-    uBit.display.print("S");
-    uBit.sleep(500);
-    uBit.display.clear();
-}
-
-
 
 void
 accelerometer_test1()
@@ -59,6 +37,7 @@ spirit_level2()
         int x = uBit.accelerometer.getX();
         int y = uBit.accelerometer.getY();
         int z = uBit.accelerometer.getZ();
+        (void) z;
 
         DMESG("Acc [X:%d][Y:%d][Z:%d]\r\n", x, y, z);
 
@@ -88,6 +67,7 @@ spirit_level()
         int x = uBit.accelerometer.getX();
         int y = uBit.accelerometer.getY();
         int z = uBit.accelerometer.getZ();
+        (void) z;
 
         DMESG("Acc [X:%d][Y:%d][Z:%d]", x, y, z);
 
@@ -136,9 +116,14 @@ compass_accelerometer_test()
 void
 shake_test()
 {
-    //uBit.messageBus.listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, onAccelerometerData);
-    //uBit.messageBus.listen(MICROBIT_ID_COMPASS, MICROBIT_COMPASS_EVT_DATA_UPDATE, onCompassData);
-    uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_ACCELEROMETER_EVT_SHAKE, onShake);
+    //uBit.messageBus.listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, [](MicroBitEvent e) { DMESGN("A"); });
+    //uBit.messageBus.listen(MICROBIT_ID_COMPASS, MICROBIT_COMPASS_EVT_DATA_UPDATE, [](MicroBitEvent e) { DMESGN("C"); });
+    uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_ACCELEROMETER_EVT_SHAKE, [](MicroBitEvent e) { 
+        DMESG(" *** SHAKE ***");
+        uBit.display.print("S");
+        uBit.sleep(500);
+        uBit.display.clear();
+    });
 
     while(1)
     {

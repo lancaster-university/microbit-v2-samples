@@ -19,6 +19,7 @@ extern MicroBit uBit;
 /**
  * Tests if the mic auto activation (and ADC activation) works correctly
  */
+#if CONFIG_ENABLED(CODAL_ENABLE_ASSERT)
 void stream_test_mic_activate() {
     assert( uBit.audio.isMicrophoneEnabled() == false, "Microphone was enabled on startup?" );
     assert( uBit.audio.mic->output.isFlowing() == false, "isFlowing() should be false on startup." );
@@ -43,6 +44,13 @@ void stream_test_getValue_interval() {
     assert( uBit.audio.mic->output.isFlowing() == false, "isFlowing() should be false after 2 * CODAL_STREAM_IDLE_TIMEOUT_MS" );
     assert_pass( NULL );
 }
+
+void stream_test_all() {
+    stream_test_mic_activate();
+    stream_test_getValue_interval();
+    assert_pass( NULL );
+}
+#endif
 
 void stream_test_record() {
     uBit.audio.requestActivation();
@@ -151,10 +159,4 @@ void stream_test_recording_sample_rates() {
     while (true) {
         uBit.sleep(1000);
     }
-}
-
-void stream_test_all() {
-    stream_test_mic_activate();
-    stream_test_getValue_interval();
-    assert_pass( NULL );
 }

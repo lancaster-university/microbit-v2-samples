@@ -84,6 +84,7 @@ mems_mic_zero_offset_test()
 
     while (true) {
         value = levelSPL->getValue();
+        (void) value;
         snprintf(float_str, 80, "%.4f", uBit.audio.processor->zeroOffset);
         uBit.serial.printf("%s\n", float_str);
         uBit.sleep(1);

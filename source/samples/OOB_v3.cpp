@@ -164,6 +164,7 @@ static void playMelody(const char melody[][NOTE_LEN], size_t len) {
         }
 
         // Play the tone/rest for the calculated duration
+        (void) note;
         DMESG("%s -> f:%u, ms:%d", note, frequency, durationMs);
         if (frequency) {
             uBit.audio.virtualOutputPin.setAnalogPeriodUs(1000000 / frequency);

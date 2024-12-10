@@ -10,6 +10,7 @@ onReadFlashStatus()
 
     //MicroBitUSBFlashConfig config = uBit.flash.getConfiguration();
     MicroBitUSBFlashGeometry geometry = uBit.flash.getGeometry();
+    (void) geometry;
     //DMESG("FLASH CONFIG: [filename: %s] [size:%d] [visible:%d]", config.fileName.toCharArray(), config.fileSize, config.visible ? 1 : 0);
     DMESG("FLASH GEOMETRY: [blockSize: %d][blockCount: %d]", geometry.blockSize, geometry.blockCount);
 }

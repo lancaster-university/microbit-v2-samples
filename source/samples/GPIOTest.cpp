@@ -82,6 +82,7 @@ analog_test()
         for (Pin *p : analogPins)
         {
             int v = p->getAnalogValue();
+            (void) v;
             DMESG("%d", v);
         }
 
