@@ -1,13 +1,9 @@
 import os
 import sys
-import optparse
 import platform
 import json
 import shutil
 import re
-
-import os, re, json, xml.etree.ElementTree
-from optparse import OptionParser
 import subprocess
 
 
@@ -16,7 +12,10 @@ def system(cmd):
       sys.exit(1)
 
 def build(clean, verbose = False, parallelism = 10):
-    if platform.system() == "Windows":
+    # Use Ninja on Windows, or if available in any other OS
+    use_ninja = shutil.which("ninja") is not None or platform.system() == "Windows"
+
+    if use_ninja:
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
 
