@@ -17,3 +17,8 @@ if(NOT WIN32)
   set(BoldCyan    "${Esc}[1;36m")
   set(BoldWhite   "${Esc}[1;37m")
 endif()
+
+# Ninja builds are not coloured, compilers detect their output being piped and
+# remove it. This makes CMake > 3.24 add extra compiler flags to force colour
+# and has no effect on older CMake versions
+set(CMAKE_COLOR_DIAGNOSTICS On)
