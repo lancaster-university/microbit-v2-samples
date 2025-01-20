@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, macos-13, windows-2019]
-        gcc: ['7-2017-q4', 'latest']
+        gcc: ['6-2016-q4', 'latest']  # Min version 6.2 as used in pext/yotta:latest docker image
         cmake: ['3.6.0', '']  # Empty string installs the latest CMake release
       fail-fast: false
     runs-on: ${{ matrix.os }}
