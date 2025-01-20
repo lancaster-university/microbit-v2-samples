@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include "MicroBit.h"
 #include "SerialStreamer.h"
 #include "StreamNormalizer.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
 #include "Tests.h"
+#include <stdio.h>
 
 static NRF52ADCChannel *mic = NULL;
 static SerialStreamer *streamer = NULL;
