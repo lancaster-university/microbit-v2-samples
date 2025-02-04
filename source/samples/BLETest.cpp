@@ -68,7 +68,7 @@ void ble_test()
     // Options for MICROBIT_BLE_SECURITY_LEVEL are:
     // SECURITY_MODE_ENCRYPTION_WITH_MITM, enables pairing with a passcode
     // SECURITY_MODE_ENCRYPTION_NO_MITM, enables pairing without a passcode
-    // SECURITY_MODE_ENCRYPTION_OPEN_LINK, pairing is no required
+    // SECURITY_MODE_ENCRYPTION_OPEN_LINK, pairing is not required
     //
 
     uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, onConnected);
