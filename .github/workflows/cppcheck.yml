@@ -9,7 +9,7 @@ on:
 
 jobs:
   cppcheck:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Run CppCheck against the codebase + libraries
     steps:
       - uses: actions/checkout@v4
