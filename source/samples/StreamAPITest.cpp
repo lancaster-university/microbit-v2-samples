@@ -58,18 +58,18 @@ void stream_test_record() {
     static StreamRecording * recording = new StreamRecording( *input );
     static MixerChannel * output = uBit.audio.mixer.addChannel( *recording );
 
-    // FIXME: Update this to use the new requestSampleRate
-    // input->requestSampleRate( 11000 );
+    uBit.audio.mic->setSampleRate( 11000 );
     output->setSampleRate( 11000 );
-    output->setVolume( CONFIG_MIXER_INTERNAL_RANGE * 0.8 ); // 80% volume
+
+    output->setVolume( CONFIG_MIXER_INTERNAL_RANGE * 0.2 ); // 20% volume
 
     uBit.display.printChar( '3', 1000 );
     uBit.display.printChar( '2', 1000 );
     uBit.display.printChar( '1', 1000 );
 
     uBit.display.printChar( 'R' );
-    // FIXME: Update this to use the new requestSampleRate
-    // input->requestSampleRate( 11000 );
+    uBit.audio.mic->setSampleRate( 11000 );
+
     recording->recordAsync();
     while( recording->isRecording() ) {
         uBit.display.printChar( '~' );
@@ -101,14 +101,13 @@ static const int STRSR_SAMPLE_RATE = 11000;
 
 static void strsr_handle_buttonA(MicroBitEvent) {
     static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
-    // FIXME: Update this to use the new requestSampleRate
-    // splitterChannel->requestSampleRate(STRSR_SAMPLE_RATE);
+    uBit.audio.mic->setSampleRate( STRSR_SAMPLE_RATE );
     static StreamRecording *recording = new StreamRecording(*splitterChannel);
     static MixerChannel *channel = uBit.audio.mixer.addChannel(*recording, STRSR_SAMPLE_RATE);
 
     DMESG( "Actual sample rate: %d (requested %d)", (int)splitterChannel->getSampleRate(), STRSR_SAMPLE_RATE );
 
-    MicroBitAudio::requestActivation();
+    uBit.audio.requestActivation();
     channel->setVolume(75.0);
     uBit.audio.mixer.setVolume(512);
     uBit.audio.mixer.setSilenceLevel( 0 );
@@ -117,24 +116,20 @@ static void strsr_handle_buttonA(MicroBitEvent) {
     uBit.display.clear();
     uBit.audio.levelSPL->setUnit(LEVEL_DETECTOR_SPL_8BIT);
 
-    // FIXME: Update this to use the new requestSampleRate
-    // splitterChannel->requestSampleRate( STRSR_SAMPLE_RATE );
+    uBit.audio.mic->setSampleRate( STRSR_SAMPLE_RATE );
 
     DMESG( "RECORDING" );
     recording->recordAsync();
     bool showR = true;
     while (uBit.buttonA.isPressed()) {
         if( uBit.logo.isPressed() ) {
-            // FIXME: Update this to use the new requestSampleRate
-            // splitterChannel->requestSampleRate( abs((uBit.accelerometer.getRoll()-90) * 100) );
+            uBit.audio.mic->setSampleRate( abs((uBit.accelerometer.getRoll()-90) * 100) );
             DMESG( "Sample Rate: %d (mic = %d)", (int)splitterChannel->getSampleRate(), (int)uBit.audio.mic->getSampleRate() );
         } else {
-            if( uBit.buttonB.isPressed() ) {}
-                // FIXME: Update this to use the new requestSampleRate
-                // splitterChannel->requestSampleRate( 5000 );
-            else {}
-                // FIXME: Update this to use the new requestSampleRate
-                // splitterChannel->requestSampleRate( STRSR_SAMPLE_RATE );
+            if( uBit.buttonB.isPressed() )
+                uBit.audio.mic->setSampleRate(5000);
+            else
+                uBit.audio.mic->setSampleRate(STRSR_SAMPLE_RATE);
         }
         
         if (showR)
