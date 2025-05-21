@@ -76,7 +76,7 @@ mems_mic_test()
 void
 mems_mic_zero_offset_test()
 {
-    LevelDetectorSPL* levelSPL = new LevelDetectorSPL(uBit.audio.processor->output, 85.0, 65.0, 16.0, 0, DEVICE_ID_SYSTEM_LEVEL_DETECTOR, false);
+    LevelDetectorSPL* levelSPL = new LevelDetectorSPL(uBit.audio.processor->output, 85.0, 65.0, 16.0, 0, DEVICE_ID_SYSTEM_LEVEL_DETECTOR);
     uBit.audio.activateMic();
 
     char float_str[20];

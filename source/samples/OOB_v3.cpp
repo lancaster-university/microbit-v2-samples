@@ -212,7 +212,8 @@ static void onButtonLogo(MicroBitEvent) {
 
     int sampleRate = 11000;
     static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
-    splitterChannel->requestSampleRate( sampleRate );
+    // FIXME: Update this to use the new requestSampleRate
+    // splitterChannel->requestSampleRate( sampleRate );
 
     // Uncomment these two lines and comment out the *recording declaration after them to insert a low-pass-filter.
     // static LowPassFilter *lowPassFilter = new LowPassFilter(*splitterChannel, 0.812313f, false);
