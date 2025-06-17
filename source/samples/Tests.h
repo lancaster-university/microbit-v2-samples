@@ -105,5 +105,6 @@ void stream_test_getValue_interval();
 void stream_test_record();
 void stream_test_recording_sample_rates();
 void stream_test_all();
+void morse_code();
 
 #endif
