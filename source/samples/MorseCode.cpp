@@ -6,7 +6,7 @@
 
 // Morse code timing constants
 // Time differences come from the international standard
-constexpr int FRAME_LENGTH = 400;
+constexpr int FRAME_LENGTH = 280;
 constexpr int MAX_FRAME_LENGTH = 500;
 constexpr int MIN_FRAME_LENGTH = 10;
 
