@@ -47,6 +47,7 @@ parser.add_option('-d', '--dev', dest='dev', action="store_true", help='enable d
 parser.add_option('-g', '--generate-docs', dest='generate_docs', action="store_true", help='generate documentation for the current target', default=False)
 parser.add_option('-j', '--parallelism', dest='parallelism', action="store", help='Set the number of parallel threads to build with, if supported', default=10)
 parser.add_option('-n', '--lines', dest='detail_lines', action="store", help="Sets the number of detail lines to output (only relevant to --status)", default=3 )
+parser.add_option('--cmake-build-type', dest='cmake_build_type', metavar="-DCMAKE_BUILD_TYPE", help="Pass the -DCMAKE_BUILD_TYPE argument to cmake. Default is 'RelWithDebInfo', which targets size optimizations and includes some basic debug info. Other options include 'Debug', 'Release', and 'MinSizeRel'. See cmake documentation for more details.", default='RelWithDebInfo')
 
 (options, args) = parser.parse_args()
 
@@ -131,6 +132,11 @@ elif len(args) > 1:
     print("Too many arguments supplied, only one target can be specified.")
     exit(1)
 
+if options.cmake_build_type not in ['Debug', 'Release', 'MinSizeRel', 'RelWithDebInfo']:
+    print("Invalid CMake build type specified: {}".format(options.cmake_build_type))
+    print("Valid options are: Debug, Release, MinSizeRel, RelWithDebInfo. See CMake documentation for more details.")
+    exit(1)
+
 if not options.test_platform:
 
     if not os.path.exists("../codal.json"):
@@ -141,7 +147,7 @@ if not options.test_platform:
         generate_docs()
         exit(0)
 
-    build(options.clean, verbose=options.verbose, parallelism=options.parallelism)
+    build(options.clean, verbose=options.verbose, parallelism=options.parallelism, cmake_build_type=options.cmake_build_type)
     exit(0)
 
 for json_obj in test_json:
@@ -168,4 +174,4 @@ for json_obj in test_json:
     with open("../codal.json", 'w') as codal_json:
         json.dump(config, codal_json, indent=4)
 
-    build(True, True, options.parallelism)
+    build(True, True, options.parallelism, cmake_build_type=options.cmake_build_type)

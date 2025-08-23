@@ -11,13 +11,13 @@ def system(cmd):
     if os.system(cmd) != 0:
       sys.exit(1)
 
-def build(clean, verbose = False, parallelism = 10):
+def build(clean, verbose = False, parallelism = 10, cmake_build_type='RelWithDebInfo'):
     # Use Ninja on Windows, or if available in any other OS
     use_ninja = shutil.which("ninja") is not None or platform.system() == "Windows"
 
     if use_ninja:
         # configure
-        system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
+        system(f"cmake .. -DCMAKE_BUILD_TYPE={cmake_build_type} -G \"Ninja\"")
 
         if clean:
             system("ninja clean")
@@ -29,7 +29,7 @@ def build(clean, verbose = False, parallelism = 10):
             system("ninja -j {}".format(parallelism))
     else:
         # configure
-        system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
+        system(f"cmake .. -DCMAKE_BUILD_TYPE={cmake_build_type} -G \"Unix Makefiles\"")
 
         if clean:
             system("make clean")
