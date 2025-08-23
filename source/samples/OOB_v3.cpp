@@ -1,3 +1,27 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) 2023 Micro:bit Educational Foundation
+Copyright (c) 2023 Lancaster University
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+*/
 #include "MicroBit.h"
 #include "Synthesizer.h"
 #include "StreamRecording.h"
@@ -304,6 +328,25 @@ static void onStart() {
     uBit.display.print(HEART);
 }
 
+static void clearDataLoggingStorage() {
+    // This 32-bit word will be initially stored in flash as 0xffffffff
+    // On first run, it will be cleared to 0x00000000 in flash, to be able to
+    // use it as a flag to only erase the data logging storage once
+    static const uint32_t flash_original_value __ALIGNED(4) = 0xffffffff;
+    uint32_t zero = 0x00000000;
+
+    NRF52FlashManager flashManager(0, 128, 4096);
+
+    // Read the value currently in flash
+    uint32_t flash_current_value;
+    flashManager.read(&flash_current_value, (uint32_t)&flash_original_value, 1);
+    if (flash_current_value) {
+        // Value is not cleared yet, so full erase data storage and clear the flag
+        uBit.log.clear(true);
+        flashManager.write((uint32_t)&flash_original_value, &zero, 1);
+    }
+}
+
 void out_of_box_experience() {
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, onButtonA);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, onButtonB);
@@ -314,8 +357,11 @@ void out_of_box_experience() {
 
     onStart();
 
-    //uBit.audio.rawSplitter->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
-    //uBit.audio.splitter->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
+    // The Out of Box Experience is the default programme loaded to micro:bit from factory.
+    // It can be flashed to a micro:bit to resemble a "factory reset"
+    // For that, the data logging storage should be fully erased (by default it will do a quick erase)
+    // This process can take several seconds, so it is done in a separate fiber
+    create_fiber(clearDataLoggingStorage);
 
     while (true) {
         uBit.sleep(1000);
