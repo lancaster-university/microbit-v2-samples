@@ -10,7 +10,7 @@
 #include "MicroBit.h"
 
 #ifndef MB_OOB_VERSION
-#define MB_OOB_VERSION "3.0.1"
+#define MB_OOB_VERSION "3.0.2"
 #endif
 
 extern MicroBit uBit;
