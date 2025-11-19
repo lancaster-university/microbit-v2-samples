@@ -1,8 +1,14 @@
+/**
+ * (c) 2020-2023 Lancaster University
+ * (c) 2020-2025 Micro:bit Educational Foundation
+ *
+ * SPDX-License-Identifier: MIT
+ */
+#include "OOB.h"
 #include "MicroBit.h"
 #include "Synthesizer.h"
 #include "StreamRecording.h"
 #include "LowPassFilter.h"
-#include "Tests.h"
 
 const char * const heart =
     "000,255,000,255,000\n"
