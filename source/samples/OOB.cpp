@@ -2,6 +2,7 @@
  * Modified version of the original OOB hex to support V2
  */
 
+#include "OOB.h"
 #include "MicroBit.h"
 #include "Tests.h"
 #include <cmath>

@@ -1,16 +1,11 @@
 #include "MicroBit.h"
 #include "CodalDmesg.h"
+#include "OOB.h"
 
 #ifndef MB_NEXT_TESTS_H
 #define MB_NEXT_TESTS_H
 
-#define MICROBIT_UBIT_AS_STATIC_OBJECT
-
-#ifdef MICROBIT_UBIT_AS_STATIC_OBJECT
 extern MicroBit uBit;
-#else
-extern MicroBit& uBit;
-#endif
 
 void blinky();
 void button_test1();
@@ -93,8 +88,6 @@ void mixer_test2();
 void speaker_pin_test();
 void say_hello();
 void stream_mixer_to_serial();
-void out_of_box_experience_v2();
-void out_of_box_experience();
 void level_meter();
 void init_clap_detect();
 void ble_test();
