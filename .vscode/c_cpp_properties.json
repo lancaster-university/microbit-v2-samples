@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/source/**",
+                "${workspaceFolder}/libraries/**",
+                "${workspaceFolder}/utils/cmake/**",
+                "${workspaceFolder}/build/libraries/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/arm-none-eabi-g++",
+            "compilerArgs": ["-DNRF52833_XXAA"],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
