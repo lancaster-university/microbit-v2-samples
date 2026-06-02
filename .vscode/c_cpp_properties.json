@@ -1,19 +1,14 @@
 {
     "configurations": [
         {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/source/**",
-                "${workspaceFolder}/libraries/**",
-                "${workspaceFolder}/utils/cmake/**",
-                "${workspaceFolder}/build/libraries/**"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/arm-none-eabi-g++",
-            "compilerArgs": ["-DNRF52833_XXAA"],
-            "cStandard": "c11",
+            "name": "mac-CODAL-ARM",
+            "compilerPath": "/Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/arm-none-eabi-g++",
+            "cStandard": "c17",
             "cppStandard": "c++11",
-            "intelliSenseMode": "gcc-arm"
+            "intelliSenseMode": "gcc-arm",
+            "compileCommands": [
+                "${workspaceFolder}/build/compile_commands.json"
+            ]
         }
     ],
     "version": 4
