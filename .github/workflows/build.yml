@@ -10,8 +10,8 @@ jobs:
   build-py-script:
     strategy:
       matrix:
-        # macos-13 is Intel and macos-15 is arm64
-        os: [ubuntu-22.04, macos-13, macos-15, windows-2022]
+        # macos-14 is arm64
+        os: [ubuntu-22.04, macos-15-intel, macos-14, windows-2022]
         gcc: ['6-2016-q4', 'latest']  # Min version 6.2 as used in pext/yotta:latest docker image
         cmake: ['3.6.0', '']  # Empty string installs the latest CMake release
         exclude:
@@ -19,15 +19,15 @@ jobs:
           - os: ubuntu-22.04
             cmake: '3.6.0'
           # Intel macOS cannot run the latest gcc (which is arm64 only)
-          - os: macos-13
+          - os: macos-15-intel
             gcc: 'latest'
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.8'
       - name: Setup arm-none-eabi-gcc ${{ matrix.gcc }}
@@ -49,7 +49,7 @@ jobs:
       - name: Build default project using build.py
         run: python build.py
       - name: Upload hex file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MICROBIT-${{ matrix.os }}-gcc-${{ matrix.gcc }}-cmake-${{ matrix.cmake || 'latest' }}
           path: MICROBIT.hex
@@ -64,7 +64,7 @@ jobs:
       - name: Build BLE project using build.py
         run: python build.py --clean
       - name: Upload BLE hex file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MICROBIT-BLE-${{ matrix.os }}-gcc-${{ matrix.gcc }}-cmake-${{ matrix.cmake || 'latest' }}
           path: MICROBIT.hex
