@@ -40,11 +40,62 @@ def build(clean, verbose = False, parallelism = 10):
         else:
             system("make -j {}".format(parallelism))
 
+def _strip_json_comments(text):
+    result = ""
+    i = 0
+    n = len(text)
+    in_string = False
+
+    while i < n:
+        c = text[i]
+
+        if in_string:
+            result += c
+            if c == '\\' and i + 1 < n:
+                result += text[i + 1]
+                i += 2
+                continue
+            if c == '"':
+                in_string = False
+            i += 1
+        elif c == '"':
+            in_string = True
+            result += c
+            i += 1
+        elif c == '/' and i + 1 < n and text[i + 1] == '/':
+            end = text.find('\n', i)
+            if end == -1:
+                break
+            i = end
+        elif c == '/' and i + 1 < n and text[i + 1] == '*':
+            end = text.find('*/', i + 2)
+            if end == -1:
+                break
+            # drop the comment but keep newlines so error messages keep sane line numbers
+            block = text[i:end + 2]
+            result += re.sub(r'[^\n]', '', block)
+            i = end + 2
+        elif c == ',':
+            # tolerate trailing commas, as the CMake parser does
+            j = i + 1
+            while j < n and text[j] in ' \t\r\n':
+                j += 1
+            if j < n and text[j] in '}]':
+                i = j
+            else:
+                result += c
+                i += 1
+        else:
+            result += c
+            i += 1
+
+    return result
+
 def read_json(fn):
     json_file = ""
     with open(fn) as f:
         json_file = f.read()
-    return json.loads(json_file)
+    return json.loads(_strip_json_comments(json_file))
 
 def checkgit():
     stat = os.popen('git status --porcelain').read().strip()
