@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.19) # string(JSON) support
 
 # include additional cmake
 include(utils/cmake/JSONParser.cmake)
