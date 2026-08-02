@@ -1,3 +1,5 @@
+json_get_or_empty(device_definitions device_json "definitions")
+
 if("${INCLUDE_DIRS}" STRGREATER "")
     target_include_directories(codal PUBLIC "${INCLUDE_DIRS}")
 endif()
@@ -5,7 +7,7 @@ endif()
 add_library(codal "${SOURCE_FILES}")
 set_target_properties(codal PROPERTIES SUFFIX "" ENABLE_EXPORTS ON)
 
-target_compile_definitions(codal PUBLIC "${device.definitions}")
+target_compile_definitions(codal PUBLIC "${device_definitions}")
 target_include_directories(codal PUBLIC ${PLATFORM_INCLUDES_PATH})
 target_compile_options(codal PUBLIC -include ${EXTRA_INCLUDES_PATH})
 

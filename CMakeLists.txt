@@ -22,7 +22,6 @@
 cmake_minimum_required(VERSION 3.19) # string(JSON) support
 
 # include additional cmake
-include(utils/cmake/JSONParser.cmake)
 include(utils/cmake/util.cmake)
 include(utils/cmake/colours.cmake)
 
@@ -39,20 +38,26 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 #read our config file...
 file(READ "./codal.json" codal_json)
-sbeParseJson(codal codal_json)
 
 set(CODAL_APP_OUTPUT_DIR ".")
 set(CODAL_APP_SOURCE_DIR "source")
 
-if("${codal.application}" STRGREATER "")
-    set(CODAL_APP_SOURCE_DIR "${codal.application}")
+json_get_or_empty(codal_application codal_json "application")
+if("${codal_application}" STRGREATER "")
+    set(CODAL_APP_SOURCE_DIR "${codal_application}")
 endif()
 
-if("${codal.output_folder}" STRGREATER "")
-    set(CODAL_APP_OUTPUT_DIR "${codal.output_folder}")
+json_get_or_empty(codal_output_folder codal_json "output_folder")
+if("${codal_output_folder}" STRGREATER "")
+    set(CODAL_APP_OUTPUT_DIR "${codal_output_folder}")
 endif()
 
-if(NOT "${codal.target.name}" STRGREATER "")
+json_get_or_empty(codal_target_name codal_json "target" "name")
+json_get_or_empty(codal_target_url codal_json "target" "url")
+json_get_or_empty(codal_target_branch codal_json "target" "branch")
+json_get_or_empty(codal_target_type codal_json "target" "type")
+
+if(NOT "${codal_target_name}" STRGREATER "")
     message(FATAL_ERROR "${BoldRed}INVALID TARGET.${ColourReset}")
 endif()
 
@@ -60,26 +65,34 @@ set(CODAL_DEPS "")
 set(LIB_DEST "libraries")
 
 #install the target
-INSTALL_DEPENDENCY(${LIB_DEST} ${codal.target.name} ${codal.target.url} ${codal.target.branch} ${codal.target.type})
-message("${BoldMagenta}Set target: ${codal.target.name} ${ColourReset}")
-list(APPEND CODAL_DEPS ${codal.target.name})
+INSTALL_DEPENDENCY(${LIB_DEST} ${codal_target_name} ${codal_target_url} ${codal_target_branch} ${codal_target_type})
+message("${BoldMagenta}Set target: ${codal_target_name} ${ColourReset}")
+list(APPEND CODAL_DEPS ${codal_target_name})
 
-if("${codal.target.dev}" STRGREATER "")
-    file(READ "./${LIB_DEST}/${codal.target.name}/target.json" device_json)
+json_get_or_empty(codal_target_dev codal_json "target" "dev")
+if("${codal_target_dev}" STRGREATER "")
+    file(READ "./${LIB_DEST}/${codal_target_name}/target.json" device_json)
     message("${BoldMagenta}Using target.json (dev version) ${ColourReset}")
 else()
-    file(READ "./${LIB_DEST}/${codal.target.name}/target-locked.json" device_json)
+    file(READ "./${LIB_DEST}/${codal_target_name}/target-locked.json" device_json)
     message("${BoldMagenta}Using target-locked.json${ColourReset}")
 endif()
 
-message("${BoldBlue}Targeting ${codal.target.name}${ColourReset}")
+message("${BoldBlue}Targeting ${codal_target_name}${ColourReset}")
 
-sbeParseJson(device device_json)
+json_get_or_empty(device_device device_json "device")
+json_get_or_empty(device_processor device_json "processor")
+json_get_or_empty(device_architecture device_json "architecture")
+json_get_or_empty(device_toolchain device_json "toolchain")
+json_get_or_empty(device_generate_bin device_json "generate_bin")
+json_get_or_empty(device_generate_hex device_json "generate_hex")
+json_get_or_empty(device_show_size device_json "show_size")
+json_get_or_empty(device_post_process device_json "post_process")
+json_get_or_empty(device_post_process_command device_json "post_process" "command")
 
-SET(CODAL_TARGET_NAME ${device.target.name})
-SET(CODAL_OUTPUT_NAME ${device.device})
-SET(CODAL_TARGET_PROCESSOR ${device.processor})
-SET(CODAL_TARGET_CPU_ARCHITECTURE ${device.architecture})
+SET(CODAL_OUTPUT_NAME ${device_device})
+SET(CODAL_TARGET_PROCESSOR ${device_processor})
+SET(CODAL_TARGET_CPU_ARCHITECTURE ${device_architecture})
 
 # if this is the first build, lets copy a sample main.cpp from the target if available.
 if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CODAL_APP_SOURCE_DIR} AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/${LIB_DEST}/${codal.target.name}/samples/main.cpp)
@@ -94,8 +107,8 @@ endif()
 
 ####################
 
-SET(TOOLCHAIN ${device.toolchain})
-SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
+SET(TOOLCHAIN ${device_toolchain})
+SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device_toolchain}")
 
 # include toolchain file
 set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake" CACHE PATH "toolchain file")
@@ -106,7 +119,7 @@ enable_language(ASM)
 
 # include compiler flags overrides
 include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
-set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${device.toolchain}")
+set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${device_toolchain}")
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
@@ -116,63 +129,71 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 
 SET(CODAL_DEFINITIONS "")
 
-EXTRACT_JSON_ARRAY(codal "codal\.config\." CODAL_FIELDS CODAL_VALUES)
-EXTRACT_JSON_ARRAY(device "device\.config\." DEVICE_FIELDS DEVICE_VALUES)
+json_collect_object(CODAL_FIELDS CODAL_VALUES codal_json "config")
+json_collect_object(DEVICE_FIELDS DEVICE_VALUES device_json "config")
 UNIQUE_JSON_KEYS(CODAL_FIELDS CODAL_VALUES DEVICE_FIELDS DEVICE_VALUES FINAL_FIELDS FINAL_VALUES)
 FORM_DEFINITIONS(FINAL_FIELDS FINAL_VALUES CODAL_DEFINITIONS)
 
 # extract any CMAKE definitions specified in the target.json object, and set as native cmake vars
 # cmake definitions require special handling as types are not safe in cmake, any semi-colon would need escaped, which would be ugly.
-foreach(var ${device})
-    #if it is not prefixed by codal.cmake_definitions, do not consider the key.		 +
-    if(NOT "${var}" MATCHES "device\.cmake_definitions\.")
-        continue()
-    endif()
+json_collect_object(_CMAKE_DEF_FIELDS _CMAKE_DEF_VALUES device_json "cmake_definitions")
+list(LENGTH _CMAKE_DEF_FIELDS _def_count)
+if(_def_count GREATER 0)
+    math(EXPR _def_count "${_def_count} - 1")
+    foreach(i RANGE ${_def_count})
+        list(GET _CMAKE_DEF_FIELDS ${i} _def_field)
+        list(GET _CMAKE_DEF_VALUES ${i} _def_value)
 
-    string(REGEX MATCH "[^device\.cmake_definitions\.]([A-Z,a-z,0-9,_,]+)" CODAL_CMAKE_DEFINITION "${var}")
-
-    set(${CODAL_CMAKE_DEFINITION} ${${var}})
-endforeach()
+        set(${_def_field} ${_def_value})
+    endforeach()
+endif()
 
 #define any additional symbols specified by the target.
-if("${device.definitions}" STRGREATER "")
-    add_definitions("${device.definitions}")
+json_get_or_empty(device_definitions device_json "definitions")
+if("${device_definitions}" STRGREATER "")
+    add_definitions("${device_definitions}")
 endif()
 
 ####################
 # optional JSON flags for compilation + assembly
 ###################
-if("${device.cpu_opts}" STRGREATER "")
-    set(_CPU_COMPILATION_OPTIONS "${device.cpu_opts}")
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${device.cpu_opts}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${device.cpu_opts}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${device.cpu_opts}")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device.cpu_opts}")
+json_get_or_empty(device_cpu_opts device_json "cpu_opts")
+json_get_or_empty(device_asm_flags device_json "asm_flags")
+json_get_or_empty(device_c_flags device_json "c_flags")
+json_get_or_empty(device_cpp_flags device_json "cpp_flags")
+json_get_or_empty(device_linker_flags device_json "linker_flags")
+
+if("${device_cpu_opts}" STRGREATER "")
+    set(_CPU_COMPILATION_OPTIONS "${device_cpu_opts}")
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${device_cpu_opts}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${device_cpu_opts}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${device_cpu_opts}")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device_cpu_opts}")
 endif()
 
 set(_C_FAMILY_FLAGS_INIT "-fno-exceptions -fno-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-parameter")
 
 # asm
-if("${device.asm_flags}" STRGREATER "")
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${device.asm_flags}")
+if("${device_asm_flags}" STRGREATER "")
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${device_asm_flags}")
 endif()
 
 # c
-if("${device.c_flags}" STRGREATER "")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device.c_flags}")
-    set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} ${device.c_flags}")
+if("${device_c_flags}" STRGREATER "")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device_c_flags}")
+    set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} ${device_c_flags}")
 endif()
 
 # cpp
-if("${device.cpp_flags}" STRGREATER "")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device.cpp_flags}")
-    set(CMAKE_CXX_LINK_FLAGS "${device.cpp_flags}")
+if("${device_cpp_flags}" STRGREATER "")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_C_FAMILY_FLAGS_INIT} ${device_cpp_flags}")
+    set(CMAKE_CXX_LINK_FLAGS "${device_cpp_flags}")
 endif()
 
 # linker opts
-if("${device.linker_flags}" STRGREATER "")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device.linker_flags}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${device.linker_flags}")
+if("${device_linker_flags}" STRGREATER "")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${device_linker_flags}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${device_linker_flags}")
 endif()
 
 # create a header file from the definitions specified in JSON
@@ -205,23 +226,29 @@ include_directories(${PROJECT_SOURCE_DIR}/${LIB_DEST})
 #add_subdirectory("${PROJECT_SOURCE_DIR}/${LIB_DEST}/${dep}")
 
 # "import" and add any specified libraries to the build list
-if("${device.libraries}" STRGREATER "")
+string(JSON device_libraries_len ERROR_VARIABLE _no_libraries LENGTH "${device_json}" "libraries")
+if(NOT _no_libraries)
     message("Installing dependencies...")
-    set(DEVICE_LIBS ${device.libraries})
+    math(EXPR _last_library "${device_libraries_len} - 1")
 
-    foreach(i ${DEVICE_LIBS})
+    foreach(i RANGE ${_last_library})
+        string(JSON _lib_url GET "${device_json}" "libraries" ${i} "url")
+        string(JSON _lib_name GET "${device_json}" "libraries" ${i} "name")
+        string(JSON _lib_type GET "${device_json}" "libraries" ${i} "type")
+        string(JSON _lib_branch ERROR_VARIABLE _no_branch GET "${device_json}" "libraries" ${i} "branch")
+
         SET(BRANCH "NONE")
-        SET(URL "${device.libraries_${i}.url}")
-        if("${device.libraries_${i}.branch}" STRGREATER "")
-            SET(BRANCH "${device.libraries_${i}.branch}")
+        if(NOT _no_branch)
+            SET(BRANCH "${_lib_branch}")
         endif()
-        if("${codal.target.branches.${URL}}" STRGREATER "")
-            SET(BRANCH "${codal.target.branches.${URL}}")
+        string(JSON _override ERROR_VARIABLE _no_override GET "${codal_json}" "target" "branches" "${_lib_url}")
+        if(NOT _no_override)
+            SET(BRANCH "${_override}")
             MESSAGE (STATUS "Override branch: ${BRANCH}")
         endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${device.libraries_${i}.name} ${URL} ${BRANCH} ${device.libraries_${i}.type})
-        list(APPEND CODAL_DEPS "${device.libraries_${i}.name}")
+        INSTALL_DEPENDENCY(${LIB_DEST} ${_lib_name} ${_lib_url} ${BRANCH} ${_lib_type})
+        list(APPEND CODAL_DEPS "${_lib_name}")
     endforeach()
 
     foreach(dep ${CODAL_DEPS})

@@ -29,25 +29,50 @@ MACRO(SOURCE_FILES return_list dir pattern)
     SET(${return_list} ${dir_list})
 ENDMACRO()
 
-function(EXTRACT_JSON_ARRAY json_file json_field_path fields values)
+# Read a value out of the JSON document held in variable <json_var>.  The
+# arguments after <json_var> form the member/index path into the document.
+# The value is written to <result>; a missing path yields the empty string.
+function(json_get_or_empty result json_var)
+    set(_json_value "${${json_var}}")
+    string(JSON _out ERROR_VARIABLE _err GET "${_json_value}" ${ARGN})
+    if(_err)
+        set(${result} "" PARENT_SCOPE)
+    else()
+        set(${result} "${_out}" PARENT_SCOPE)
+    endif()
+endfunction()
 
-    set(VALUES "")
-    set(FIELDS "")
-
-    foreach(var ${${json_file}})
-        # extract any cmd line definitions specified in the json object, and add them
-        # if it is not prefixed by json_field_path, do not consider the key.
-        if("${var}" MATCHES "${json_field_path}")
-            string(REGEX MATCH "[^${json_field_path}]([A-Z,a-z,0-9,_,]+)" VALUE "${var}")
-
-            # never quote the value - gives more flexibility
-            list(APPEND FIELDS ${VALUE})
-            list(APPEND VALUES "${${var}}")
-        endif()
-    endforeach()
-
-    set(${fields} ${FIELDS} PARENT_SCOPE)
-    set(${values} ${VALUES} PARENT_SCOPE)
+# Collect the member names and values of the JSON object at the path given by
+# the arguments after <json_var> into the parallel lists <fields> and
+# <values>.  A missing path yields empty lists.  Booleans come back from
+# string(JSON) as ON/OFF; they are normalized to true/false to match the
+# values the old flattened parser produced.
+function(json_collect_object fields values json_var)
+    set(_json_value "${${json_var}}")
+    set(_fields "")
+    set(_values "")
+    string(JSON _len ERROR_VARIABLE _err LENGTH "${_json_value}" ${ARGN})
+    if(NOT _err AND _len GREATER 0)
+        math(EXPR _last "${_len} - 1")
+        foreach(_i RANGE ${_last})
+            string(JSON _field MEMBER "${_json_value}" ${ARGN} ${_i})
+            string(JSON _type TYPE "${_json_value}" ${ARGN} ${_field})
+            string(JSON _value GET "${_json_value}" ${ARGN} ${_field})
+            if("${_type}" STREQUAL "BOOLEAN")
+                if("${_value}" STREQUAL "ON")
+                    set(_value "true")
+                else()
+                    set(_value "false")
+                endif()
+            elseif("${_type}" STREQUAL "NULL")
+                set(_value "null")
+            endif()
+            list(APPEND _fields "${_field}")
+            list(APPEND _values "${_value}")
+        endforeach()
+    endif()
+    set(${fields} ${_fields} PARENT_SCOPE)
+    set(${values} ${_values} PARENT_SCOPE)
 endfunction()
 
 function(FORM_DEFINITIONS fields values definitions)
