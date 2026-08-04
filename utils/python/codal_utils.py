@@ -109,23 +109,89 @@ def read_config():
     target = read_json("libraries/" + targetdir + "/target.json")
     return (codal, targetdir, target)
 
+def _repo_name(url):
+    name = url.rstrip('/').rsplit('/', 1)[-1]
+    if name.endswith('.git'):
+        name = name[:-4]
+    return name
+
+def _is_sha(ref):
+    return re.fullmatch(r'[0-9a-fA-F]{7,40}', ref) is not None
+
+def _find_override(branches, name):
+    for url, ref in branches.items():
+        if _repo_name(url) == name:
+            return (url, ref)
+    return None
+
+def _git(cwd, args, what=None):
+    try:
+        subprocess.run(args, cwd=cwd, check=True)
+    except subprocess.CalledProcessError:
+        if what is None:
+            what = "git " + " ".join(args)
+        print("{}: failed in {}".format(what, cwd))
+        sys.exit(1)
+
+def _default_branch(cwd):
+    _git(cwd, ["git", "remote", "set-head", "origin", "-a"])
+    return str(subprocess.check_output(
+        ["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+        cwd=cwd), "utf8").strip()
+
+def _ff_only(ref, cwd, name):
+    _git(cwd, ["git", "merge", "--ff-only", "origin/" + ref],
+         "{}: cannot fast-forward to origin/{} (local branch has diverged)".format(name, ref))
+
+def _git_sync(name, url, ref, cwd, switch=True):
+    dirty = str(subprocess.check_output(["git", "status", "--porcelain"], cwd=cwd), "utf8").strip()
+    if dirty != "":
+        print("{}: refusing to update, uncommitted changes:".format(name))
+        print(dirty)
+        sys.exit(1)
+
+    _git(cwd, ["git", "remote", "set-url", "origin", url])
+    _git(cwd, ["git", "fetch", "origin", "--prune"])
+
+    if ref is None:
+        ref = _default_branch(cwd)
+
+    if not switch:
+        return
+
+    _git(cwd, ["git", "checkout", ref])
+    if not _is_sha(ref):
+        _ff_only(ref, cwd, name)
+
 def update(allow_detached=False, sync_dev=False):
-    (codal, targetdir, target) = read_config()
+    codal = read_json("codal.json")
+    targetdir = codal['target']['name']
+
+    target_file = "target-locked.json"
+    if codal['target'].get('dev') or sync_dev:
+        target_file = "target.json"
+    target_path = "libraries/" + targetdir + "/" + target_file
+    if not os.path.exists(target_path):
+        target_path = "libraries/" + targetdir + "/target.json"
+    target = read_json(target_path)
+
     dirname = os.getcwd()
+    branches = codal['target'].get('branches', {})
+
     for ln in target['libraries']:
-        os.chdir(dirname + "/libraries/" + ln['name'])
-        if sync_dev:
-            default_branch = list(filter( lambda v: v.strip().startswith('HEAD'), str(subprocess.check_output( ["git", "remote", "show", "origin"] ), "utf8").splitlines()))[0].split(":")[1].strip()
-            system("git checkout " + default_branch)
+        cwd = dirname + "/libraries/" + ln['name']
+        override = _find_override(branches, ln['name'])
+        if override is not None:
+            (url, ref) = override
         else:
-            system("git checkout " + ln['branch'])
-        system("git pull")
-    os.chdir(dirname + "/libraries/" + targetdir)
-    if ("HEAD detached" in os.popen('git branch').read().strip() and
-        allow_detached == False):
-        system("git checkout master")
-    system("git pull")
-    os.chdir(dirname)
+            (url, ref) = (ln['url'], ln['branch'])
+        if sync_dev:
+            ref = None
+        _git_sync(ln['name'], url, ref, cwd)
+
+    cwd = dirname + "/libraries/" + targetdir
+    _git_sync(targetdir, codal['target']['url'], codal['target']['branch'], cwd,
+              switch=not allow_detached)
 
 def revision(rev):
     (codal, targetdir, target) = read_config()
