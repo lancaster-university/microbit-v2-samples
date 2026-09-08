@@ -36,6 +36,7 @@ endif()
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS_ON)
 
 #read our config file...
 file(READ "./codal.json" codal_json)

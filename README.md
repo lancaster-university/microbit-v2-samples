@@ -57,6 +57,14 @@ The `samples` folder contains a number of simple sample programs that utilise yo
 There is an example `coda.dev.json` file which enables "developer builds" (clones dependencies from the latest commits, instead of the commits locked in the `codal-microbit-v2` tag), and adds extra CODAL flags that enable debug data to be printed to serial.
 To use it, simply copy the additional json entries into your `codal.json` file, or you can replace the file completely (`mv coda.dev.json codal.json`).
 
+## Clangd configuration for Helix
+Clangd language server configurations are provided for the Helix IDE.
+This is primarily set up to work with the nix devshell and should Just Work (TM).
+
+However, if you do not wish to use the devshell you will need to make sure clangd is [installed](https://clangd.llvm.org/installation).
+Clangd also need access to the gcc and g++ compilers in order to query the standard library headers.
+To provide this, create a symlink for `arm-none-eabi-gcc` and `arm-none-eabi-g++` at `/opt/arm-none-eabi/bin/`.
+
 # Debugging
 If you are using Visual Studio Code, there is a working debugging environment already set up for you, allowing you to set breakpoints and observe the micro:bit's memory. To get it working, follow these steps:
 

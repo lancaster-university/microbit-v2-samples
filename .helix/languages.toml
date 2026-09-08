@@ -1,0 +1,12 @@
+[language-server.clangd]
+command = "clangd"
+args = ["--query-driver=/nix/store/*/bin/arm-none-eabi-*,/opt/arm-none-eabi/bin/arm-none-eabi-*", "--background-index", "--header-insertion=never", "--function-arg-placeholders", "--completion-style=detailed", "--argument-lists=full-placeholders"]
+
+[[language]]
+name = "cpp"
+language-servers = ["clangd"]
+
+[[language]]
+name = "c"
+language-servers = ["clangd"]
+
