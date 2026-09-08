@@ -42,6 +42,29 @@ To omit the final output stage (for CI, for example) run without the `--output` 
     docker build -t microbit-tools .
 ```
 
+## Nix flake
+A hashed and locked dev environment is provided via a nix flake.
+This avoids polluting your system environment with tooling required for a particular project.
+
+Install nix by following the instructions [here](https://nix.dev/install-nix.html).
+
+To set up and enter the dev environment, run `nix develop`.
+Optionally, if you want to use `ninja` to build, run `nix develop .#ninja` to include this package in the environment.
+Ninja can help speed up build times on slow machines.
+While inside the environment, all the build tooling will be available on the command line with the specified versions.
+Pressing Ctrl-D will exit the environment and the tooling will no longer be accessible.
+
+You can also optionally automate this process by installing [direnv](https://direnv.net/docs/installation.html).
+Having done this, run
+```sh
+echo "use flake" >> .envrc
+direnv allow
+```
+Once this is done, entering the repo directory will automatically activate the devshell.
+Navigating out of the directory will deactivate it.
+This comes with the added benefit of keeping your shell profile active.
+As above, if you wish to use `ninja`, replace the echo call with `echo "use flake .#ninja" >> .envrc`.
+
 # Building
 - Clone this repository
 - In the root of this repository type `python build.py`
@@ -58,6 +81,7 @@ There is an example `coda.dev.json` file which enables "developer builds" (clone
 To use it, simply copy the additional json entries into your `codal.json` file, or you can replace the file completely (`mv coda.dev.json codal.json`).
 
 # Debugging
+## VS Code
 If you are using Visual Studio Code, there is a working debugging environment already set up for you, allowing you to set breakpoints and observe the micro:bit's memory. To get it working, follow these steps:
 
 1. Install either [OpenOCD](http://openocd.org) or [PyOCD](https://github.com/pyocd/pyOCD).
@@ -67,6 +91,22 @@ If you are using Visual Studio Code, there is a working debugging environment al
 5. Two debugging options are provided: one for OpenOCD, and one for PyOCD. Select the correct one depending on the debugger you installed.
 
 This should launch the debugging environment for you. To set breakpoints, you can click to the left of the line number of where you want to stop.
+
+## gdb
+You can also use `gdb` for debugging.
+If you are not using the nix devshell, install OpenOCD with the link in the previous section.
+If you are using the devshell, it will already be available.
+1. Build your program
+2. Run `openocd -f interface/cmsis-dap.cfg -f target/nrf52.cfg`
+3. In a second terminal, run
+```
+    arm-none-eabi-gdb build/MICROBIT -tui \
+    -ex "target extended-remote :3333" \
+    -ex "monitor reset halt" \
+    -ex "load"
+```
+This will reset and halt the MCU and flash your binary onto it.
+Once the binary is flashed, you can re-attach with the same command, just removing the last two `-ex` arguments.
 
 # Compatibility
 This repository is designed to follow the principles and APIs developed for the first version of the micro:bit. We have also included a compatibility layer so that the vast majority of C/C++ programs built using [microbit-dal](https://www.github.com/lancaster-university/microbit-dal) will operate with few changes.
