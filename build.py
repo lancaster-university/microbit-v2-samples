@@ -58,7 +58,7 @@ if options.lock_target:
     exit(0)
 
 if options.update:
-    update(sync_dev = options.dev)
+    update(sync_dev = options.dev, verbose = options.verbose)
     exit(0)
 
 if options.status:

@@ -124,46 +124,92 @@ def _find_override(branches, name):
             return (url, ref)
     return None
 
-def _git(cwd, args, what=None):
-    try:
-        subprocess.run(args, cwd=cwd, check=True)
-    except subprocess.CalledProcessError:
-        if what is None:
-            what = "git " + " ".join(args)
-        print("{}: failed in {}".format(what, cwd))
-        sys.exit(1)
+_partial_line = False
 
-def _default_branch(cwd):
-    _git(cwd, ["git", "remote", "set-head", "origin", "-a"])
+def _git(cwd, args, what=None, verbose=False):
+    global _partial_line
+    if verbose:
+        rc = subprocess.run(args, cwd=cwd).returncode
+        output = None
+    else:
+        proc = subprocess.run(args, cwd=cwd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, universal_newlines=True)
+        rc = proc.returncode
+        output = proc.stdout
+    if rc == 0:
+        return output or ""
+    if what is None:
+        what = "git " + " ".join(args)
+    if _partial_line:
+        print("failed", flush=True)
+        _partial_line = False
+    print("{}: failed in {}".format(what, cwd), flush=True)
+    if output:
+        print(output, end="", flush=True)
+    sys.exit(1)
+
+def _head(cwd):
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cwd).decode("utf8").strip()
+
+def _default_branch(cwd, verbose=False):
+    _git(cwd, ["git", "remote", "set-head", "origin", "-a"], verbose=verbose)
     return str(subprocess.check_output(
         ["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
         cwd=cwd), "utf8").strip()
 
-def _ff_only(ref, cwd, name):
+def _ff_only(ref, cwd, name, verbose=False):
     _git(cwd, ["git", "merge", "--ff-only", "origin/" + ref],
-         "{}: cannot fast-forward to origin/{} (local branch has diverged)".format(name, ref))
+         "{}: cannot fast-forward to origin/{} (local branch has diverged)".format(name, ref),
+         verbose=verbose)
 
-def _git_sync(name, url, ref, cwd, switch=True):
+def _git_sync(name, url, ref, cwd, switch=True, verbose=False):
+    global _partial_line
+    before = _head(cwd)
     dirty = str(subprocess.check_output(["git", "status", "--porcelain"], cwd=cwd), "utf8").strip()
     if dirty != "":
         print("{}: refusing to update, uncommitted changes:".format(name))
         print(dirty)
         sys.exit(1)
 
-    _git(cwd, ["git", "remote", "set-url", "origin", url])
-    _git(cwd, ["git", "fetch", "origin", "--prune"])
+    if verbose:
+        print("Updating {} ({}{})".format(name, url, " @ " + ref if ref else ""), flush=True)
+        prefix = name + ": "
+    else:
+        # announce the repo before the (possibly slow) fetch, so progress is visible
+        print("{}: ".format(name), end="", flush=True)
+        _partial_line = True
+        prefix = ""
+
+    _git(cwd, ["git", "remote", "set-url", "origin", url], verbose=verbose)
+    _git(cwd, ["git", "fetch", "origin", "--prune"], verbose=verbose)
 
     if ref is None:
-        ref = _default_branch(cwd)
+        ref = _default_branch(cwd, verbose)
+
+    def done(msg):
+        global _partial_line
+        if _partial_line:
+            print(msg, flush=True)
+            _partial_line = False
+        else:
+            print(prefix + msg, flush=True)
 
     if not switch:
-        return
+        done("{} (fetched only)".format(ref))
+        return False
 
-    _git(cwd, ["git", "checkout", ref])
+    _git(cwd, ["git", "checkout", ref], verbose=verbose)
     if not _is_sha(ref):
-        _ff_only(ref, cwd, name)
+        _ff_only(ref, cwd, name, verbose)
 
-def update(allow_detached=False, sync_dev=False):
+    after = _head(cwd)
+    if after != before:
+        done("updated {} -> {}".format(before[:7], after[:7]))
+        return True
+    done("up to date @ {}".format(after[:7]))
+    return False
+
+def update(allow_detached=False, sync_dev=False, verbose=False):
     codal = read_json("codal.json")
     targetdir = codal['target']['name']
 
@@ -187,11 +233,11 @@ def update(allow_detached=False, sync_dev=False):
             (url, ref) = (ln['url'], ln['branch'])
         if sync_dev:
             ref = None
-        _git_sync(ln['name'], url, ref, cwd)
+        _git_sync(ln['name'], url, ref, cwd, verbose=verbose)
 
     cwd = dirname + "/libraries/" + targetdir
     _git_sync(targetdir, codal['target']['url'], codal['target']['branch'], cwd,
-              switch=not allow_detached)
+              switch=not allow_detached, verbose=verbose)
 
 def revision(rev):
     (codal, targetdir, target) = read_config()
@@ -241,7 +287,7 @@ def get_next_version(options):
     if options.version:
         return options.version
     log = os.popen('git log -n 100').read().strip()
-    m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
+    m = re.search(r'Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:
         print("Cannot determine next version from git log")
         exit(1)
