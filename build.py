@@ -29,7 +29,7 @@ import platform
 import json
 import shutil
 import re
-from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs
+from utils.python.codal_utils import system, build, read_json, checkgit, read_config, update, revision, printstatus, status, get_next_version, lock, delete_build_folder, generate_docs, print_build_id, write_buildinfo
 
 parser = optparse.OptionParser(usage="usage: %prog target-name-or-url [options]", description="This script manages the build system for a codal device. Passing a target-name generates a codal.json for that devices, to list all devices available specify the target-name as 'ls'.")
 parser.add_option('-c', '--clean', dest='clean', action="store_true", help='Whether to clean before building. Applicable only to unix based builds.', default=False)
@@ -49,6 +49,8 @@ parser.add_option('-j', '--parallelism', dest='parallelism', action="store", hel
 parser.add_option('-n', '--lines', dest='detail_lines', action="store", help="Sets the number of detail lines to output (only relevant to --status)", default=3 )
 
 (options, args) = parser.parse_args()
+
+print_build_id()
 
 if not os.path.exists("build"):
     os.mkdir("build")
@@ -142,6 +144,7 @@ if not options.test_platform:
         exit(0)
 
     build(options.clean, verbose=options.verbose, parallelism=options.parallelism)
+    write_buildinfo("..", "..")
     exit(0)
 
 for json_obj in test_json:

@@ -5,11 +5,64 @@ import json
 import shutil
 import re
 import subprocess
+import time
 
 
 def system(cmd):
     if os.system(cmd) != 0:
       sys.exit(1)
+
+def _git_out(args, cwd=None):
+    try:
+        return subprocess.check_output(args, cwd=cwd, stderr=subprocess.DEVNULL,
+                                       universal_newlines=True).strip()
+    except subprocess.CalledProcessError:
+        return ""
+
+def describe_build(root=None):
+    sha = _git_out(["git", "rev-parse", "HEAD"], cwd=root)
+    if not sha:
+        return None
+    branch = _git_out(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root)
+    if branch == "HEAD":
+        describe = _git_out(["git", "describe", "--tags", "--always"], cwd=root)
+        branch = "detached" + ("@" + describe if describe else "")
+    dirty = bool(_git_out(["git", "status", "--porcelain"], cwd=root))
+    return {"sha": sha, "branch": branch, "dirty": dirty}
+
+def print_build_id(root=None):
+    info = describe_build(root)
+    if info is None:
+        print("Warning: cannot determine git commit id (not a git checkout?).")
+        return
+    if root is None:
+        root = os.getcwd()
+    flags = info["branch"] + (", dirty" if info["dirty"] else "")
+    print("Building {} @ {} ({})".format(os.path.basename(os.path.abspath(root)),
+                                         info["sha"][:7], flags))
+    print("Full commit id: " + info["sha"])
+
+def write_buildinfo(root=None, output_dir="."):
+    if root is None:
+        root = os.getcwd()
+    info = describe_build(root)
+    if info is None:
+        print("Warning: cannot determine git commit id, skipping buildinfo.")
+        return
+    codal = read_json(root + "/codal.json")
+    targetdir = codal['target']['name']
+    try:
+        target = read_json(root + "/libraries/" + targetdir + "/target.json")
+        device = target["device"]
+    except Exception:
+        device = targetdir
+    path = os.path.join(output_dir, device + ".buildinfo")
+    with open(path, "w") as f:
+        f.write("commit=" + info["sha"] + "\n")
+        f.write("branch=" + info["branch"] + "\n")
+        f.write("dirty=" + ("true" if info["dirty"] else "false") + "\n")
+        f.write("built=" + time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()) + "\n")
+    print("Wrote " + path)
 
 def build(clean, verbose = False, parallelism = 10):
     # Use Ninja on Windows, or if available in any other OS

@@ -11,6 +11,7 @@ Makefile
 .vscode
 *.uf2
 *.bin
+*.buildinfo
 pxtapp
 buildcache.json
 *.pyc
