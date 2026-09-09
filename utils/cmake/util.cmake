@@ -29,6 +29,40 @@ MACRO(SOURCE_FILES return_list dir pattern)
     SET(${return_list} ${dir_list})
 ENDMACRO()
 
+# Look up a dependency override in the "branches" object of codal.json.
+# This mirrors _find_override() in utils/python/codal_utils.py: every key is a
+# repo URL, whose trailing path segment (minus a ".git" suffix) is the repo
+# name. The first entry whose repo name matches <name> sets <out_url> to the
+# key itself and <out_ref> to its value. Both are empty if there is no match.
+# Note: looking this up by the dependency's *declared* URL (as a direct JSON
+# key GET) silently misses entries that point to a fork of the same repo,
+# which made fresh clones build pre-fix upstream code.
+function(find_dependency_override out_url out_ref json_var name)
+    set(_json_value "${${json_var}}")
+    set(${out_url} "" PARENT_SCOPE)
+    set(${out_ref} "" PARENT_SCOPE)
+    string(JSON _len ERROR_VARIABLE _err LENGTH "${_json_value}" "target" "branches")
+    if(_err)
+        return()
+    endif()
+    if(NOT _len GREATER 0)
+        return()
+    endif()
+    math(EXPR _last "${_len} - 1")
+    foreach(_i RANGE ${_last})
+        string(JSON _key MEMBER "${_json_value}" "target" "branches" ${_i})
+        string(REGEX REPLACE "/+$" "" _base "${_key}")
+        string(REGEX REPLACE ".*/" "" _repo "${_base}")
+        string(REGEX REPLACE "\\.git$" "" _repo "${_repo}")
+        if("${_repo}" STREQUAL "${name}")
+            string(JSON _ref GET "${_json_value}" "target" "branches" "${_key}")
+            set(${out_url} "${_key}" PARENT_SCOPE)
+            set(${out_ref} "${_ref}" PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
 # Read a value out of the JSON document held in variable <json_var>.  The
 # arguments after <json_var> form the member/index path into the document.
 # The value is written to <result>; a missing path yields the empty string.
@@ -136,6 +170,21 @@ function(INSTALL_DEPENDENCY dir name url branch type)
 
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}")
         message("${name} is already installed")
+        # A 40-hex ref is a pin: warn (never fail) when the existing checkout
+        # is not at it, so builds from stale library trees cannot silently
+        # diverge from what a fresh clone would produce.
+        string(LENGTH "${branch}" _branch_len)
+        if("${type}" STREQUAL "git" AND _branch_len EQUAL 40 AND "${branch}" MATCHES "^[0-9a-fA-F]+$")
+            execute_process(
+                COMMAND git rev-parse HEAD
+                WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${dir}/${name}"
+                OUTPUT_VARIABLE _head OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET)
+            string(TOLOWER "${branch}" _pin_lc)
+            if(_head AND NOT "${_head}" STREQUAL "${_pin_lc}")
+                message("${BoldYellow}WARNING: ${dir}/${name} HEAD is ${_head} but the pin wants ${_pin_lc} - run ./build.py --update${ColourReset}")
+            endif()
+        endif()
         return()
     endif()
 

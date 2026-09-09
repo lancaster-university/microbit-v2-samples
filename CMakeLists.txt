@@ -241,13 +241,24 @@ if(NOT _no_libraries)
         if(NOT _no_branch)
             SET(BRANCH "${_lib_branch}")
         endif()
-        string(JSON _override ERROR_VARIABLE _no_override GET "${codal_json}" "target" "branches" "${_lib_url}")
-        if(NOT _no_override)
-            SET(BRANCH "${_override}")
-            MESSAGE (STATUS "Override branch: ${BRANCH}")
+
+        # apply the codal.json "branches" override by repo NAME (the entry key
+        # is the URL to clone from), mirroring _find_override() in
+        # utils/python/codal_utils.py. Matching on the declared URL instead
+        # silently ignored forked entries, so CI fresh clones built upstream.
+        find_dependency_override(_ovr_url _ovr_ref codal_json "${_lib_name}")
+        if(_ovr_url)
+            if(NOT "${_ovr_url}" STREQUAL "${_lib_url}")
+                MESSAGE (STATUS "Override ${_lib_name}: url ${_lib_url} -> ${_ovr_url}")
+            endif()
+            MESSAGE (STATUS "Override branch: ${_ovr_ref}")
+            SET(BRANCH "${_ovr_ref}")
+            SET(_lib_eff_url "${_ovr_url}")
+        else()
+            SET(_lib_eff_url "${_lib_url}")
         endif()
 
-        INSTALL_DEPENDENCY(${LIB_DEST} ${_lib_name} ${_lib_url} ${BRANCH} ${_lib_type})
+        INSTALL_DEPENDENCY(${LIB_DEST} ${_lib_name} ${_lib_eff_url} ${BRANCH} ${_lib_type})
         list(APPEND CODAL_DEPS "${_lib_name}")
     endforeach()
 
