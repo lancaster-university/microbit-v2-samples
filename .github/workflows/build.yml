@@ -13,11 +13,11 @@ jobs:
         # macos-14 is arm64
         os: [ubuntu-22.04, macos-15-intel, macos-14, windows-2022]
         gcc: ['6-2016-q4', 'latest']  # Min version 6.2 as used in pext/yotta:latest docker image
-        cmake: ['3.6.0', '']  # Empty string installs the latest CMake release
+        cmake: ['3.19.0', '']  # Empty string installs the latest CMake release
         exclude:
           # This old version of CMake does not run in Ubuntu 22.04
           - os: ubuntu-22.04
-            cmake: '3.6.0'
+            cmake: '3.19.0'
           # Intel macOS cannot run the latest gcc (which is arm64 only)
           - os: macos-15-intel
             gcc: 'latest'
