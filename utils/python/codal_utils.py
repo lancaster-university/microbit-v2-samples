@@ -5,11 +5,64 @@ import json
 import shutil
 import re
 import subprocess
+import time
 
 
 def system(cmd):
     if os.system(cmd) != 0:
       sys.exit(1)
+
+def _git_out(args, cwd=None):
+    try:
+        return subprocess.check_output(args, cwd=cwd, stderr=subprocess.DEVNULL,
+                                       universal_newlines=True).strip()
+    except subprocess.CalledProcessError:
+        return ""
+
+def describe_build(root=None):
+    sha = _git_out(["git", "rev-parse", "HEAD"], cwd=root)
+    if not sha:
+        return None
+    branch = _git_out(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root)
+    if branch == "HEAD":
+        describe = _git_out(["git", "describe", "--tags", "--always"], cwd=root)
+        branch = "detached" + ("@" + describe if describe else "")
+    dirty = bool(_git_out(["git", "status", "--porcelain"], cwd=root))
+    return {"sha": sha, "branch": branch, "dirty": dirty}
+
+def print_build_id(root=None):
+    info = describe_build(root)
+    if info is None:
+        print("Warning: cannot determine git commit id (not a git checkout?).")
+        return
+    if root is None:
+        root = os.getcwd()
+    flags = info["branch"] + (", dirty" if info["dirty"] else "")
+    print("Building {} @ {} ({})".format(os.path.basename(os.path.abspath(root)),
+                                         info["sha"][:7], flags))
+    print("Full commit id: " + info["sha"])
+
+def write_buildinfo(root=None, output_dir="."):
+    if root is None:
+        root = os.getcwd()
+    info = describe_build(root)
+    if info is None:
+        print("Warning: cannot determine git commit id, skipping buildinfo.")
+        return
+    codal = read_json(root + "/codal.json")
+    targetdir = codal['target']['name']
+    try:
+        target = read_json(root + "/libraries/" + targetdir + "/target.json")
+        device = target["device"]
+    except Exception:
+        device = targetdir
+    path = os.path.join(output_dir, device + ".buildinfo")
+    with open(path, "w") as f:
+        f.write("commit=" + info["sha"] + "\n")
+        f.write("branch=" + info["branch"] + "\n")
+        f.write("dirty=" + ("true" if info["dirty"] else "false") + "\n")
+        f.write("built=" + time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()) + "\n")
+    print("Wrote " + path)
 
 def build(clean, verbose = False, parallelism = 10):
     # Use Ninja on Windows, or if available in any other OS
@@ -40,11 +93,62 @@ def build(clean, verbose = False, parallelism = 10):
         else:
             system("make -j {}".format(parallelism))
 
+def _strip_json_comments(text):
+    result = ""
+    i = 0
+    n = len(text)
+    in_string = False
+
+    while i < n:
+        c = text[i]
+
+        if in_string:
+            result += c
+            if c == '\\' and i + 1 < n:
+                result += text[i + 1]
+                i += 2
+                continue
+            if c == '"':
+                in_string = False
+            i += 1
+        elif c == '"':
+            in_string = True
+            result += c
+            i += 1
+        elif c == '/' and i + 1 < n and text[i + 1] == '/':
+            end = text.find('\n', i)
+            if end == -1:
+                break
+            i = end
+        elif c == '/' and i + 1 < n and text[i + 1] == '*':
+            end = text.find('*/', i + 2)
+            if end == -1:
+                break
+            # drop the comment but keep newlines so error messages keep sane line numbers
+            block = text[i:end + 2]
+            result += re.sub(r'[^\n]', '', block)
+            i = end + 2
+        elif c == ',':
+            # tolerate trailing commas, as the CMake parser does
+            j = i + 1
+            while j < n and text[j] in ' \t\r\n':
+                j += 1
+            if j < n and text[j] in '}]':
+                i = j
+            else:
+                result += c
+                i += 1
+        else:
+            result += c
+            i += 1
+
+    return result
+
 def read_json(fn):
     json_file = ""
     with open(fn) as f:
         json_file = f.read()
-    return json.loads(json_file)
+    return json.loads(_strip_json_comments(json_file))
 
 def checkgit():
     stat = os.popen('git status --porcelain').read().strip()
@@ -58,23 +162,135 @@ def read_config():
     target = read_json("libraries/" + targetdir + "/target.json")
     return (codal, targetdir, target)
 
-def update(allow_detached=False, sync_dev=False):
-    (codal, targetdir, target) = read_config()
-    dirname = os.getcwd()
-    for ln in target['libraries']:
-        os.chdir(dirname + "/libraries/" + ln['name'])
-        if sync_dev:
-            default_branch = list(filter( lambda v: v.strip().startswith('HEAD'), str(subprocess.check_output( ["git", "remote", "show", "origin"] ), "utf8").splitlines()))[0].split(":")[1].strip()
-            system("git checkout " + default_branch)
+def _repo_name(url):
+    name = url.rstrip('/').rsplit('/', 1)[-1]
+    if name.endswith('.git'):
+        name = name[:-4]
+    return name
+
+def _is_sha(ref):
+    return re.fullmatch(r'[0-9a-fA-F]{7,40}', ref) is not None
+
+def _find_override(branches, name):
+    for url, ref in branches.items():
+        if _repo_name(url) == name:
+            return (url, ref)
+    return None
+
+_partial_line = False
+
+def _git(cwd, args, what=None, verbose=False):
+    global _partial_line
+    if verbose:
+        rc = subprocess.run(args, cwd=cwd).returncode
+        output = None
+    else:
+        proc = subprocess.run(args, cwd=cwd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, universal_newlines=True)
+        rc = proc.returncode
+        output = proc.stdout
+    if rc == 0:
+        return output or ""
+    if what is None:
+        what = "git " + " ".join(args)
+    if _partial_line:
+        print("failed", flush=True)
+        _partial_line = False
+    print("{}: failed in {}".format(what, cwd), flush=True)
+    if output:
+        print(output, end="", flush=True)
+    sys.exit(1)
+
+def _head(cwd):
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cwd).decode("utf8").strip()
+
+def _default_branch(cwd, verbose=False):
+    _git(cwd, ["git", "remote", "set-head", "origin", "-a"], verbose=verbose)
+    return str(subprocess.check_output(
+        ["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+        cwd=cwd), "utf8").strip()
+
+def _ff_only(ref, cwd, name, verbose=False):
+    _git(cwd, ["git", "merge", "--ff-only", "origin/" + ref],
+         "{}: cannot fast-forward to origin/{} (local branch has diverged)".format(name, ref),
+         verbose=verbose)
+
+def _git_sync(name, url, ref, cwd, switch=True, verbose=False):
+    global _partial_line
+    before = _head(cwd)
+    dirty = str(subprocess.check_output(["git", "status", "--porcelain"], cwd=cwd), "utf8").strip()
+    if dirty != "":
+        print("{}: refusing to update, uncommitted changes:".format(name))
+        print(dirty)
+        sys.exit(1)
+
+    if verbose:
+        print("Updating {} ({}{})".format(name, url, " @ " + ref if ref else ""), flush=True)
+        prefix = name + ": "
+    else:
+        # announce the repo before the (possibly slow) fetch, so progress is visible
+        print("{}: ".format(name), end="", flush=True)
+        _partial_line = True
+        prefix = ""
+
+    _git(cwd, ["git", "remote", "set-url", "origin", url], verbose=verbose)
+    _git(cwd, ["git", "fetch", "origin", "--prune"], verbose=verbose)
+
+    if ref is None:
+        ref = _default_branch(cwd, verbose)
+
+    def done(msg):
+        global _partial_line
+        if _partial_line:
+            print(msg, flush=True)
+            _partial_line = False
         else:
-            system("git checkout " + ln['branch'])
-        system("git pull")
-    os.chdir(dirname + "/libraries/" + targetdir)
-    if ("HEAD detached" in os.popen('git branch').read().strip() and
-        allow_detached == False):
-        system("git checkout master")
-    system("git pull")
-    os.chdir(dirname)
+            print(prefix + msg, flush=True)
+
+    if not switch:
+        done("{} (fetched only)".format(ref))
+        return False
+
+    _git(cwd, ["git", "checkout", ref], verbose=verbose)
+    if not _is_sha(ref):
+        _ff_only(ref, cwd, name, verbose)
+
+    after = _head(cwd)
+    if after != before:
+        done("updated {} -> {}".format(before[:7], after[:7]))
+        return True
+    done("up to date @ {}".format(after[:7]))
+    return False
+
+def update(allow_detached=False, sync_dev=False, verbose=False):
+    codal = read_json("codal.json")
+    targetdir = codal['target']['name']
+
+    target_file = "target-locked.json"
+    if codal['target'].get('dev') or sync_dev:
+        target_file = "target.json"
+    target_path = "libraries/" + targetdir + "/" + target_file
+    if not os.path.exists(target_path):
+        target_path = "libraries/" + targetdir + "/target.json"
+    target = read_json(target_path)
+
+    dirname = os.getcwd()
+    branches = codal['target'].get('branches', {})
+
+    for ln in target['libraries']:
+        cwd = dirname + "/libraries/" + ln['name']
+        override = _find_override(branches, ln['name'])
+        if override is not None:
+            (url, ref) = override
+        else:
+            (url, ref) = (ln['url'], ln['branch'])
+        if sync_dev:
+            ref = None
+        _git_sync(ln['name'], url, ref, cwd, verbose=verbose)
+
+    cwd = dirname + "/libraries/" + targetdir
+    _git_sync(targetdir, codal['target']['url'], codal['target']['branch'], cwd,
+              switch=not allow_detached, verbose=verbose)
 
 def revision(rev):
     (codal, targetdir, target) = read_config()
@@ -124,7 +340,7 @@ def get_next_version(options):
     if options.version:
         return options.version
     log = os.popen('git log -n 100').read().strip()
-    m = re.search('Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
+    m = re.search(r'Snapshot v(\d+)\.(\d+)\.(\d+)(-([\w\-]+).(\d+))?', log)
     if m is None:
         print("Cannot determine next version from git log")
         exit(1)

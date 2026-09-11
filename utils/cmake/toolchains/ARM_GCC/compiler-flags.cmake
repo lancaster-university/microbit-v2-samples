@@ -36,7 +36,7 @@ set(CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -cr <LINK_FLAGS> <TARGET> <OBJEC
 
 set(CMAKE_CXX_LINK_EXECUTABLE       "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> -Wl,-Map,<TARGET>.map -Wl,--start-group <OBJECTS> <LINK_LIBRARIES> -lnosys -lstdc++ -lsupc++ -lm -lc -lgcc -lstdc++ -lsupc++ -lm -lc -lgcc -Wl,--end-group  --specs=nano.specs -o <TARGET>")
 
-if(${device.show_size})
+if(${device_show_size})
     set(CMAKE_CXX_LINK_EXECUTABLE   "${CMAKE_CXX_LINK_EXECUTABLE} -Wl,--print-memory-usage")
 endif()
 
