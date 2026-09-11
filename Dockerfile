@@ -10,7 +10,7 @@
 # when running the image. This means that the built MICROBIT.hex file
 # will be available in the source folder outside the image.
 
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
