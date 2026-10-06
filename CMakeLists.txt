@@ -139,6 +139,11 @@ if("${device.definitions}" STRGREATER "")
     add_definitions("${device.definitions}")
 endif()
 
+# Force size optimization.
+foreach(lang C CXX ASM)
+    set(CMAKE_${lang}_FLAGS_RELWITHDEBINFO "-Os -g -DNDEBUG")
+endforeach()
+
 ####################
 # optional JSON flags for compilation + assembly
 ###################
